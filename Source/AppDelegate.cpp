@@ -9,7 +9,7 @@
 
 using namespace ax;
 
-static ax::Size designResolutionSize = ax::Size(720/2,1280/2);
+static ax::Size designResolutionSize = ax::Size(720,1280);
 
 AppDelegate::AppDelegate() {}
 
@@ -37,7 +37,7 @@ bool AppDelegate::applicationDidFinishLaunching()
 #if (AX_TARGET_PLATFORM == AX_PLATFORM_WIN32) || (AX_TARGET_PLATFORM == AX_PLATFORM_MAC) || \
     (AX_TARGET_PLATFORM == AX_PLATFORM_LINUX)
         renderView = RenderViewImpl::createWithRect(
-            "simple_prototype", ax::Rect(0, 0, designResolutionSize.width, designResolutionSize.height));
+            "simple_prototype", ax::Rect(0, 0, 360, 640));
 #else
         renderView = RenderViewImpl::create("simple_prototype");
 #endif
@@ -52,7 +52,7 @@ bool AppDelegate::applicationDidFinishLaunching()
 
     // Set the design resolution
     renderView->setDesignResolutionSize(designResolutionSize.width, designResolutionSize.height,
-                                    ResolutionPolicy::SHOW_ALL);
+                                    ResolutionPolicy::FIXED_HEIGHT);
 
     // create a scene. it's an autorelease object
     auto scene = utils::createInstance<MainScene>();

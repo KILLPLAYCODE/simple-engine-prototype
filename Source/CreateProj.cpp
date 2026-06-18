@@ -42,7 +42,7 @@ bool CreateProj::init()
 
     auto sprite = Sprite::create("sprites/textfield.png"sv);
     sprite->setPosition(Vec2(origin.x + visibleSize.width/2, origin.y + visibleSize.height/2 + 200));
-    sprite->setScale(0.3f);
+    sprite->setScale(0.6f);
     Size spritesz = sprite->getContentSize();
     this->addChild(sprite,5);
 
@@ -51,14 +51,14 @@ bool CreateProj::init()
     name->setPosition(Vec2(spritesz.width/2,spritesz.height + 100));
 
     auto button2 = ui::Button::create("sprites/button.png"sv,"sprites/button_pressed.png"sv);
-    button2->setPosition(Vec2(origin.x + visibleSize.width/2, origin.y + visibleSize.height/2 - 50));
-    button2->setScale(0.3f);
+    button2->setPosition(Vec2(origin.x + visibleSize.width/2, origin.y + visibleSize.height/2 - 100));
+    button2->setScale(0.6f);
     this->addChild(button2,2);
     auto title2 = Label::createWithTTF("CREATE","fonts/Gokart Bubble.otf",98);
     button2->addChild(title2,5);
     title2->setPosition(Vec2(390,160));
 
-    auto textfield = ui::TextField::create("Project name...", "fonts/arial.ttf",98);
+    auto textfield = ui::TextField::create("Project name...", "fonts/arial.ttf",92);
     textfield->setPosition(Vec2(spritesz.width/2,spritesz.height/2));
     textfield->setMaxLengthEnabled(true);
     textfield->setMaxLength(18);
@@ -68,7 +68,12 @@ bool CreateProj::init()
     button2->addClickEventListener([=](Object* sender){
         auto fileUtils = FileUtils::getInstance();
         std::string systemPath = fileUtils->getWritablePath();
+        std::string triggerFile = systemPath + ".init";
+        if (!fileUtils->isFileExist(triggerFile)) {
+            fileUtils->writeStringToFile("init", triggerFile);
+        }    
         std::string textfieldtxt = std::string(textfield->getString());
+        AXLOGI("{}", systemPath);
         if(textfieldtxt.empty()){
             return;
         }
@@ -77,6 +82,11 @@ bool CreateProj::init()
             fileUtils->createDirectories(folder);
         }
 });
+    auto testUtils = FileUtils::getInstance();;
+    std::string testPath = testUtils->getWritablePath();
+    auto path = Label::createWithTTF(testPath, "fonts/arial.ttf", 28);
+    path->setPosition(Vec2(origin.x + visibleSize.width/2,origin.y + visibleSize.height/2));
+    this->addChild(path, 10);
     scheduleUpdate();
 
     return true;

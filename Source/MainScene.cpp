@@ -5,7 +5,6 @@ using namespace ax;
 
 static int s_sceneID = 1000;
 
-// Print useful error message instead of segfaulting when files are not there.
 static void problemLoading(const char* filename)
 {
     printf("Error while loading: %s\n", filename);
@@ -14,11 +13,9 @@ static void problemLoading(const char* filename)
         "MainScene.cpp\n");
 }
 
-// on "init" you need to initialize your instance
 bool MainScene::init()
 {
     //////////////////////////////
-    // 1. super init first
     if (!Scene::init())
     {
         return false;
@@ -34,24 +31,13 @@ bool MainScene::init()
     layer->setPosition(Vec2::ZERO);
     this->addChild(layer,0);
 
+    auto label = Label::createWithTTF("Simple\nEngine", "fonts/Magic Yellow.otf", 84);
+    label->setPosition(Vec2(origin.x + visibleSize.width / 2, origin.y + visibleSize.height - label->getContentSize().height/2 - 80));
+    this->addChild(label, 1);
 
-    auto label = Label::createWithTTF("Simple\nEngine", "fonts/Magic Yellow.otf", 42);
-    if (label == nullptr)
-    {
-        problemLoading("'fonts/Marker Felt.ttf'");
-    }
-    else
-    {
-        // position the label on the center of the screen
-        label->setPosition(
-            Vec2(origin.x + visibleSize.width / 2, origin.y + visibleSize.height - label->getContentSize().height/2 - 80));
-
-        // add the label as a child to this layer
-        this->addChild(label, 1);
-    }
     auto button = ui::Button::create("sprites/button.png"sv,"sprites/button.png"sv);
     button->setPosition(Vec2(origin.x + visibleSize.width/2,origin.y + visibleSize.height/2 + 50));
-    button->setScale(0.3f);
+    button->setScale(0.6f);
     this->addChild(button,2);
     auto title = Label::createWithTTF("CREATE", "fonts/Gokart Bubble.otf",128);
     button->addChild(title,5);
@@ -62,8 +48,8 @@ bool MainScene::init()
     });
 
     auto button2 = ui::Button::create("sprites/button.png"sv,"sprites/button.png"sv);
-    button2->setPosition(Vec2(origin.x + visibleSize.width/2, origin.y + visibleSize.height/2 - 50));
-    button2->setScale(0.3f);
+    button2->setPosition(Vec2(origin.x + visibleSize.width/2, origin.y + visibleSize.height/2 - 100));
+    button2->setScale(0.6f);
     this->addChild(button2,2);
     auto title2 = Label::createWithTTF("MY PROJECTS","fonts/Gokart Bubble.otf",98);
     button2->addChild(title2,5);
