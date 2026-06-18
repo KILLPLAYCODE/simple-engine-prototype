@@ -1,0 +1,228 @@
+#include "MainScene.h"
+#include "ui/CocosGUI.h"
+#include "CreateProj.h"
+using namespace ax;
+
+static int s_sceneID = 1000;
+
+// Print useful error message instead of segfaulting when files are not there.
+static void problemLoading(const char* filename)
+{
+    printf("Error while loading: %s\n", filename);
+    printf(
+        "Depending on how you compiled you might have to add 'Content/' in front of filenames in "
+        "MainScene.cpp\n");
+}
+
+// on "init" you need to initialize your instance
+bool MainScene::init()
+{
+    //////////////////////////////
+    // 1. super init first
+    if (!Scene::init())
+    {
+        return false;
+    }
+
+    auto visibleSize = _director->getVisibleSize();
+    auto origin      = _director->getVisibleOrigin();
+    auto safeArea    = _director->getSafeAreaRect();
+    auto safeOrigin  = safeArea.origin;
+    auto touchListener = EventListenerTouchOneByOne::create();
+    Color3B bgColor(135, 206, 235);
+    auto layer = LayerColor::create(Color4B(bgColor),visibleSize.width,visibleSize.height);
+    layer->setPosition(Vec2::ZERO);
+    this->addChild(layer,0);
+
+
+    auto label = Label::createWithTTF("Simple\nEngine", "fonts/Magic Yellow.otf", 42);
+    if (label == nullptr)
+    {
+        problemLoading("'fonts/Marker Felt.ttf'");
+    }
+    else
+    {
+        // position the label on the center of the screen
+        label->setPosition(
+            Vec2(origin.x + visibleSize.width / 2, origin.y + visibleSize.height - label->getContentSize().height/2 - 80));
+
+        // add the label as a child to this layer
+        this->addChild(label, 1);
+    }
+    auto button = ui::Button::create("sprites/button.png"sv,"sprites/button.png"sv);
+    button->setPosition(Vec2(origin.x + visibleSize.width/2,origin.y + visibleSize.height/2 + 50));
+    button->setScale(0.3f);
+    this->addChild(button,2);
+    auto title = Label::createWithTTF("CREATE", "fonts/Gokart Bubble.otf",128);
+    button->addChild(title,5);
+    title->setPosition(Vec2(390,160));
+    button->addClickEventListener([this](Object* sender){
+        auto nextScene = CreateProj::createScene();
+        Director::getInstance()->replaceScene(nextScene);
+    });
+
+    auto button2 = ui::Button::create("sprites/button.png"sv,"sprites/button.png"sv);
+    button2->setPosition(Vec2(origin.x + visibleSize.width/2, origin.y + visibleSize.height/2 - 50));
+    button2->setScale(0.3f);
+    this->addChild(button2,2);
+    auto title2 = Label::createWithTTF("MY PROJECTS","fonts/Gokart Bubble.otf",98);
+    button2->addChild(title2,5);
+    title2->setPosition(Vec2(390,160));
+    scheduleUpdate();
+
+    return true;
+}
+
+void MainScene::onTouchesBegan(const std::vector<ax::Touch*>& touches, ax::Event* event)
+{
+    for (auto&& t : touches)
+    {
+        // AXLOGD("onTouchesBegan detected, X:{}  Y:{}", t->getLocation().x, t->getLocation().y);
+    }
+}
+
+void MainScene::onTouchesMoved(const std::vector<ax::Touch*>& touches, ax::Event* event)
+{
+    for (auto&& t : touches)
+    {
+        // AXLOGD("onTouchesMoved detected, X:{}  Y:{}", t->getLocation().x, t->getLocation().y);
+    }
+}
+
+void MainScene::onTouchesEnded(const std::vector<ax::Touch*>& touches, ax::Event* event)
+{
+    for (auto&& t : touches)
+    {
+        // AXLOGD("onTouchesEnded detected, X:{}  Y:{}", t->getLocation().x, t->getLocation().y);
+    }
+}
+
+bool MainScene::onMouseDown(Event* event)
+{
+    EventMouse* e = static_cast<EventMouse*>(event);
+    // AXLOGD("onMouseDown detected, button: {}", static_cast<int>(e->getMouseButton()));
+    return true;
+}
+
+bool MainScene::onMouseUp(Event* event)
+{
+    EventMouse* e = static_cast<EventMouse*>(event);
+    AXLOGD("onMouseUp detected, button: {}", static_cast<int>(e->getMouseButton()));
+    return true;
+}
+
+bool MainScene::onMouseMove(Event* event)
+{
+    EventMouse* e = static_cast<EventMouse*>(event);
+    // AXLOGD("onMouseMove detected, X:{}  Y:{}", e->getLocation().x, e->getLocation().y);
+    return true;
+}
+
+bool MainScene::onMouseScroll(Event* event)
+{
+    EventMouse* e = static_cast<EventMouse*>(event);
+    // AXLOGD("onMouseScroll detected, X:{}  Y:{}", e->getScrollX(), e->getScrollY());
+    return true;
+}
+
+void MainScene::onKeyPressed(EventKeyboard::KeyCode code, Event* event)
+{
+    AXLOGD("Scene: #{} onKeyPressed, keycode: {}", _sceneID, static_cast<int>(code));
+}
+
+void MainScene::onKeyReleased(EventKeyboard::KeyCode code, Event* event)
+{
+    AXLOGD("onKeyReleased, keycode: {}", static_cast<int>(code));
+}
+
+void MainScene::update(float delta)
+{
+    switch (_gameState)
+    {
+    case GameState::init:
+    {
+        _gameState = GameState::update;
+        break;
+    }
+
+    case GameState::update:
+    {
+        /////////////////////////////
+        // Add your codes below...like....
+        //
+        // UpdateJoyStick();
+        // UpdatePlayer();
+        // UpdatePhysics();
+        // ...
+        break;
+    }
+
+    case GameState::pause:
+    {
+        /////////////////////////////
+        // Add your codes below...like....
+        //
+        // anyPauseStuff()
+
+        break;
+    }
+
+    case GameState::menu1:
+    {  /////////////////////////////
+        // Add your codes below...like....
+        //
+        // UpdateMenu1();
+        break;
+    }
+
+    case GameState::menu2:
+    {  /////////////////////////////
+        // Add your codes below...like....
+        //
+        // UpdateMenu2();
+        break;
+    }
+
+    case GameState::end:
+    {  /////////////////////////////
+        // Add your codes below...like....
+        //
+        // CleanUpMyCrap();
+        menuCloseCallback(this);
+        break;
+    }
+
+    }  // switch
+}
+
+void MainScene::menuCloseCallback(ax::Object* sender)
+{
+    // Close the axmol game scene and quit the application
+    _director->end();
+
+    /*To navigate back to native iOS screen(if present) without quitting the application  ,do not use
+     * _director->end() as given above,instead trigger a custom event created in RootViewController.mm
+     * as below*/
+
+    // EventCustom customEndEvent("game_scene_close_event");
+    //_eventDispatcher->dispatchEvent(&customEndEvent);
+}
+
+MainScene::MainScene()
+{
+    _sceneID = ++s_sceneID;
+    AXLOGD("Scene: ctor: #{}", _sceneID);
+}
+
+MainScene::~MainScene()
+{
+    AXLOGD("~Scene: dtor: #{}", _sceneID);
+
+    if (_touchListener)
+        _eventDispatcher->removeEventListener(_touchListener);
+    if (_keyboardListener)
+        _eventDispatcher->removeEventListener(_keyboardListener);
+    if (_mouseListener)
+        _eventDispatcher->removeEventListener(_mouseListener);
+    _sceneID = -1;
+}
