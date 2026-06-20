@@ -40,6 +40,7 @@ class MainScene : public ax::Scene
     };
 
 public:
+    static ax::Scene* createScene();
     bool init() override;
     void update(float delta) override;
 
@@ -61,8 +62,7 @@ public:
     // a selector callback
     void menuCloseCallback(ax::Object* sender);
 
-    MainScene();
-    ~MainScene() override;
+    CREATE_FUNC(MainScene);
 
 private:
     GameState _gameState                            = GameState::init;

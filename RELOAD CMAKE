@@ -1,0 +1,1 @@
+Зайдите в папку build (или proj.android/build / proj.linux/build, смотря где лежит сборка). Удалите файл CMakeCache.txt. Запустите сборку через ваш привычный скрипт

@@ -2,6 +2,9 @@
 #include "ui/CocosGUI.h"
 #include <string>
 #include "axmol.h"
+#include "Scenes.h"
+#include "MainScene.h"
+#include "DATAmanager.h"
 using namespace ax;
 
 static int s_sceneID = 1001;
@@ -11,7 +14,6 @@ Scene* CreateProj::createScene()
     return CreateProj::create();
 }
 
-// Print useful error message instead of segfaulting when files are not there.
 static void problemLoading(const char* filename)
 {
     printf("Error while loading: %s\n", filename);
@@ -20,11 +22,8 @@ static void problemLoading(const char* filename)
         "CreateProj.cpp\n");
 }
 
-// on "init" you need to initialize your instance
 bool CreateProj::init()
 {
-    //////////////////////////////
-    // 1. super init first
     if (!Scene::init())
     {
         return false;
@@ -39,6 +38,16 @@ bool CreateProj::init()
     auto layer = LayerColor::create(Color4B(bgColor),visibleSize.width,visibleSize.height);
     layer->setPosition(Vec2::ZERO);
     this->addChild(layer,0);
+
+    auto back = ui::Button::create("sprites/button_back.png"sv,"sprites/button_back_pressed.png"sv);
+    back->setScale(0.2f);
+    auto backSize = back->getContentSize();
+    back->setPosition(Vec2(origin.x + visibleSize.width - backSize.width - 50,origin.y + visibleSize.height - backSize.height/8));
+    back->addClickEventListener([=](Object* sender){
+        auto nextScene = MainScene::createScene();
+        Director::getInstance()->replaceScene(nextScene);
+    });
+    this->addChild(back, 15);
 
     auto sprite = Sprite::create("sprites/textfield.png"sv);
     sprite->setPosition(Vec2(origin.x + visibleSize.width/2, origin.y + visibleSize.height/2 + 200));
@@ -58,7 +67,7 @@ bool CreateProj::init()
     button2->addChild(title2,5);
     title2->setPosition(Vec2(390,160));
 
-    auto textfield = ui::TextField::create("Project name...", "fonts/arial.ttf",92);
+    auto textfield = ui::TextField::create("Project name...", "fonts/arial.ttf",86);
     textfield->setPosition(Vec2(spritesz.width/2,spritesz.height/2));
     textfield->setMaxLengthEnabled(true);
     textfield->setMaxLength(18);
@@ -67,26 +76,33 @@ bool CreateProj::init()
 
     button2->addClickEventListener([=](Object* sender){
         auto fileUtils = FileUtils::getInstance();
-        std::string systemPath = fileUtils->getWritablePath();
-        std::string triggerFile = systemPath + ".init";
-        if (!fileUtils->isFileExist(triggerFile)) {
-            fileUtils->writeStringToFile("init", triggerFile);
-        }    
+        std::string systemPath = fileUtils->getWritablePath();  
         std::string textfieldtxt = std::string(textfield->getString());
         AXLOGI("{}", systemPath);
         if(textfieldtxt.empty()){
             return;
         }
-        std::string folder = systemPath + textfieldtxt + "/";
+        std::string folder = systemPath + "projects/" + textfieldtxt + "/";
+        std::string sounds = folder + "sounds/";
+        std::string fonts = folder + "fonts/"; 
         if(!fileUtils->isDirectoryExist(folder)){
             fileUtils->createDirectories(folder);
+            fileUtils->createDirectories(sounds);
+            fileUtils->createDirectories(fonts);
+        }
+        if(fileUtils->isDirectoryExist(folder)){
+            DATAmanager::getInstance()->projectPath = folder;
+            DATAmanager::getInstance()->projectName = textfieldtxt;
+            DATAmanager::getInstance()->GameScenes = 0;
+            DATAmanager::getInstance()->GameObjects = 0;
+            DATAmanager::getInstance()->Variables = 0;
+            DATAmanager::getInstance()->Functions = 0;
+            DATAmanager::getInstance()->Sounds = 0;
+            DATAmanager::getInstance()->Fonts = 0;
+            auto nextScene = Scenes::createScene();
+        Director::getInstance()->replaceScene(nextScene);
         }
 });
-    auto testUtils = FileUtils::getInstance();;
-    std::string testPath = testUtils->getWritablePath();
-    auto path = Label::createWithTTF(testPath, "fonts/arial.ttf", 28);
-    path->setPosition(Vec2(origin.x + visibleSize.width/2,origin.y + visibleSize.height/2));
-    this->addChild(path, 10);
     scheduleUpdate();
 
     return true;

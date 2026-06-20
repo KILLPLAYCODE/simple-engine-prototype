@@ -1,9 +1,17 @@
 #include "MainScene.h"
 #include "ui/CocosGUI.h"
 #include "CreateProj.h"
+#include "ListProject.h"
+#include "DATAmanager.h"
+#include "axmol.h"
 using namespace ax;
 
 static int s_sceneID = 1000;
+
+Scene* MainScene::createScene() 
+{
+    return MainScene::create();
+}
 
 static void problemLoading(const char* filename)
 {
@@ -15,7 +23,6 @@ static void problemLoading(const char* filename)
 
 bool MainScene::init()
 {
-    //////////////////////////////
     if (!Scene::init())
     {
         return false;
@@ -31,14 +38,18 @@ bool MainScene::init()
     layer->setPosition(Vec2::ZERO);
     this->addChild(layer,0);
 
+    //auto grid = Sprite::create("sprites/background_gift.png");
+    //grid->setPosition(Vec2(origin.x + visibleSize.width/2, origin.y + visibleSize.height/2));
+    //this->addChild(grid, 1);
+
     auto label = Label::createWithTTF("Simple\nEngine", "fonts/Magic Yellow.otf", 84);
     label->setPosition(Vec2(origin.x + visibleSize.width / 2, origin.y + visibleSize.height - label->getContentSize().height/2 - 80));
-    this->addChild(label, 1);
+    this->addChild(label, 2);
 
     auto button = ui::Button::create("sprites/button.png"sv,"sprites/button.png"sv);
     button->setPosition(Vec2(origin.x + visibleSize.width/2,origin.y + visibleSize.height/2 + 50));
     button->setScale(0.6f);
-    this->addChild(button,2);
+    this->addChild(button,3);
     auto title = Label::createWithTTF("CREATE", "fonts/Gokart Bubble.otf",128);
     button->addChild(title,5);
     title->setPosition(Vec2(390,160));
@@ -50,10 +61,18 @@ bool MainScene::init()
     auto button2 = ui::Button::create("sprites/button.png"sv,"sprites/button.png"sv);
     button2->setPosition(Vec2(origin.x + visibleSize.width/2, origin.y + visibleSize.height/2 - 100));
     button2->setScale(0.6f);
-    this->addChild(button2,2);
+    this->addChild(button2,4);
     auto title2 = Label::createWithTTF("MY PROJECTS","fonts/Gokart Bubble.otf",98);
-    button2->addChild(title2,5);
+    button2->addChild(title2,6);
     title2->setPosition(Vec2(390,160));
+    button2->addClickEventListener([this](Object* sender){
+        auto nextScene = ListProject::createScene();
+        Director::getInstance()->replaceScene(nextScene);
+    });
+
+    auto fileUtils = FileUtils::getInstance();
+    std::string systemPath = fileUtils->getWritablePath() + "projects/";
+    DATAmanager::getInstance()->projectsFolder = systemPath;
     scheduleUpdate();
 
     return true;
@@ -183,32 +202,5 @@ void MainScene::update(float delta)
 
 void MainScene::menuCloseCallback(ax::Object* sender)
 {
-    // Close the axmol game scene and quit the application
     _director->end();
-
-    /*To navigate back to native iOS screen(if present) without quitting the application  ,do not use
-     * _director->end() as given above,instead trigger a custom event created in RootViewController.mm
-     * as below*/
-
-    // EventCustom customEndEvent("game_scene_close_event");
-    //_eventDispatcher->dispatchEvent(&customEndEvent);
-}
-
-MainScene::MainScene()
-{
-    _sceneID = ++s_sceneID;
-    AXLOGD("Scene: ctor: #{}", _sceneID);
-}
-
-MainScene::~MainScene()
-{
-    AXLOGD("~Scene: dtor: #{}", _sceneID);
-
-    if (_touchListener)
-        _eventDispatcher->removeEventListener(_touchListener);
-    if (_keyboardListener)
-        _eventDispatcher->removeEventListener(_keyboardListener);
-    if (_mouseListener)
-        _eventDispatcher->removeEventListener(_mouseListener);
-    _sceneID = -1;
 }
