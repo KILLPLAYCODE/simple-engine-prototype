@@ -26,6 +26,7 @@
 #pragma once
 
 #include "axmol.h"
+#include <map>
 
 class MainScene : public ax::Scene
 {
@@ -70,5 +71,6 @@ private:
     ax::EventListenerKeyboard* _keyboardListener    = nullptr;
     ax::EventListenerMouse* _mouseListener          = nullptr;
     int _sceneID                                    = 0;
+    std::map<int,std::string> text;
 };
 

@@ -44,7 +44,7 @@ bool Scenes::init()
     this->addChild(DrawNode,20);
 
     std::string name = DATAmanager::getInstance()->projectName;
-    auto nameLabel = Label::createWithTTF(name,"fonts/Marker Felt.ttf",86);
+    auto nameLabel = Label::createWithTTF(name,"fonts/arial.ttf",86);
     nameLabel->setPosition(Vec2(origin.x + visibleSize.width/2, origin.y + visibleSize.height - 86));
     this->addChild(nameLabel, 21);
 

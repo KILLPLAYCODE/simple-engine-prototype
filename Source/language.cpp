@@ -1,0 +1,59 @@
+//language.cpp
+#include "DATAmanager.h"
+#include "language.h"
+#include <string>
+#include <map>
+void loadEnglish();
+void loadRussian();
+void loadUkraine();
+
+void LANGUAGE::changeLanguage(const std::string& languageText){
+    if(languageText == "en"){
+        loadEnglish();
+    }
+    if(languageText == "ru"){
+        loadRussian();
+    }
+    if(languageText == "ukr"){
+        loadUkraine();
+    }
+}
+void loadEnglish(){
+    std::map<int,std::string> enText;
+    enText[0] = "CREATE";
+    enText[1] = "MY PROJECTS";
+    enText[2] = "PROJECT NAME";
+    enText[3] = "Project name...";
+
+    DATAmanager::getInstance()->language = "en";
+    DATAmanager::getInstance()->translater = std::move(enText);
+    DATAmanager::getInstance()->buttonFont = "fonts/Gokart Bubble.otf";
+    DATAmanager::getInstance()->fontSize = 128;
+    DATAmanager::getInstance()->titleFont = "fonts/Magic Yellow.otf";
+}
+void loadRussian(){
+    std::map<int,std::string> ruText;
+    ruText[0] = "СОЗДАТЬ";
+    ruText[1] = "МОИ ПРОЕКТЫ";
+    ruText[2] = "НАЗВАНИЕ ПРОЕКТА";
+    ruText[3] = "Название проекта...";
+
+    DATAmanager::getInstance()->language = "ru";
+    DATAmanager::getInstance()->translater = std::move(ruText);
+    DATAmanager::getInstance()->buttonFont = "fonts/Simple.ttf";
+    DATAmanager::getInstance()->fontSize = 128;
+    DATAmanager::getInstance()->titleFont = "fonts/Ice Age SHA.otf";
+}
+void loadUkraine(){
+    std::map<int,std::string> ukrText;
+    ukrText[0] = "СТВОРИТИ";
+    ukrText[1] = "МОЇ ПРОЄКТИ";
+    ukrText[2] = "НАЗВА ПРОЄКТУ";
+    ukrText[3] = "Назва проєкту...";
+    
+    DATAmanager::getInstance()->language = "ukr";
+    DATAmanager::getInstance()->translater = std::move(ukrText);
+    DATAmanager::getInstance()->buttonFont = "fonts/Simple.ttf";
+    DATAmanager::getInstance()->fontSize = 128;
+    DATAmanager::getInstance()->titleFont = "fonts/Ice Age SHA.otf";
+}

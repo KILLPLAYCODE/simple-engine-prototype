@@ -48,7 +48,7 @@ bool ListProject::init()
     auto back = ui::Button::create("sprites/button_back.png"sv,"sprites/button_back_pressed.png"sv);
     back->setScale(0.2f);
     auto backSize = back->getContentSize();
-    back->setPosition(Vec2(origin.x + visibleSize.width - backSize.width - 50,origin.y + visibleSize.height - backSize.height/8));
+    back->setPosition(Vec2(origin.x + visibleSize.width/2 - backSize.width/2,origin.y + visibleSize.height - backSize.height/8));
     back->addClickEventListener([=](Object* sender){
         auto nextScene = MainScene::createScene();
         Director::getInstance()->replaceScene(nextScene);
@@ -59,21 +59,24 @@ bool ListProject::init()
     label->setPosition(Vec2(origin.x + visibleSize.width/2,origin.y + visibleSize.height/2 + 550));
     this->addChild(label, 21);
 
-    std::vector<std::string> folderNames;
-    std::string systemPath = DATAmanager::getInstance()->projectsFolder;
-    for(const auto& entry : std::filesystem::directory_iterator(systemPath)){
-        if(entry.is_directory()){
-            folderNames.push_back(entry.path().filename().string());
-        }
-    }
-
     auto scrollGroup = ui::ScrollView::create();
-    scrollGroup->setContentSize(Size(720,1130));
+    scrollGroup->setContentSize(Size(visibleSize.width,1130));
     scrollGroup->setPosition(Vec2(origin.x + visibleSize.width/2 - 355,origin.y + visibleSize.height/2 - 640));
     scrollGroup->setDirection(ui::ScrollView::Direction::VERTICAL);
     scrollGroup->setBounceEnabled(true);
     this->addChild(scrollGroup);
 
+    std::vector<std::string> folderNames;
+    std::string systemPath = DATAmanager::getInstance()->projectsFolder;
+try{
+    for(const auto& entry : std::filesystem::directory_iterator(systemPath)){
+        if(entry.is_directory()){
+            folderNames.push_back(entry.path().filename().string());
+        }
+    }
+} catch (const std::filesystem::filesystem_error& e) {
+    AXLOGE("file system error: {}", e.what());
+}
     float folderHeight = 232.0f;
     float totalHeight = folderHeight * folderNames.size();
     if(totalHeight < 1130){
@@ -84,12 +87,12 @@ bool ListProject::init()
         auto item = Sprite::create("sprites/icon_scene.png");
         float y = totalHeight - (i * folderHeight) - (folderHeight/2);
         item->setPosition(Vec2(100,y));
-        item->setScale(0.3f);
+        item->setScale(0.25f);
         scrollGroup->addChild(item);
 
         auto next = ui::Button::create("sprites/continue_button.png","sprites/continue_button_pressed.png");
         //float y = totalHeight - (i * folderHeight) - (folderHeight/2);
-        next->setPosition(Vec2(origin.x + visibleSize.width/2 + 260,y));
+        next->setPosition(Vec2(origin.x + visibleSize.width/2 + 220,y));
         next->setScale(0.1f);
         scrollGroup->addChild(next);
     }

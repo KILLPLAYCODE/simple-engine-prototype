@@ -1,9 +1,13 @@
+//MainScene.cpp
 #include "MainScene.h"
 #include "ui/CocosGUI.h"
 #include "CreateProj.h"
 #include "ListProject.h"
 #include "DATAmanager.h"
+#include "language.h"
 #include "axmol.h"
+#include <map>
+#include "Settings.h"
 using namespace ax;
 
 static int s_sceneID = 1000;
@@ -38,10 +42,12 @@ bool MainScene::init()
     layer->setPosition(Vec2::ZERO);
     this->addChild(layer,0);
 
-    //auto grid = Sprite::create("sprites/background_gift.png");
-    //grid->setPosition(Vec2(origin.x + visibleSize.width/2, origin.y + visibleSize.height/2));
-    //this->addChild(grid, 1);
+    std::string l = DATAmanager::getInstance()->language;
+    LANGUAGE::changeLanguage(l);
 
+    text = DATAmanager::getInstance()->translater;
+    std::string font = DATAmanager::getInstance()->buttonFont;
+    float fontScale = DATAmanager::getInstance()->fontSize;
     auto label = Label::createWithTTF("Simple\nEngine", "fonts/Magic Yellow.otf", 84);
     label->setPosition(Vec2(origin.x + visibleSize.width / 2, origin.y + visibleSize.height - label->getContentSize().height/2 - 80));
     this->addChild(label, 2);
@@ -50,9 +56,14 @@ bool MainScene::init()
     button->setPosition(Vec2(origin.x + visibleSize.width/2,origin.y + visibleSize.height/2 + 50));
     button->setScale(0.6f);
     this->addChild(button,3);
-    auto title = Label::createWithTTF("CREATE", "fonts/Gokart Bubble.otf",128);
-    button->addChild(title,5);
-    title->setPosition(Vec2(390,160));
+    //auto title = Label::createWithTTF(text[0],font,fontScale);
+    //auto title = Label::createWithTTF(text[0], "fonts/arial.ttf",128);
+    //button->addChild(title,5);
+    //title->setPosition(Vec2(390,160));
+    button->setTitleText(text[0]);
+    button->setTitleFontName(font);
+    button->setTitleFontSize(fontScale);
+    button->setTitleColor(Color3B::BLACK);
     button->addClickEventListener([this](Object* sender){
         auto nextScene = CreateProj::createScene();
         Director::getInstance()->replaceScene(nextScene);
@@ -62,17 +73,34 @@ bool MainScene::init()
     button2->setPosition(Vec2(origin.x + visibleSize.width/2, origin.y + visibleSize.height/2 - 100));
     button2->setScale(0.6f);
     this->addChild(button2,4);
-    auto title2 = Label::createWithTTF("MY PROJECTS","fonts/Gokart Bubble.otf",98);
-    button2->addChild(title2,6);
-    title2->setPosition(Vec2(390,160));
+    //auto title2 = Label::createWithTTF(text[1],font,fontScale - 30);
+    //auto title2 = Label::createWithTTF(text[1],"fonts/arial.ttf",98);
+    //button2->addChild(title2,6);
+    //title2->setPosition(Vec2(390,160));
+    button2->setTitleText(text[1]);
+    button2->setTitleFontName(font);
+    button2->setTitleFontSize(fontScale - 30);
+    button2->setTitleColor(Color3B::BLACK);
     button2->addClickEventListener([this](Object* sender){
         auto nextScene = ListProject::createScene();
+        Director::getInstance()->replaceScene(nextScene);
+    });
+    auto settings = ui::Button::create("sprites/settings.png","sprites/settings_pressed.png");
+    settings->setPosition(Vec2(origin.x + visibleSize.width/2 + 275,origin.y + visibleSize.height/2 - 550));
+    settings->setScale(0.3f);
+    this->addChild(settings,8);
+    settings->addClickEventListener([this](Object* sender){
+        auto nextScene = Settings::createScene();
         Director::getInstance()->replaceScene(nextScene);
     });
 
     auto fileUtils = FileUtils::getInstance();
     std::string systemPath = fileUtils->getWritablePath() + "projects/";
     DATAmanager::getInstance()->projectsFolder = systemPath;
+
+    if(!fileUtils->isDirectoryExist(systemPath)){
+        fileUtils->createDirectories(systemPath);
+    }
     scheduleUpdate();
 
     return true;

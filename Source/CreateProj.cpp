@@ -34,6 +34,11 @@ bool CreateProj::init()
     auto safeArea    = _director->getSafeAreaRect();
     auto safeOrigin  = safeArea.origin;
 
+    std::map<int,std::string> text = DATAmanager::getInstance()->translater;
+    std::string font = DATAmanager::getInstance()->buttonFont;
+    std::string titleF = DATAmanager::getInstance()->titleFont;
+    float fontScale = DATAmanager::getInstance()->fontSize;
+    
     Color3B bgColor(135, 206, 235);
     auto layer = LayerColor::create(Color4B(bgColor),visibleSize.width,visibleSize.height);
     layer->setPosition(Vec2::ZERO);
@@ -55,7 +60,7 @@ bool CreateProj::init()
     Size spritesz = sprite->getContentSize();
     this->addChild(sprite,5);
 
-    auto name = Label::createWithTTF("PROJECT NAME","fonts/Magic Yellow.otf",112);
+    auto name = Label::createWithTTF(text[2],titleF,112);
     sprite->addChild(name,6);
     name->setPosition(Vec2(spritesz.width/2,spritesz.height + 100));
 
@@ -63,11 +68,16 @@ bool CreateProj::init()
     button2->setPosition(Vec2(origin.x + visibleSize.width/2, origin.y + visibleSize.height/2 - 100));
     button2->setScale(0.6f);
     this->addChild(button2,2);
-    auto title2 = Label::createWithTTF("CREATE","fonts/Gokart Bubble.otf",98);
-    button2->addChild(title2,5);
-    title2->setPosition(Vec2(390,160));
+    //auto title2 = Label::createWithTTF(text[0],font,98);
+    //button2->addChild(title2,5);
+    //title2->setPosition(Vec2(390,160));
+    //title2->setTextColor(Color4B::BLACK);
+    button2->setTitleText(text[0]);
+    button2->setTitleFontName(font);
+    button2->setTitleFontSize(fontScale);
+    button2->setTitleColor(Color3B::BLACK);
 
-    auto textfield = ui::TextField::create("Project name...", "fonts/arial.ttf",86);
+    auto textfield = ui::TextField::create(text[3], "fonts/arial.ttf",86);
     textfield->setPosition(Vec2(spritesz.width/2,spritesz.height/2));
     textfield->setMaxLengthEnabled(true);
     textfield->setMaxLength(18);
