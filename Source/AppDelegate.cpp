@@ -52,7 +52,7 @@ bool AppDelegate::applicationDidFinishLaunching()
 
     // Set the design resolution
     renderView->setDesignResolutionSize(designResolutionSize.width, designResolutionSize.height,
-                                    ResolutionPolicy::FIXED_HEIGHT);
+                                    ResolutionPolicy::FIXED_WIDTH);
 
     // create a scene. it's an autorelease object
     auto scene = utils::createInstance<MainScene>();

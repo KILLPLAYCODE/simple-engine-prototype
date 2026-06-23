@@ -3,8 +3,8 @@
 #include "ui/CocosGUI.h"
 #include "CreateProj.h"
 #include "ListProject.h"
-#include "DATAmanager.h"
-#include "language.h"
+#include "src/DATAmanager.h"
+#include "src/language.h"
 #include "axmol.h"
 #include <map>
 #include "Settings.h"
@@ -86,7 +86,7 @@ bool MainScene::init()
         Director::getInstance()->replaceScene(nextScene);
     });
     auto settings = ui::Button::create("sprites/settings.png","sprites/settings_pressed.png");
-    settings->setPosition(Vec2(origin.x + visibleSize.width/2 + 275,origin.y + visibleSize.height/2 - 550));
+    settings->setPosition(Vec2(origin.x + visibleSize.width/2 + 275,origin.y + 100));
     settings->setScale(0.3f);
     this->addChild(settings,8);
     settings->addClickEventListener([this](Object* sender){

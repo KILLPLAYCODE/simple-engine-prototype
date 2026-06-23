@@ -4,7 +4,7 @@
 #include "axmol.h"
 #include "Scenes.h"
 #include "MainScene.h"
-#include "DATAmanager.h"
+#include "src/DATAmanager.h"
 using namespace ax;
 
 static int s_sceneID = 1001;
@@ -93,13 +93,17 @@ bool CreateProj::init()
             return;
         }
         std::string folder = systemPath + "projects/" + textfieldtxt + "/";
+        if(fileUtils->isDirectoryExist(folder)){
+            return;
+        }
         std::string sounds = folder + "sounds/";
         std::string fonts = folder + "fonts/"; 
-        if(!fileUtils->isDirectoryExist(folder)){
-            fileUtils->createDirectories(folder);
-            fileUtils->createDirectories(sounds);
-            fileUtils->createDirectories(fonts);
-        }
+        std::string scenes = folder + "scenes/";
+        fileUtils->createDirectories(folder);
+        fileUtils->createDirectories(sounds);
+        fileUtils->createDirectories(fonts);
+        fileUtils->createDirectories(scenes);
+        
         if(fileUtils->isDirectoryExist(folder)){
             DATAmanager::getInstance()->projectPath = folder;
             DATAmanager::getInstance()->projectName = textfieldtxt;
@@ -109,8 +113,13 @@ bool CreateProj::init()
             DATAmanager::getInstance()->Functions = 0;
             DATAmanager::getInstance()->Sounds = 0;
             DATAmanager::getInstance()->Fonts = 0;
+            DATAmanager::getInstance()->Scenes = 0;
+            std::string IconPlaceHolder = "sprites/icon_scene_placeholder.png";
+            std::string file = folder + "icon.png";
+            Data fileData = fileUtils->getDataFromFile(IconPlaceHolder);
+            fileUtils->writeDataToFile(fileData,file);
             auto nextScene = Scenes::createScene();
-        Director::getInstance()->replaceScene(nextScene);
+            Director::getInstance()->replaceScene(nextScene);
         }
 });
     scheduleUpdate();

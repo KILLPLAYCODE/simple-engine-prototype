@@ -15,6 +15,7 @@ class DATAmanager
     std::string language = "ru";
     std::string buttonFont = "";
     std::string titleFont = "";
+    //std::string markerFont = "";
     float fontSize = 0;
     std::string projectsFolder = "";
     std::string projectPath = "";
@@ -25,6 +26,7 @@ class DATAmanager
     int Functions = 0;
     int Sounds = 0;
     int Fonts = 0;
+    int Scenes = 0;
     private:
     DATAmanager() = default;
 };

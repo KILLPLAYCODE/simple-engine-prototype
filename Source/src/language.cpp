@@ -24,12 +24,14 @@ void loadEnglish(){
     enText[1] = "MY PROJECTS";
     enText[2] = "PROJECT NAME";
     enText[3] = "Project name...";
+    enText[4] = "Language:";
 
     DATAmanager::getInstance()->language = "en";
     DATAmanager::getInstance()->translater = std::move(enText);
     DATAmanager::getInstance()->buttonFont = "fonts/Gokart Bubble.otf";
     DATAmanager::getInstance()->fontSize = 128;
     DATAmanager::getInstance()->titleFont = "fonts/Magic Yellow.otf";
+    //DATAmanager::getInstance()->markerFont = "fonts/Marker Felt.ttf";
 }
 void loadRussian(){
     std::map<int,std::string> ruText;
@@ -37,12 +39,14 @@ void loadRussian(){
     ruText[1] = "МОИ ПРОЕКТЫ";
     ruText[2] = "НАЗВАНИЕ ПРОЕКТА";
     ruText[3] = "Название проекта...";
+    ruText[4] = "Язык:";
 
     DATAmanager::getInstance()->language = "ru";
     DATAmanager::getInstance()->translater = std::move(ruText);
     DATAmanager::getInstance()->buttonFont = "fonts/Simple.ttf";
     DATAmanager::getInstance()->fontSize = 128;
     DATAmanager::getInstance()->titleFont = "fonts/Ice Age SHA.otf";
+    //DATAmanager::getInstance()->markerFont = "fonts/SPORE-Regular.ttf";
 }
 void loadUkraine(){
     std::map<int,std::string> ukrText;
@@ -50,10 +54,12 @@ void loadUkraine(){
     ukrText[1] = "МОЇ ПРОЄКТИ";
     ukrText[2] = "НАЗВА ПРОЄКТУ";
     ukrText[3] = "Назва проєкту...";
+    ukrText[4] = "Мова:";
     
     DATAmanager::getInstance()->language = "ukr";
     DATAmanager::getInstance()->translater = std::move(ukrText);
     DATAmanager::getInstance()->buttonFont = "fonts/Simple.ttf";
     DATAmanager::getInstance()->fontSize = 128;
     DATAmanager::getInstance()->titleFont = "fonts/Ice Age SHA.otf";
+    //DATAmanager::getInstance()->markerFont = "fonts/SPORE-Regular.ttf";
 }

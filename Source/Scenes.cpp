@@ -3,10 +3,11 @@
 #include <string>
 #include "axmol.h"
 #include "MainScene.h"
-#include "DATAmanager.h"
+#include "src/DATAmanager.h"
+#include "ListProject.h"
 using namespace ax;
 
-static int s_sceneID = 1003;
+static int _sceneID = 1003;
 
 Scene* Scenes::createScene() 
 {
@@ -44,8 +45,8 @@ bool Scenes::init()
     this->addChild(DrawNode,20);
 
     std::string name = DATAmanager::getInstance()->projectName;
-    auto nameLabel = Label::createWithTTF(name,"fonts/arial.ttf",86);
-    nameLabel->setPosition(Vec2(origin.x + visibleSize.width/2, origin.y + visibleSize.height - 86));
+    auto nameLabel = Label::createWithTTF(name,"fonts/arial.ttf",96 - name.length());
+    nameLabel->setPosition(Vec2(origin.x + visibleSize.width/2 + 50, visibleSize.height - 86));
     this->addChild(nameLabel, 21);
 
     auto back = ui::Button::create("sprites/button_back.png"sv,"sprites/button_back_pressed.png"sv);
@@ -53,7 +54,7 @@ bool Scenes::init()
     auto backSize = back->getContentSize();
     back->setPosition(Vec2(origin.x + visibleSize.width - backSize.width - 50,origin.y + visibleSize.height - backSize.height/8));
     back->addClickEventListener([=](Object* sender){
-        auto nextScene = MainScene::createScene();
+        auto nextScene = ListProject::createScene();
         Director::getInstance()->replaceScene(nextScene);
     });
     this->addChild(back, 25);

@@ -70,5 +70,6 @@ private:
     ax::EventListenerKeyboard* _keyboardListener    = nullptr;
     ax::EventListenerMouse* _mouseListener          = nullptr;
     int _sceneID                                    = 4;
+    ax::Label* labelanguage = nullptr;
 };
 
