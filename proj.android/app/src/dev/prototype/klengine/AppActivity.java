@@ -23,7 +23,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ****************************************************************************/
-package dev.axmol.app;
+package dev.prototype.klengine;
 
 import android.os.Bundle;
 import dev.axmol.lib.AxmolActivity;
@@ -31,6 +31,14 @@ import dev.axmol.lib.SharedLoader;
 import android.os.Build;
 import android.view.WindowManager;
 import android.view.WindowManager.LayoutParams;
+
+import android.content.Intent;
+import android.net.Uri;
+import android.app.Activity;
+import android.os.Bundle;
+import java.io.InputStream;
+import java.io.FileOutputStream;
+import java.io.File;
 
 public class AppActivity extends AxmolActivity {
     private static final int PICK_IMAGE = 1;
@@ -41,6 +49,7 @@ public class AppActivity extends AxmolActivity {
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        super.setEnableVirtualButton(false);
         super.onCreate(savedInstanceState);
         _instance = this;
         if (!isTaskRoot()) {
@@ -62,29 +71,37 @@ public class AppActivity extends AxmolActivity {
             public void run(){
                 Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
                 intent.setType("image/*");
-                _instance.startActivityForResult(Intent.createChooser(intent, "Select Image", PICK_IMAGE));
+                _instance.startActivityForResult(Intent.createChooser(intent, "Select Image"), PICK_IMAGE);
             }
         });
     }
     @Override
-    protected void OnActivityResult(int requestCode, int ResultCode, Intent data){
-        super.OnActivityResult(requestCode,ResultCode,data);
+    protected void onActivityResult(int requestCode, int ResultCode, Intent data){
+        super.onActivityResult(requestCode,ResultCode,data);
         if(requestCode == PICK_IMAGE && ResultCode == Activity.RESULT_OK && data != null && data.getData() != null){
             Uri selectedImageUri = data.getData();
+            try {
             InputStream inputStream = getContentResolver().openInputStream(selectedImageUri);
             File temp = new File(getCacheDir(), "icon.png");
+            if(temp.exists()){
+                temp.delete();
+            }
             FileOutputStream outputStream = new FileOutputStream(temp);
 
-            byte[] buffer = new byte[1024];
+            byte[] buffer = new byte[65536];
             int bytesRead;
             while((bytesRead = inputStream.read(buffer)) != -1){
                 outputStream.write(buffer, 0, bytesRead);
             }
-
+            
+            outputStream.flush();
             inputStream.close();
             outputStream.close();
 
             onImageSelectedNative(temp.getAbsolutePath());
+        } catch (Exception e) {
+                android.util.Log.e("SimpleEngine", "Ошибка при обработке картинки: " + e.getMessage());
+            }
         }
     }
     private native void onImageSelectedNative(String path);

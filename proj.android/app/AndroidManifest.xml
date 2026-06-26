@@ -14,7 +14,7 @@
                    android:value="simple_prototype" />
 
         <activity
-            android:name="dev.axmol.app.AppActivity"
+            android:name="dev.prototype.klengine.AppActivity"
             android:screenOrientation="portrait"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/app_name"

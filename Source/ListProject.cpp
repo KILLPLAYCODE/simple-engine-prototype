@@ -29,7 +29,7 @@ static void problemLoading(const char* filename)
 void openGallery(){
     #if (AX_TARGET_PLATFORM == AX_PLATFORM_ANDROID)
     JniMethodInfo methodInfo;
-    if(JniHelper::getStaticMethodInfo(methodInfo, "dev/prototype/klengine/AppActivity", "OpenAndroidGallery", "()V")){
+    if(JniHelper::getStaticMethodInfo(methodInfo, "dev/prototype/klengine/AppActivity", "openAndroidGallery", "()V")){
         methodInfo.env->CallStaticVoidMethod(methodInfo.classID, methodInfo.methodID);
         methodInfo.env->DeleteLocalRef(methodInfo.classID);
     }
@@ -43,6 +43,7 @@ bool ListProject::init()
         return false;
     }
     auto touchListener = EventListenerTouchOneByOne::create();
+    touchListener->setSwallowTouches(true);
     auto visibleSize = _director->getVisibleSize();
     auto origin      = _director->getVisibleOrigin();
     auto safeArea    = _director->getSafeAreaRect();
@@ -50,6 +51,7 @@ bool ListProject::init()
 
     std::map<int,std::string> text = DATAmanager::getInstance()->translater;
     //std::string marker = DATAmanager::getInstance()->markerFont;
+    DATAmanager::getInstance()->projectPath = "";
 
     Color3B bgColor(135, 206, 235);
     auto layer = LayerColor::create(Color4B(bgColor),visibleSize.width,visibleSize.height);
@@ -57,9 +59,34 @@ bool ListProject::init()
     this->addChild(layer,0);
 
     auto DrawNode = DrawNode::create();
-    Color4F color = Color4F(0,0.64f,0.9f,1.0f);
+    auto color = Color4F(0,0.64f,0.9f,1.0f);
     DrawNode->drawSolidRect(Vec2(0,visibleSize.height), Vec2(visibleSize.width,visibleSize.height - 150),color);
     this->addChild(DrawNode,20);
+
+    auto backLayer = ui::Layout::create();
+    backLayer->setContentSize(visibleSize);
+    backLayer->setBackGroundColorType(ui::Layout::BackGroundColorType::SOLID);
+    backLayer->setBackGroundColor(Color3B(0, 0, 0));
+    backLayer->setBackGroundColorOpacity(198);
+    backLayer->setVisible(false);
+    backLayer->setPosition(Vec2::ZERO);
+    backLayer->setTouchEnabled(true);
+    this->addChild(backLayer,30);
+
+    auto option = DrawNode::create();
+    option->setVisible(false);
+    auto col = Color4F(0,0.64f,0.9f,1);
+    option->drawSolidRect(Vec2(origin.x + 100,visibleSize.height - 200), Vec2(visibleSize.width - 100,origin.y + 200),col);
+    this->addChild(option,31);
+    touchListener->onTouchBegan = [=](Touch* touch, Event* event) -> bool {
+        Vec2 touchPosition = option->convertToNodeSpace(touch->getLocation());
+        Rect rect = Rect(0,0,option->getContentSize().width,option->getContentSize().height);
+        if(rect.containsPoint(touchPosition)){
+            return true;
+        }
+        return false;
+    };
+    _eventDispatcher->addEventListenerWithSceneGraphPriority(touchListener,option);
 
     auto back = ui::Button::create("sprites/button_back.png"sv,"sprites/button_back_pressed.png"sv);
     back->setScale(0.2f);
@@ -72,7 +99,7 @@ bool ListProject::init()
     this->addChild(back, 25);
 
     auto label = Label::createWithTTF(text[1],"fonts/arial.ttf", 66);
-    label->setPosition(Vec2(origin.x + visibleSize.width/2 + 50,visibleSize.height - 75));
+    label->setPosition(Vec2(origin.x + visibleSize.width/2 + 50,visibleSize.height - 100));
     this->addChild(label, 21);
 
     auto scrollGroup = ui::ScrollView::create();
@@ -95,39 +122,40 @@ try{
 }
     float folderHeight = 232.0f;
     float totalHeight = folderHeight * folderNames.size();
-    if(totalHeight < 1130){
-        totalHeight = 1130;
+    if(totalHeight < visibleSize.height - 150){
+        totalHeight = visibleSize.height - 150;
     }
     scrollGroup->setInnerContainerSize(Size(visibleSize.width,totalHeight));
     for(int i = 0; i < folderNames.size();i++){
         float y = totalHeight - (i * folderHeight) - (folderHeight/2);
 
+        auto fileUtils = FileUtils::getInstance();
         std::string file = systemPath + folderNames[i] + "/icon.png";
-        auto placeIcon = Sprite::create(file);
+        if(!fileUtils->isFileExist(file)){
+            file = "sprites/icon_scene_placeholder.png";
+        }
+  
+        auto item = ui::Button::create(file,file);
+        auto originalSize = item->getContentSize();
+        float scaleX = 130 / originalSize.width;
+        float scaleY = 130 / originalSize.height;
+        item->setPosition(Vec2(100,y));
+        //item->setScale(0.25f);
+        item->setScaleX(scaleX);
+        item->setScaleY(scaleY);
+        scrollGroup->addChild(item);
+
+        auto placeIcon = ui::Button::create("sprites/icon_scene.png","sprites/icon_scene.png");
         placeIcon->setPosition(Vec2(100,y));
         placeIcon->setScale(0.25f);
         scrollGroup->addChild(placeIcon);
-        touchListener->onTouchBegan = [=](Touch* touch, Event* event) -> bool {
-
-        Vec2 touchPoint = touch->getLocation();
-        Vec2 localPoint = placeIcon->convertToNodeSpace(touchPoint);
-        Rect bounds = Rect(0, 0, placeIcon->getContentSize().width, placeIcon->getContentSize().height);
-
-        if (bounds.containsPoint(localPoint)){
-            auto fileUtils = FileUtils::getInstance();
-            auto systemPath = fileUtils->getWritablePath();
-            auto pjPath = systemPath + "projects/" + folderNames[i] + "/";
-            DATAmanager::getInstance()->projectPath = pjPath;
-            openGallery();
-            return true;
-        }
-        return false;
-        };
-
-        auto item = Sprite::create("sprites/icon_scene.png");
-        item->setPosition(Vec2(100,y));
-        item->setScale(0.25f);
-        scrollGroup->addChild(item);
+        placeIcon->addClickEventListener([=](Object* sender){
+        auto fileUtils = FileUtils::getInstance();
+        auto systemPath = fileUtils->getWritablePath();
+        auto pjPath = systemPath + "projects/" + folderNames[i] + "/";
+        DATAmanager::getInstance()->projectPath = pjPath;
+        openGallery();
+        });
 
         auto next = ui::Button::create("sprites/continue_button.png","sprites/continue_button_pressed.png");
         //float y = totalHeight - (i * folderHeight) - (folderHeight/2);
@@ -148,6 +176,10 @@ try{
         settings->setPosition(Vec2(origin.x + visibleSize.width/2 + 180,y));
         settings->setScale(0.1f);
         scrollGroup->addChild(settings);
+        settings->addClickEventListener([=](Object* sender){
+            option->setVisible(true);
+            backLayer->setVisible(true);
+        });
 
         auto nameProject = Label::createWithTTF(folderNames[i],"fonts/arial.ttf",68 - folderNames[i].length());
         nameProject->setPosition(Vec2(origin.x + visibleSize.width/2 - 25,y));
@@ -232,8 +264,9 @@ extern "C" {
             Data fileData = fileUtils->getDataFromFile(cacheImagePath);
 
             if(!fileData.isNull()){
-                fileUtils->writeDataToFile(file,filePath);
+                fileUtils->writeDataToFile(fileData,filePath);
                 fileUtils->removeFile(cacheImagePath);
+                Director::getInstance()->getTextureCache()->removeTextureForKey(filePath);
                 auto scene = ListProject::createScene();
                 Director::getInstance()->replaceScene(scene);
             }
