@@ -28,6 +28,9 @@ void loadEnglish(){
     enText[5] = "Scene name:";
     enText[6] = "Scene name...";
     enText[7] = "Cancel";
+    enText[8] = "Delete";
+    enText[9] = "OBJECT NAME";
+    enText[10] = "Object name...";
 
     DATAmanager::getInstance()->language = "en";
     DATAmanager::getInstance()->translater = std::move(enText);
@@ -46,6 +49,9 @@ void loadRussian(){
     ruText[5] = "Название сцены:";
     ruText[6] = "Название сцены...";
     ruText[7] = "Отмена";
+    ruText[8] = "Удалить";
+    ruText[9] = "НАЗВАНИЕ ОБЪЕКТА";
+    ruText[10] = "Название объекта...";
 
     DATAmanager::getInstance()->language = "ru";
     DATAmanager::getInstance()->translater = std::move(ruText);
@@ -64,6 +70,9 @@ void loadUkraine(){
     ukrText[5] = "Назва сцени:";
     ukrText[6] = "Назва сцени...";
     ukrText[7] = "Відміна";
+    ukrText[8] = "Видалити";
+    ukrText[9] = "НАЗВА ОБ'ЄКТУ";
+    ukrText[10] = "Назва об'єкту";
     
     DATAmanager::getInstance()->language = "ukr";
     DATAmanager::getInstance()->translater = std::move(ukrText);

@@ -100,7 +100,7 @@ public class AppActivity extends AxmolActivity {
 
             onImageSelectedNative(temp.getAbsolutePath());
         } catch (Exception e) {
-                android.util.Log.e("SimpleEngine", "Ошибка при обработке картинки: " + e.getMessage());
+                android.util.Log.e("Simple Engine", "Ошибка при обработке картинки: " + e.getMessage());
             }
         }
     }

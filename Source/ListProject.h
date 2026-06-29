@@ -52,6 +52,7 @@ private:
     ax::EventListenerTouchAllAtOnce* _touchListener = nullptr;
     ax::EventListenerKeyboard* _keyboardListener    = nullptr;
     ax::EventListenerMouse* _mouseListener          = nullptr;
+    bool canFadeOut = false;
     int _sceneID                                    = 2;
 };
 

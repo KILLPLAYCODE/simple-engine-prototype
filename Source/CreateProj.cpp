@@ -99,21 +99,16 @@ bool CreateProj::init()
         std::string sounds = folder + "sounds/";
         std::string fonts = folder + "fonts/"; 
         std::string scenes = folder + "scenes/";
+        std::string textures = folder + "textures/";
         fileUtils->createDirectories(folder);
         fileUtils->createDirectories(sounds);
         fileUtils->createDirectories(fonts);
         fileUtils->createDirectories(scenes);
+        fileUtils->createDirectories(textures);
         
         if(fileUtils->isDirectoryExist(folder)){
             DATAmanager::getInstance()->projectPath = folder;
             DATAmanager::getInstance()->projectName = textfieldtxt;
-            DATAmanager::getInstance()->GameScenes = 0;
-            DATAmanager::getInstance()->GameObjects = 0;
-            DATAmanager::getInstance()->Variables = 0;
-            DATAmanager::getInstance()->Functions = 0;
-            DATAmanager::getInstance()->Sounds = 0;
-            DATAmanager::getInstance()->Fonts = 0;
-            DATAmanager::getInstance()->Scenes = 0;
             std::string IconPlaceHolder = "sprites/icon_scene_placeholder.png";
             std::string file = folder + "icon.png";
             Data fileData = fileUtils->getDataFromFile(IconPlaceHolder);

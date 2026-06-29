@@ -43,7 +43,11 @@ bool MainScene::init()
     this->addChild(layer,0);
 
     std::string l = DATAmanager::getInstance()->language;
-    LANGUAGE::changeLanguage(l);
+    bool read = DATAmanager::getInstance()->LanguageLoad;
+    if(!read){
+        LANGUAGE::changeLanguage(l);
+        DATAmanager::getInstance()->LanguageLoad = true;
+    }
 
     text = DATAmanager::getInstance()->translater;
     std::string font = DATAmanager::getInstance()->buttonFont;

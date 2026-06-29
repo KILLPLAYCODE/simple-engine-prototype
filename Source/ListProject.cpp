@@ -26,7 +26,7 @@ static void problemLoading(const char* filename)
         "Depending on how you compiled you might have to add 'Content/' in front of filenames in "
         "ListProject.cpp\n");
 }
-void openGallery(){
+static void openGallery(){
     #if (AX_TARGET_PLATFORM == AX_PLATFORM_ANDROID)
     JniMethodInfo methodInfo;
     if(JniHelper::getStaticMethodInfo(methodInfo, "dev/prototype/klengine/AppActivity", "openAndroidGallery", "()V")){
@@ -50,6 +50,8 @@ bool ListProject::init()
     auto safeOrigin  = safeArea.origin;
 
     std::map<int,std::string> text = DATAmanager::getInstance()->translater;
+    std::string titleB = DATAmanager::getInstance()->buttonFont;
+    std::string titleF = DATAmanager::getInstance()->titleFont;
     //std::string marker = DATAmanager::getInstance()->markerFont;
     DATAmanager::getInstance()->projectPath = "";
 
@@ -63,6 +65,45 @@ bool ListProject::init()
     DrawNode->drawSolidRect(Vec2(0,visibleSize.height), Vec2(visibleSize.width,visibleSize.height - 150),color);
     this->addChild(DrawNode,20);
 
+    auto option = DrawNode::create();
+    option->setVisible(false);
+    auto col = Color4F(0,0.64f,0.9f,1);
+    option->drawSolidRect(Vec2(origin.x + 100,visibleSize.height - 200), Vec2(visibleSize.width - 100,origin.y + 200),col);
+    this->addChild(option,31);
+
+    auto projectNameLabel = Label::createWithTTF(text[2],titleF,46);
+    projectNameLabel->setPosition(Vec2(origin.x + visibleSize.width/2,visibleSize.height - 300));
+    projectNameLabel->setVisible(false);
+    this->addChild(projectNameLabel,33);
+
+    auto buttonTextField = Sprite::create("sprites/textfield.png");
+    buttonTextField->setVisible(false);
+    buttonTextField->setPosition(Vec2(origin.x + visibleSize.width/2,origin.y + visibleSize.height/2 + 200));
+    buttonTextField->setScale(0.4f);
+    auto textFieldSize = buttonTextField->getContentSize();
+    this->addChild(buttonTextField,34);
+
+    auto nameProject = ui::TextField::create(text[3],"fonts/arial.ttf",86);
+    nameProject->setVisible(false);
+    nameProject->setMaxLengthEnabled(true);
+    nameProject->setMaxLength(18);
+    nameProject->setTextColor(Color4B::BLACK);
+    buttonTextField->addChild(nameProject);
+    nameProject->setPosition(Vec2(textFieldSize.width/2,textFieldSize.height/2));
+
+    auto deleteProj = ui::Button::create("sprites/button_1_1.png","sprites/button_1_1_pressed.png");
+    deleteProj->setVisible(false);
+    deleteProj->setPosition(Vec2(origin.x + visibleSize.width/2,origin.y + 250));
+    deleteProj->setScale(0.4f);
+    auto textSize = deleteProj->getContentSize();
+    this->addChild(deleteProj,32);
+
+    auto deleteLabel = Label::createWithTTF(text[8],titleB,142);
+    deleteLabel->setVisible(false);
+    deleteLabel->setTextColor(Color4B::BLACK);
+    deleteProj->addChild(deleteLabel);
+    deleteLabel->setPosition(Vec2(textSize.width/2,textSize.height/2));
+
     auto backLayer = ui::Layout::create();
     backLayer->setContentSize(visibleSize);
     backLayer->setBackGroundColorType(ui::Layout::BackGroundColorType::SOLID);
@@ -72,21 +113,56 @@ bool ListProject::init()
     backLayer->setPosition(Vec2::ZERO);
     backLayer->setTouchEnabled(true);
     this->addChild(backLayer,30);
+    touchListener->onTouchBegan = [=](Touch* touch, Event* event)->bool {
+        if(!option->isVisible()){
+            canFadeOut = false;
+            return false;
+        }
+            Vec2 localPoint = option->convertToNodeSpace(touch->getLocation());
+            Rect bounds = Rect(origin.x + 100,origin.y + 200, visibleSize.width - 200,visibleSize.height - 400);
 
-    auto option = DrawNode::create();
-    option->setVisible(false);
-    auto col = Color4F(0,0.64f,0.9f,1);
-    option->drawSolidRect(Vec2(origin.x + 100,visibleSize.height - 200), Vec2(visibleSize.width - 100,origin.y + 200),col);
-    this->addChild(option,31);
-    touchListener->onTouchBegan = [=](Touch* touch, Event* event) -> bool {
-        Vec2 touchPosition = option->convertToNodeSpace(touch->getLocation());
-        Rect rect = Rect(0,0,option->getContentSize().width,option->getContentSize().height);
-        if(rect.containsPoint(touchPosition)){
+        if(bounds.containsPoint(localPoint)){
+            canFadeOut = false;
             return true;
         }
+        canFadeOut = true;
         return false;
-    };
-    _eventDispatcher->addEventListenerWithSceneGraphPriority(touchListener,option);
+        };
+        _eventDispatcher->addEventListenerWithSceneGraphPriority(touchListener,option);
+
+    backLayer->addClickEventListener([=](Object* sender){
+        if(!canFadeOut){
+            return;
+        }
+        auto fileUtils = FileUtils::getInstance();
+        backLayer->setVisible(false);
+        option->setVisible(false);
+        deleteProj->setVisible(false);
+        buttonTextField->setVisible(false);
+        nameProject->setVisible(false);
+        projectNameLabel->setVisible(false);
+        auto oldName = DATAmanager::getInstance()->projectName;
+        auto newName = std::string(nameProject->getString());
+        if(oldName == newName){
+            return;
+        }
+        if(newName.empty()){
+            return;
+        }
+        auto oldPath = DATAmanager::getInstance()->projectsFolder + oldName;
+        auto newPath = DATAmanager::getInstance()->projectsFolder + newName;
+        fileUtils->renameFile(oldPath,newPath);
+        auto reload = ListProject::createScene();
+        Director::getInstance()->replaceScene(reload);
+    });
+
+    deleteProj->addClickEventListener([=](Object* sender){
+        auto fileUtils = FileUtils::getInstance();
+        auto projectPlace = DATAmanager::getInstance()->projectsFolder + DATAmanager::getInstance()->projectName;
+        fileUtils->removeDirectory(projectPlace);
+        auto reload = ListProject::createScene();
+        Director::getInstance()->replaceScene(reload);
+    });
 
     auto back = ui::Button::create("sprites/button_back.png"sv,"sprites/button_back_pressed.png"sv);
     back->setScale(0.2f);
@@ -138,7 +214,7 @@ try{
         auto item = ui::Button::create(file,file);
         auto originalSize = item->getContentSize();
         float scaleX = 130 / originalSize.width;
-        float scaleY = 130 / originalSize.height;
+        float scaleY = 140 / originalSize.height;
         item->setPosition(Vec2(100,y));
         //item->setScale(0.25f);
         item->setScaleX(scaleX);
@@ -179,11 +255,18 @@ try{
         settings->addClickEventListener([=](Object* sender){
             option->setVisible(true);
             backLayer->setVisible(true);
+            deleteProj->setVisible(true);
+            deleteLabel->setVisible(true);
+            buttonTextField->setVisible(true);
+            nameProject->setVisible(true);
+            projectNameLabel->setVisible(true);
+            nameProject->setString(folderNames[i]);
+            DATAmanager::getInstance()->projectName = folderNames[i];
         });
 
-        auto nameProject = Label::createWithTTF(folderNames[i],"fonts/arial.ttf",68 - folderNames[i].length());
-        nameProject->setPosition(Vec2(origin.x + visibleSize.width/2 - 25,y));
-        scrollGroup->addChild(nameProject);
+        auto namePj = Label::createWithTTF(folderNames[i],"fonts/arial.ttf",68 - folderNames[i].length());
+        namePj->setPosition(Vec2(origin.x + visibleSize.width/2 - 25,y));
+        scrollGroup->addChild(namePj);
     }
     scheduleUpdate();
 

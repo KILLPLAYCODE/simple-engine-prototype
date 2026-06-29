@@ -20,13 +20,11 @@ class DATAmanager
     std::string projectsFolder = "";
     std::string projectPath = "";
     std::string projectName = "";
-    int GameScenes = 0;
-    int GameObjects = 0;
-    int Variables = 0;
-    int Functions = 0;
-    int Sounds = 0;
-    int Fonts = 0;
-    int Scenes = 0;
+    std::string sceneName = "";
+    std::string objectName = "";
+    bool LanguageLoad = false;
+    //InsideScene
+    uint8_t switcher = 0;
     private:
     DATAmanager() = default;
 };

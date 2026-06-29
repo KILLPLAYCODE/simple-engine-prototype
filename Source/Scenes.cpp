@@ -8,6 +8,7 @@
 #include <filesystem>
 #include <vector>
 #include <map>
+#include "InsideScene.h"
 using namespace ax;
 
 static int _sceneID = 1003;
@@ -32,6 +33,9 @@ bool Scenes::init()
         return false;
     }
     auto touchListener = EventListenerTouchOneByOne::create();
+    touchListener->setSwallowTouches(true);
+    auto touchListener1 = EventListenerTouchOneByOne::create();
+    touchListener1->setSwallowTouches(true);
     auto visibleSize = _director->getVisibleSize();
     auto origin      = _director->getVisibleOrigin();
     auto safeArea    = _director->getSafeAreaRect();
@@ -45,7 +49,109 @@ bool Scenes::init()
     auto layer = LayerColor::create(Color4B(bgColor),visibleSize.width,visibleSize.height);
     layer->setPosition(Vec2::ZERO);
     this->addChild(layer,0);
+    //CHANGE SCENE
+    auto backLayerChange = ui::Layout::create();
+    backLayerChange->setContentSize(visibleSize);
+    backLayerChange->setBackGroundColorType(ui::Layout::BackGroundColorType::SOLID);
+    backLayerChange->setBackGroundColor(Color3B(0, 0, 0));
+    backLayerChange->setBackGroundColorOpacity(198);
+    backLayerChange->setVisible(false);
+    backLayerChange->setPosition(Vec2::ZERO);
+    backLayerChange->setTouchEnabled(true);
+    this->addChild(backLayerChange,35);
 
+    auto option = DrawNode::create();
+    option->setVisible(false);
+    auto col = Color4F(0,0.64f,0.9f,1);
+    option->drawSolidRect(Vec2(origin.x + 100,visibleSize.height - 200), Vec2(visibleSize.width - 100,origin.y + 200),col);
+    this->addChild(option,36);
+
+    auto SceneNameLabel = Label::createWithTTF(text[5],titleF,46);
+    SceneNameLabel->setPosition(Vec2(origin.x + visibleSize.width/2,visibleSize.height - 300));
+    SceneNameLabel->setVisible(false);
+    this->addChild(SceneNameLabel,37);
+
+    auto buttonTextFieldScene = Sprite::create("sprites/textfield.png");
+    buttonTextFieldScene->setVisible(false);
+    buttonTextFieldScene->setPosition(Vec2(origin.x + visibleSize.width/2,origin.y + visibleSize.height/2 + 200));
+    buttonTextFieldScene->setScale(0.4f);
+    auto textFieldSizeScene = buttonTextFieldScene->getContentSize();
+    this->addChild(buttonTextFieldScene,38);
+
+    auto nameSceneTextField = ui::TextField::create(text[6],"fonts/arial.ttf",86);
+    nameSceneTextField->setVisible(false);
+    nameSceneTextField->setMaxLengthEnabled(true);
+    nameSceneTextField->setMaxLength(18);
+    nameSceneTextField->setTextColor(Color4B::BLACK);
+    buttonTextFieldScene->addChild(nameSceneTextField);
+    nameSceneTextField->setPosition(Vec2(textFieldSizeScene.width/2,textFieldSizeScene.height/2));
+
+    auto deleteScene = ui::Button::create("sprites/button_1_1.png","sprites/button_1_1_pressed.png");
+    deleteScene->setVisible(false);
+    deleteScene->setPosition(Vec2(origin.x + visibleSize.width/2,origin.y + 250));
+    deleteScene->setScale(0.4f);
+    auto textSize = deleteScene->getContentSize();
+    this->addChild(deleteScene,39);
+
+    auto deleteLabel = Label::createWithTTF(text[8],titleB,142);
+    deleteLabel->setVisible(false);
+    deleteLabel->setTextColor(Color4B::BLACK);
+    deleteScene->addChild(deleteLabel);
+    deleteLabel->setPosition(Vec2(textSize.width/2,textSize.height/2));
+
+    touchListener1->onTouchBegan = [=](Touch* touch, Event* event)->bool {
+        if(!option->isVisible()){
+            return false;
+        }
+        if(canFadeOut){
+            canFadeOut = false;
+        }
+            Vec2 localPoint = option->convertToNodeSpace(touch->getLocation());
+            Rect bounds = Rect(origin.x + 100,origin.y + 200, visibleSize.width - 200,visibleSize.height - 400);
+
+        if(bounds.containsPoint(localPoint)){
+            canFadeOut = false;
+            return true;
+        }
+        canFadeOut = true;
+        return false;
+        };
+    _eventDispatcher->addEventListenerWithSceneGraphPriority(touchListener1,option);
+
+    backLayerChange->addClickEventListener([=](Object* sender){
+        if(!canFadeOut){
+            AXLOGW("FAILED");
+            return;
+        }
+        auto fileUtils = FileUtils::getInstance();
+        backLayerChange->setVisible(false);
+        option->setVisible(false);
+        deleteScene->setVisible(false);
+        buttonTextFieldScene->setVisible(false);
+        nameSceneTextField->setVisible(false);
+        SceneNameLabel->setVisible(false);
+        auto oldName = DATAmanager::getInstance()->sceneName;
+        auto newName = std::string(nameSceneTextField->getString());
+        if(oldName == newName){
+            return;
+        }
+        if(newName.empty()){
+            return;
+        }
+        auto oldPath = DATAmanager::getInstance()->projectsFolder + DATAmanager::getInstance()->projectName + "/scenes/" + oldName;
+        auto newPath = DATAmanager::getInstance()->projectsFolder + DATAmanager::getInstance()->projectName + "/scenes/" + newName;
+        fileUtils->renameFile(oldPath,newPath);
+        auto reload = Scenes::createScene();
+        Director::getInstance()->replaceScene(reload);
+    });
+    deleteScene->addClickEventListener([=](Object* sender){
+        auto fileUtils = FileUtils::getInstance();
+        auto projectPlace = DATAmanager::getInstance()->projectsFolder + DATAmanager::getInstance()->projectName + "/scenes/" + DATAmanager::getInstance()->sceneName;
+        fileUtils->removeDirectory(projectPlace);
+        auto reload = Scenes::createScene();
+        Director::getInstance()->replaceScene(reload);
+    });
+    //CREATE SCENE
     auto backLayer = ui::Layout::create();
     backLayer->setContentSize(visibleSize);
     backLayer->setBackGroundColorType(ui::Layout::BackGroundColorType::SOLID);
@@ -57,10 +163,28 @@ bool Scenes::init()
     this->addChild(backLayer,30);
 
     auto frontWindow = DrawNode::create();
-    Color4F col = Color4F(0,0.64f,0.9f,1.0f);
-    frontWindow->drawSolidRect(Vec2(origin.x + 100,visibleSize.height - 200), Vec2(visibleSize.width - 100,origin.y + 200), col);
+    auto color1 = Color4F(0,0.64f,0.9f,1.0f);
+    frontWindow->drawSolidRect(Vec2(origin.x + 100,visibleSize.height - 200), Vec2(visibleSize.width - 100,origin.y + 200), color1);
     frontWindow->setVisible(false);
     this->addChild(frontWindow,31);
+    touchListener->onTouchBegan = [=](Touch* touch, Event* event)->bool {
+        if(!frontWindow->isVisible()){
+            return false;
+        }
+        if(canFadeOut){
+            canFadeOut = false;
+        }
+            Vec2 localPoint = frontWindow->convertToNodeSpace(touch->getLocation());
+            Rect bounds = Rect(origin.x + 100,origin.y + 200, visibleSize.width - 200,visibleSize.height - 400);
+
+        if(bounds.containsPoint(localPoint)){
+            canFadeOut = false;
+            return true;
+        }
+        canFadeOut = true;
+        return false;
+        };
+    _eventDispatcher->addEventListenerWithSceneGraphPriority(touchListener,frontWindow);
 
     auto sceneNameLabel = Label::createWithTTF(text[5],titleF,46);
     sceneNameLabel->setPosition(Vec2(origin.x + visibleSize.width/2,visibleSize.height - 300));
@@ -71,7 +195,7 @@ bool Scenes::init()
     buttonTextField->setVisible(false);
     buttonTextField->setPosition(Vec2(origin.x + visibleSize.width/2,origin.y + visibleSize.height/2 + 200));
     buttonTextField->setScale(0.4f);
-    auto textFieldSize = buttonTextField->getContentSize();
+    auto textFieldSize = buttonTextFieldScene->getContentSize();
     this->addChild(buttonTextField,32);
 
     auto nameScene = ui::TextField::create(text[6],"fonts/arial.ttf",86);
@@ -115,6 +239,27 @@ bool Scenes::init()
     cancel->setScale(0.3f);
     auto cancelSize = cancel->getContentSize();
     this->addChild(cancel,35);
+
+    auto cancelLabel = Label::createWithTTF(text[7], titleB, 142);
+    cancelLabel->setVisible(false);
+    cancel->addChild(cancelLabel,36);
+    cancelLabel->setTextColor(Color4B::BLACK);
+    cancelLabel->setPosition(Vec2(cancelSize.width/2,cancelSize.height/2));
+
+    backLayer->addClickEventListener([=](Object* sender){
+        if(!canFadeOut){
+            return;
+        }
+        backLayer->setVisible(false);
+        frontWindow->setVisible(false);
+        buttonTextField->setVisible(false);
+        nameScene->setVisible(false);
+        sceneNameLabel->setVisible(false);
+        create->setVisible(false);
+        cancel->setVisible(false);
+        createLabel->setVisible(false);
+    });
+
     cancel->addClickEventListener([=](Object* sender){
         backLayer->setVisible(false);
     frontWindow->setVisible(false);
@@ -125,12 +270,7 @@ bool Scenes::init()
     cancel->setVisible(false);
     createLabel->setVisible(false);
     });
-
-    auto cancelLabel = Label::createWithTTF(text[7], titleB, 142);
-    cancelLabel->setVisible(false);
-    cancel->addChild(cancelLabel,36);
-    cancelLabel->setTextColor(Color4B::BLACK);
-    cancelLabel->setPosition(Vec2(cancelSize.width/2,cancelSize.height/2));
+    //UI
 
     auto DrawNode = DrawNode::create();
     Color4F color = Color4F(0,0.64f,0.9f,1.0f);
@@ -198,17 +338,27 @@ for(int i = 0;i < sceneName.size();i++){
     settings->setPosition(Vec2(origin.x + visibleSize.width/2 + 180,y));
     settings->setScale(0.1f);
     listScenes->addChild(settings);
+    settings->addClickEventListener([=](Object* sender){
+            option->setVisible(true);
+            backLayerChange->setVisible(true);
+            deleteScene->setVisible(true);
+            deleteLabel->setVisible(true);
+            buttonTextFieldScene->setVisible(true);
+            nameSceneTextField->setVisible(true);
+            SceneNameLabel->setVisible(true);
+            nameSceneTextField->setString(sceneName[i]);
+            DATAmanager::getInstance()->sceneName = sceneName[i];
+    });
 
     auto next = ui::Button::create("sprites/continue_button.png","sprites/continue_button_pressed.png");
     next->setPosition(Vec2(origin.x + visibleSize.width/2 + 260,y));
     next->setScale(0.1f);
     listScenes->addChild(next);
-
-    /*auto icon = Sprite::create("sprites/icon_scene_1.png");
-    icon->setPosition(Vec2(100,y));
-    icon->setScale(0.35f);
-    listScenes->addChild(icon);
-*/
+    next->addClickEventListener([=](Object* sender){
+        DATAmanager::getInstance()->sceneName = sceneName[i];
+        auto nextScene = InsideScene::createScene();
+        Director::getInstance()->replaceScene(nextScene);
+    });
 }
 float y = total - iconHeight * sceneName.size() - iconHeight/2;
 auto add = ui::Button::create("sprites/create_add.png","sprites/create_add_pressed.png");
@@ -231,69 +381,6 @@ scheduleUpdate();
 
 return true;
 }
-
-void Scenes::onTouchesBegan(const std::vector<ax::Touch*>& touches, ax::Event* event)
-{
-    for (auto&& t : touches)
-    {
-        // AXLOGD("onTouchesBegan detected, X:{}  Y:{}", t->getLocation().x, t->getLocation().y);
-    }
-}
-
-void Scenes::onTouchesMoved(const std::vector<ax::Touch*>& touches, ax::Event* event)
-{
-    for (auto&& t : touches)
-    {
-        // AXLOGD("onTouchesMoved detected, X:{}  Y:{}", t->getLocation().x, t->getLocation().y);
-    }
-}
-
-void Scenes::onTouchesEnded(const std::vector<ax::Touch*>& touches, ax::Event* event)
-{
-    for (auto&& t : touches)
-    {
-        // AXLOGD("onTouchesEnded detected, X:{}  Y:{}", t->getLocation().x, t->getLocation().y);
-    }
-}
-
-bool Scenes::onMouseDown(Event* event)
-{
-    EventMouse* e = static_cast<EventMouse*>(event);
-    // AXLOGD("onMouseDown detected, button: {}", static_cast<int>(e->getMouseButton()));
-    return true;
-}
-
-bool Scenes::onMouseUp(Event* event)
-{
-    EventMouse* e = static_cast<EventMouse*>(event);
-    AXLOGD("onMouseUp detected, button: {}", static_cast<int>(e->getMouseButton()));
-    return true;
-}
-
-bool Scenes::onMouseMove(Event* event)
-{
-    EventMouse* e = static_cast<EventMouse*>(event);
-    // AXLOGD("onMouseMove detected, X:{}  Y:{}", e->getLocation().x, e->getLocation().y);
-    return true;
-}
-
-bool Scenes::onMouseScroll(Event* event)
-{
-    EventMouse* e = static_cast<EventMouse*>(event);
-    // AXLOGD("onMouseScroll detected, X:{}  Y:{}", e->getScrollX(), e->getScrollY());
-    return true;
-}
-
-void ScenesKeyPressed(EventKeyboard::KeyCode code, Event* event)
-{
-    AXLOGD("Scene: #{} onKeyPressed, keycode: {}", _sceneID, static_cast<int>(code));
-}
-
-void Scenes::onKeyReleased(EventKeyboard::KeyCode code, Event* event)
-{
-    AXLOGD("onKeyReleased, keycode: {}", static_cast<int>(code));
-}
-
 void Scenes::update(float delta)
 {
     switch (_gameState)

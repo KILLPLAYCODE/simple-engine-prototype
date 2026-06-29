@@ -43,23 +43,6 @@ public:
     static ax::Scene* createScene();
     bool init() override;
     void update(float delta) override;
-
-    // touch
-    void onTouchesBegan(const std::vector<ax::Touch*>& touches, ax::Event* event);
-    void onTouchesMoved(const std::vector<ax::Touch*>& touches, ax::Event* event);
-    void onTouchesEnded(const std::vector<ax::Touch*>& touches, ax::Event* event);
-
-    // mouse
-    bool onMouseDown(ax::Event* event);
-    bool onMouseUp(ax::Event* event);
-    bool onMouseMove(ax::Event* event);
-    bool onMouseScroll(ax::Event* event);
-
-    // Keyboard
-    void onKeyPressed(ax::EventKeyboard::KeyCode code, ax::Event* event);
-    void onKeyReleased(ax::EventKeyboard::KeyCode code, ax::Event* event);
-
-    // a selector callback
     void menuCloseCallback(ax::Object* sender);
 
     CREATE_FUNC(Scenes);
@@ -69,6 +52,7 @@ private:
     ax::EventListenerTouchAllAtOnce* _touchListener = nullptr;
     ax::EventListenerKeyboard* _keyboardListener    = nullptr;
     ax::EventListenerMouse* _mouseListener          = nullptr;
+    bool canFadeOut = false;
     int _sceneID                                    = 3;
 };
 
