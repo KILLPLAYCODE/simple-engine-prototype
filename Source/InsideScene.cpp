@@ -99,6 +99,24 @@ bool InsideScene::init()
             frontWindow->drawSolidRect(Vec2(origin.x + 100,visibleSize.height - 200), Vec2(visibleSize.width - 100,origin.y + 200), col);
             frontWindow->setVisible(false);
             this->addChild(frontWindow,31);
+            touchListener->onTouchBegan = [=](Touch* touch, Event* event)->bool {
+                if(!frontWindow->isVisible()){
+                    return false;
+                }
+                if(canFadeOut){
+                    canFadeOut = false;
+                }
+                Vec2 localPoint = frontWindow->convertToNodeSpace(touch->getLocation());        
+                Rect bounds = Rect(origin.x + 100,origin.y + 200, visibleSize.width - 200,visibleSize.height - 400);
+
+                if(bounds.containsPoint(localPoint)){
+                    canFadeOut = false;
+                    return true;
+                }
+                canFadeOut = true;
+                return false;
+            };
+            _eventDispatcher->addEventListenerWithSceneGraphPriority(touchListener,frontWindow);
 
             auto objectNameLabel = Label::createWithTTF(text[9],titleF,46);    
             objectNameLabel->setPosition(Vec2(origin.x + visibleSize.width/2,visibleSize.height - 300));
@@ -111,6 +129,19 @@ bool InsideScene::init()
             buttonTextField->setScale(0.4f);
             auto textFieldSize = buttonTextField->getContentSize();
             this->addChild(buttonTextField,32);
+
+            auto deleteObject = ui::Button::create("sprites/button_1_1.png","sprites/button_1_1_pressed.png");
+            deleteObject->setVisible(false);
+            deleteObject->setPosition(Vec2(origin.x + visibleSize.width/2,origin.y + 250));
+            deleteObject->setScale(0.4f);
+            auto textSize = deleteObject->getContentSize();
+            this->addChild(deleteObject,39);
+
+            auto deleteLabel = Label::createWithTTF(text[8],titleB,142);
+            deleteLabel->setVisible(false);
+            deleteLabel->setTextColor(Color4B::BLACK);
+            deleteObject->addChild(deleteLabel);
+            deleteLabel->setPosition(Vec2(textSize.width/2,textSize.height/2));
 
             auto nameObject = ui::TextField::create(text[10],"fonts/arial.ttf",86);    
             nameObject->setVisible(false);
@@ -239,6 +270,31 @@ bool InsideScene::init()
                     this->addChild(texturesIcon,15 + i);
                 }
             }
+            backLayer->addClickEventListener([=](Object* sender){
+        if(!canFadeOut){
+            return;
+        }
+        auto fileUtils = FileUtils::getInstance();
+        backLayer->setVisible(false);
+        frontWindow->setVisible(false);
+        deleteObject->setVisible(false);
+        buttonTextField->setVisible(false);
+        nameObject->setVisible(false);
+        objectNameLabel->setVisible(false);
+        auto oldName = DATAmanager::getInstance()->objectName;
+        auto newName = std::string(nameObject->getString());
+        if(oldName == newName){
+            return;
+        }
+        if(newName.empty()){
+            return;
+        }
+        auto oldPath = DATAmanager::getInstance()->projectPath + "/scenes/" + DATAmanager::getInstance()->sceneName + "/" + oldName;
+        auto newPath = DATAmanager::getInstance()->projectPath + "/scenes/" + DATAmanager::getInstance()->sceneName + "/" + newName;
+        fileUtils->renameFile(oldPath,newPath);
+        auto reload = InsideScene::createScene();
+        Director::getInstance()->replaceScene(reload);
+    });
 
             std::string name = DATAmanager::getInstance()->sceneName;    
             auto nameLabel = Label::createWithTTF(name,"fonts/arial.ttf",86 - name.length());
@@ -317,15 +373,15 @@ bool InsideScene::init()
                 settings->setScale(0.1f);
                 listObjects->addChild(settings);
                 settings->addClickEventListener([=](Object* sender){
-                    option->setVisible(true);
+                    frontWindow->setVisible(true);
                     backLayer->setVisible(true);
-                    deleteProj->setVisible(true);
+                    deleteObject->setVisible(true);
                     deleteLabel->setVisible(true);
                     buttonTextField->setVisible(true);
-                    nameProject->setVisible(true);
-                    projectNameLabel->setVisible(true);
-                    nameProject->setString(folderNames[i]);            
-                    DATAmanager::getInstance()->objectName = folderNames[i];
+                    nameObject->setVisible(true);
+                    objectNameLabel->setVisible(true);
+                    nameObject->setString(objectsName[i]);            
+                    DATAmanager::getInstance()->objectName = objectsName[i];
                 });
 
                 auto next = ui::Button::create("sprites/continue_button.png","sprites/continue_button_pressed.png");
@@ -355,7 +411,6 @@ bool InsideScene::init()
                 cancel->setVisible(true);
                 createLabel->setVisible(true);
                 cancelLabel->setVisible(true);
-
             });
             break;
         }
@@ -697,7 +752,7 @@ extern "C" {
         std::string cacheImagePath = JniHelper::jstring2string(path);
         Director::getInstance()->getScheduler()->performFunctionInCocosThread([cacheImagePath](){
             auto fileUtils = FileUtils::getInstance();
-            std::string filePath = DATAmanager::getInstance()->projectPath + DATAmanager::getInstance->sceneName + "/" + DATAmanager::getInstance->objectName + "/sprite.png";
+            std::string filePath = DATAmanager::getInstance()->projectPath + DATAmanager::getInstance()->sceneName + "/" + DATAmanager::getInstance()->objectName + "/sprite.png";
             Data fileData = fileUtils->getDataFromFile(cacheImagePath);
 
             if(!fileData.isNull()){
