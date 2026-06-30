@@ -27,6 +27,7 @@ static void problemLoading(const char* filename)
         "ListProject.cpp\n");
 }
 static void openGallery(){
+    DATAmanager::getInstance()->savePath = DATAmanager::getInstance()->projectPath + "icon.png";
     #if (AX_TARGET_PLATFORM == AX_PLATFORM_ANDROID)
     JniMethodInfo methodInfo;
     if(JniHelper::getStaticMethodInfo(methodInfo, "dev/prototype/klengine/AppActivity", "openAndroidGallery", "()V")){
@@ -35,7 +36,10 @@ static void openGallery(){
     }
     #endif
 }
-
+void ListProject::onImageImported(){
+    auto reload = ListProject::createScene();
+    Director::getInstance()->replaceScene(reload);
+}
 bool ListProject::init()
 {
     if (!Scene::init())
@@ -343,15 +347,21 @@ extern "C" {
         std::string cacheImagePath = JniHelper::jstring2string(path);
         Director::getInstance()->getScheduler()->performFunctionInCocosThread([cacheImagePath](){
             auto fileUtils = FileUtils::getInstance();
-            std::string filePath = DATAmanager::getInstance()->projectPath + "icon.png";
+            std::string filePath = DATAmanager::getInstance()->savePath;
             Data fileData = fileUtils->getDataFromFile(cacheImagePath);
-
+            auto currentScene = Director::getInstance()->getRunningScene();
             if(!fileData.isNull()){
                 fileUtils->writeDataToFile(fileData,filePath);
                 fileUtils->removeFile(cacheImagePath);
                 Director::getInstance()->getTextureCache()->removeTextureForKey(filePath);
-                auto scene = ListProject::createScene();
-                Director::getInstance()->replaceScene(scene);
+                if (currentScene) {
+            if (auto insideScene = dynamic_cast<InsideScene*>(currentScene)) {
+                insideScene->onImageImported(); 
+            }
+            else if (auto listProject = dynamic_cast<ListProject*>(currentScene)) {
+                listProject->onImageImported();
+            }
+            }
             }
         });
     }

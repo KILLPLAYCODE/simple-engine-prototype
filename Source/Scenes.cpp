@@ -9,6 +9,8 @@
 #include <vector>
 #include <map>
 #include "InsideScene.h"
+#include "src/json.hpp"
+#include <fstream>
 using namespace ax;
 
 static int _sceneID = 1003;
@@ -44,6 +46,7 @@ bool Scenes::init()
     std::map<int,std::string> text = DATAmanager::getInstance()->translater;
     std::string titleF = DATAmanager::getInstance()->titleFont;
     std::string titleB = DATAmanager::getInstance()->buttonFont;
+    std::vector<std::string> sceneName;
 
     Color3B bgColor(135, 206, 235);
     auto layer = LayerColor::create(Color4B(bgColor),visibleSize.width,visibleSize.height);
@@ -297,14 +300,33 @@ bool Scenes::init()
     more->setPosition(Vec2(visibleSize.width - 50,visibleSize.height - 75));
     this->addChild(more,26);
 
+    auto run = ui::Button::create("sprites/button_run.png","sprites/button_run_pressed.png");    
+    run->setPosition(Vec2(visibleSize.width - 125,origin.y + 100));
+    run->setScale(0.25f);
+    this->addChild(run,12);
+
+    auto add = ui::Button::create("sprites/create_add.png","sprites/create_add_pressed.png");
+    add->setPosition(Vec2(visibleSize.width - 125,origin.y + 250));
+    add->setScale(0.25f);
+    this->addChild(add,13);
+    add->addClickEventListener([=](Object* sender){
+        backLayer->setVisible(true);
+        frontWindow->setVisible(true);
+        buttonTextField->setVisible(true);
+        nameScene->setVisible(true);
+        sceneNameLabel->setVisible(true);
+        create->setVisible(true);
+        cancel->setVisible(true);
+        createLabel->setVisible(true);
+        cancelLabel->setVisible(true);
+    });
+
     auto listScenes = ui::ScrollView::create();
     listScenes->setContentSize(Size(visibleSize.width,visibleSize.height - 150));
     listScenes->setPosition(Vec2(origin.x,origin.y));
     listScenes->setDirection(ui::ScrollView::Direction::VERTICAL);
     listScenes->setBounceEnabled(true);
     this->addChild(listScenes);
-
-    std::vector<std::string> sceneName;
 
     auto scenesPath = DATAmanager::getInstance()->projectPath + "scenes/";
 try {
@@ -350,6 +372,17 @@ for(int i = 0;i < sceneName.size();i++){
             DATAmanager::getInstance()->sceneName = sceneName[i];
     });
 
+    auto up = ui::Button::create("sprites/sorting.png","sprites/sorting_pressed.png");
+    up->setPosition(Vec2(origin.x + visibleSize.width/2 - 150,y + 50));
+    up->setScale(0.1f);
+    listScenes->addChild(up);
+
+    auto down = ui::Button::create("sprites/sorting.png","sprites/sorting_pressed.png");
+    down->setRotation(180);
+    down->setPosition(Vec2(origin.x + visibleSize.width/2 - 150,y - 50));
+    down->setScale(0.1f);
+    listScenes->addChild(down);
+
     auto next = ui::Button::create("sprites/continue_button.png","sprites/continue_button_pressed.png");
     next->setPosition(Vec2(origin.x + visibleSize.width/2 + 260,y));
     next->setScale(0.1f);
@@ -360,23 +393,6 @@ for(int i = 0;i < sceneName.size();i++){
         Director::getInstance()->replaceScene(nextScene);
     });
 }
-float y = total - iconHeight * sceneName.size() - iconHeight/2;
-auto add = ui::Button::create("sprites/create_add.png","sprites/create_add_pressed.png");
-add->setPosition(Vec2(origin.x + visibleSize.width/2,y));
-add->setScale(0.25f);
-listScenes->addChild(add);
-add->addClickEventListener([=](Object* sender){
-    backLayer->setVisible(true);
-    frontWindow->setVisible(true);
-    buttonTextField->setVisible(true);
-    nameScene->setVisible(true);
-    sceneNameLabel->setVisible(true);
-    create->setVisible(true);
-    cancel->setVisible(true);
-    createLabel->setVisible(true);
-    cancelLabel->setVisible(true);
-});
-
 scheduleUpdate();
 
 return true;

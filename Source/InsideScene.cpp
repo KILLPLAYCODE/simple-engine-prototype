@@ -4,6 +4,7 @@
 #include <string>
 #include "axmol.h"
 #include "MainScene.h"
+#include "ListProject.h"
 #include "src/DATAmanager.h"
 #include <filesystem>
 #include <vector>
@@ -31,6 +32,8 @@ static void problemLoading(const char* filename)
         "InsideScene.cpp\n");
 }
 static void openGallery(){
+    DATAmanager::getInstance()->savePath = DATAmanager::getInstance()->projectPath + "scenes/" + DATAmanager::getInstance()->sceneName + "/" + DATAmanager::getInstance()->objectName + "/sprite.png";
+
     #if (AX_TARGET_PLATFORM == AX_PLATFORM_ANDROID)
     JniMethodInfo methodInfo;
     if(JniHelper::getStaticMethodInfo(methodInfo, "dev/prototype/klengine/AppActivity", "openAndroidGallery", "()V")){
@@ -47,8 +50,8 @@ static void openGallery(){
     if(!select.result().empty()){
         std::string fullPath = select.result()[0];
         auto fileUtils = FileUtils::getInstance();
-        std::string spritesPath = DATAmanager::getInstance()->projectPath + "scenes/" + DATAmanager::getInstance()->sceneName + "/" + DATAmanager::getInstance()->objectName + "/sprite.png";
         Data fileData = fileUtils->getDataFromFile(fullPath);
+        auto spritesPath = DATAmanager::getInstance()->savePath;
         if(!fileData.isNull()){
             fileUtils->writeDataToFile(fileData,spritesPath);
             auto reload = InsideScene::createScene();
@@ -56,6 +59,10 @@ static void openGallery(){
         }
     }
     #endif
+}
+void InsideScene::onImageImported(){
+    auto reload = InsideScene::createScene();
+    Director::getInstance()->replaceScene(reload);
 }
 
 bool InsideScene::init()
@@ -136,6 +143,13 @@ bool InsideScene::init()
             deleteObject->setScale(0.4f);
             auto textSize = deleteObject->getContentSize();
             this->addChild(deleteObject,39);
+            deleteObject->addClickEventListener([=](Object* sender){
+                auto fileUtils = FileUtils::getInstance();
+                auto objectPlace = DATAmanager::getInstance()->projectPath + "scenes/" + DATAmanager::getInstance()->sceneName + "/" + DATAmanager::getInstance()->objectName;
+                fileUtils->removeDirectory(objectPlace);
+                auto reload = InsideScene::createScene();        
+                Director::getInstance()->replaceScene(reload);
+            });
 
             auto deleteLabel = Label::createWithTTF(text[8],titleB,142);
             deleteLabel->setVisible(false);
@@ -281,6 +295,9 @@ bool InsideScene::init()
         buttonTextField->setVisible(false);
         nameObject->setVisible(false);
         objectNameLabel->setVisible(false);
+        create->setVisible(false);
+        cancel->setVisible(false);
+        createLabel->setVisible(false);
         auto oldName = DATAmanager::getInstance()->objectName;
         auto newName = std::string(nameObject->getString());
         if(oldName == newName){
@@ -317,9 +334,25 @@ bool InsideScene::init()
             this->addChild(more,26);
 
             auto run = ui::Button::create("sprites/button_run.png","sprites/button_run_pressed.png");    
-            run->setPosition(Vec2(visibleSize.width - 100,origin.y + 100));
-            run->setScale(0.35f);
+            run->setPosition(Vec2(visibleSize.width - 125,origin.y + 100));
+            run->setScale(0.25f);
             this->addChild(run,12);
+
+            auto add = ui::Button::create("sprites/create_add.png","sprites/create_add_pressed.png");
+            add->setPosition(Vec2(visibleSize.width - 125,origin.y + 250));
+            add->setScale(0.25f);
+            this->addChild(add,13);
+            add->addClickEventListener([=](Object* sender){
+                backLayer->setVisible(true);
+                frontWindow->setVisible(true);
+                buttonTextField->setVisible(true);
+                nameObject->setVisible(true);
+                objectNameLabel->setVisible(true);
+                create->setVisible(true);
+                cancel->setVisible(true);
+                createLabel->setVisible(true);
+                cancelLabel->setVisible(true);
+            });
 
             auto listObjects = ui::ScrollView::create();    
             listObjects->setContentSize(Size(visibleSize.width,visibleSize.height - 225));
@@ -395,23 +428,6 @@ bool InsideScene::init()
                 listObjects->addChild(icon);
 
             }
-
-            float y = total - iconHeight * objectsName.size() - iconHeight/2;
-            auto add = ui::Button::create("sprites/create_add.png","sprites/create_add_pressed.png");
-            add->setPosition(Vec2(origin.x + visibleSize.width/2,y));
-            add->setScale(0.25f);
-            listObjects->addChild(add);
-            add->addClickEventListener([=](Object* sender){
-                backLayer->setVisible(true);
-                frontWindow->setVisible(true);
-                buttonTextField->setVisible(true);
-                nameObject->setVisible(true);
-                objectNameLabel->setVisible(true);
-                create->setVisible(true);
-                cancel->setVisible(true);
-                createLabel->setVisible(true);
-                cancelLabel->setVisible(true);
-            });
             break;
         }
         case 1:
@@ -598,9 +614,25 @@ bool InsideScene::init()
             this->addChild(more,26);
 
             auto run = ui::Button::create("sprites/button_run.png","sprites/button_run_pressed.png");    
-            run->setPosition(Vec2(visibleSize.width - 100,origin.y + 100));
-            run->setScale(0.35f);
+            run->setPosition(Vec2(visibleSize.width - 125,origin.y + 100));
+            run->setScale(0.25f);
             this->addChild(run,12);
+
+            auto add = ui::Button::create("sprites/create_add.png","sprites/create_add_pressed.png");
+            add->setPosition(Vec2(visibleSize.width - 125,origin.y + 250));
+            add->setScale(0.25f);
+            this->addChild(add,13);
+            add->addClickEventListener([=](Object* sender){
+                backLayer->setVisible(true);
+                frontWindow->setVisible(true);
+                buttonTextField->setVisible(true);
+                nameObject->setVisible(true);
+                objectNameLabel->setVisible(true);
+                create->setVisible(true);
+                cancel->setVisible(true);
+                createLabel->setVisible(true);
+                cancelLabel->setVisible(true);
+            });
 
             auto listObjects = ui::ScrollView::create();    
             listObjects->setContentSize(Size(visibleSize.width,visibleSize.height - 225));
@@ -656,23 +688,6 @@ bool InsideScene::init()
                 listObjects->addChild(icon);
 
             }
-
-            float y = total - iconHeight * objectsName.size() - iconHeight/2;
-            auto add = ui::Button::create("sprites/create_add.png","sprites/create_add_pressed.png");
-            add->setPosition(Vec2(origin.x + visibleSize.width/2,y));
-            add->setScale(0.25f);
-            listObjects->addChild(add);
-            add->addClickEventListener([=](Object* sender){
-                backLayer->setVisible(true);
-                frontWindow->setVisible(true);
-                buttonTextField->setVisible(true);
-                nameObject->setVisible(true);
-                objectNameLabel->setVisible(true);
-                create->setVisible(true);
-                cancel->setVisible(true);
-                createLabel->setVisible(true);
-                cancelLabel->setVisible(true);
-            });
             break;
         }
     }
@@ -746,23 +761,3 @@ void InsideScene::menuCloseCallback(ax::Object* sender)
 {
     _director->end();
 }
-#if (AX_TARGET_PLATFORM == AX_PLATFORM_ANDROID)
-extern "C" {
-    JNIEXPORT void JNICALL Java_dev_prototype_klengine_AppActivity_onImageSelectedNative(JNIEnv* env, jobject thiz, jstring path) {
-        std::string cacheImagePath = JniHelper::jstring2string(path);
-        Director::getInstance()->getScheduler()->performFunctionInCocosThread([cacheImagePath](){
-            auto fileUtils = FileUtils::getInstance();
-            std::string filePath = DATAmanager::getInstance()->projectPath + DATAmanager::getInstance()->sceneName + "/" + DATAmanager::getInstance()->objectName + "/sprite.png";
-            Data fileData = fileUtils->getDataFromFile(cacheImagePath);
-
-            if(!fileData.isNull()){
-                fileUtils->writeDataToFile(fileData,filePath);
-                fileUtils->removeFile(cacheImagePath);
-                Director::getInstance()->getTextureCache()->removeTextureForKey(filePath);
-                auto scene = InsideScene::createScene();
-                Director::getInstance()->replaceScene(scene);
-            }
-        });
-    }
-}
-#endif

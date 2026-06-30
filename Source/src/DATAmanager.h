@@ -17,6 +17,7 @@ class DATAmanager
     std::string titleFont = "";
     //std::string markerFont = "";
     float fontSize = 0;
+    std::string savePath = "";
     std::string projectsFolder = "";
     std::string projectPath = "";
     std::string projectName = "";
