@@ -9,8 +9,6 @@
 #include <vector>
 #include <map>
 #include "InsideScene.h"
-#include "src/json.hpp"
-#include <fstream>
 using namespace ax;
 
 static int _sceneID = 1003;
@@ -46,7 +44,16 @@ bool Scenes::init()
     std::map<int,std::string> text = DATAmanager::getInstance()->translater;
     std::string titleF = DATAmanager::getInstance()->titleFont;
     std::string titleB = DATAmanager::getInstance()->buttonFont;
+
     std::vector<std::string> sceneName;
+    auto fileUtils = FileUtils::getInstance();
+    std::string configSequance = DATAmanager::getInstance()->projectPath + "scenes/scenes.plist";
+    if(fileUtils->isFileExist(configSequance)){
+        ValueVector sequance = fileUtils->getValueVectorFromFile(configSequance);
+        for(const auto& value : sequance){
+            sceneName.push_back(value.asString());
+        }
+    }
 
     Color3B bgColor(135, 206, 235);
     auto layer = LayerColor::create(Color4B(bgColor),visibleSize.width,visibleSize.height);
@@ -135,6 +142,7 @@ bool Scenes::init()
         SceneNameLabel->setVisible(false);
         auto oldName = DATAmanager::getInstance()->sceneName;
         auto newName = std::string(nameSceneTextField->getString());
+        std::string sequancePath = DATAmanager::getInstance()->projectPath + "scenes/scenes.plist";
         if(oldName == newName){
             return;
         }
@@ -144,6 +152,15 @@ bool Scenes::init()
         auto oldPath = DATAmanager::getInstance()->projectsFolder + DATAmanager::getInstance()->projectName + "/scenes/" + oldName;
         auto newPath = DATAmanager::getInstance()->projectsFolder + DATAmanager::getInstance()->projectName + "/scenes/" + newName;
         fileUtils->renameFile(oldPath,newPath);
+        ValueVector renameSequance = fileUtils->getValueVectorFromFile(sequancePath);
+        for(int i = 0; i < renameSequance.size(); i++){
+        if(renameSequance[i].asString() == oldName){
+            renameSequance[i] = Value(newName);
+            break;
+        }
+    }
+        fileUtils->writeValueVectorToFile(renameSequance,sequancePath);
+
         auto reload = Scenes::createScene();
         Director::getInstance()->replaceScene(reload);
     });
@@ -151,6 +168,17 @@ bool Scenes::init()
         auto fileUtils = FileUtils::getInstance();
         auto projectPlace = DATAmanager::getInstance()->projectsFolder + DATAmanager::getInstance()->projectName + "/scenes/" + DATAmanager::getInstance()->sceneName;
         fileUtils->removeDirectory(projectPlace);
+
+        std::string scenesConfig = DATAmanager::getInstance()->projectPath + "scenes/scenes.plist";
+        ValueVector sequance = fileUtils->getValueVectorFromFile(scenesConfig);
+        for(auto it = sequance.begin();it != sequance.end();++it){
+            if(it->asString() == DATAmanager::getInstance()->sceneName){
+                sequance.erase(it);
+                break;
+            }
+        }
+        fileUtils->writeValueVectorToFile(sequance,scenesConfig);
+
         auto reload = Scenes::createScene();
         Director::getInstance()->replaceScene(reload);
     });
@@ -226,6 +254,19 @@ bool Scenes::init()
             return;
         }
         fileUtils->createDirectories(systemPath);
+
+        auto configSequance = DATAmanager::getInstance()->projectPath + "scenes/scenes.plist";
+        ValueVector saveSequance;
+        if(fileUtils->isFileExist(configSequance)){
+            saveSequance = fileUtils->getValueVectorFromFile(configSequance);
+        }
+        saveSequance.push_back(Value(nameSc));
+        fileUtils->writeValueVectorToFile(saveSequance,configSequance);
+
+        auto objectConfig = DATAmanager::getInstance()->projectPath + "scenes/" + nameSc + "/objects.plist";
+        ValueVector saveObjects;
+        fileUtils->writeValueVectorToFile(saveObjects,objectConfig);
+        
         auto nextScene = Scenes::createScene();
         Director::getInstance()->replaceScene(nextScene);
     });
@@ -274,21 +315,20 @@ bool Scenes::init()
     createLabel->setVisible(false);
     });
     //UI
-
     auto DrawNode = DrawNode::create();
     Color4F color = Color4F(0,0.64f,0.9f,1.0f);
     DrawNode->drawSolidRect(Vec2(0,visibleSize.height), Vec2(visibleSize.width,visibleSize.height - 150),color);
     this->addChild(DrawNode,20);
 
     std::string name = DATAmanager::getInstance()->projectName;
-    auto nameLabel = Label::createWithTTF(name,"fonts/arial.ttf",86 - name.length());
+    auto nameLabel = Label::createWithTTF(name,"fonts/arial.ttf",96 - name.length() * 2);
     nameLabel->setPosition(Vec2(origin.x + visibleSize.width/2, visibleSize.height - 85));
     this->addChild(nameLabel, 21);
 
     auto back = ui::Button::create("sprites/button_back.png"sv,"sprites/button_back_pressed.png"sv);
     back->setScale(0.2f);
     auto backSize = back->getContentSize();
-    back->setPosition(Vec2(origin.x + 75,visibleSize.height - 75));
+    back->setPosition(Vec2(origin.x + 50,visibleSize.height - 50));
     back->addClickEventListener([=](Object* sender){
         auto nextScene = ListProject::createScene();
         Director::getInstance()->replaceScene(nextScene);
@@ -328,16 +368,6 @@ bool Scenes::init()
     listScenes->setBounceEnabled(true);
     this->addChild(listScenes);
 
-    auto scenesPath = DATAmanager::getInstance()->projectPath + "scenes/";
-try {
-    for(const auto& scene : std::filesystem::directory_iterator(scenesPath)){
-        if(scene.is_directory()){
-            sceneName.push_back(scene.path().filename().string());
-        }
-    }
-} catch (const std::filesystem::filesystem_error& e) {
-    AXLOGE("file system error: {}", e.what());
-}
 float iconHeight = 232;
 float total = iconHeight * sceneName.size();
 if(total < visibleSize.height - 150){
@@ -352,7 +382,7 @@ for(int i = 0;i < sceneName.size();i++){
     picture->setScale(0.15f);
     listScenes->addChild(picture);
 
-    auto name = Label::createWithTTF(sceneName[i],"fonts/arial.ttf",68 - sceneName[i].length());
+    auto name = Label::createWithTTF(sceneName[i],"fonts/arial.ttf",68 - sceneName[i].length() * 2.5f);
     name->setPosition(Vec2(origin.x + visibleSize.width/2,y));
     listScenes->addChild(name);
 
@@ -373,15 +403,59 @@ for(int i = 0;i < sceneName.size();i++){
     });
 
     auto up = ui::Button::create("sprites/sorting.png","sprites/sorting_pressed.png");
-    up->setPosition(Vec2(origin.x + visibleSize.width/2 - 150,y + 50));
+    up->setPosition(Vec2(origin.x + visibleSize.width/2 - 125,y + 50));
     up->setScale(0.1f);
     listScenes->addChild(up);
+    up->addClickEventListener([=](Object* sender){
+        auto fileUtils = FileUtils::getInstance();
+        auto configSequance = DATAmanager::getInstance()->projectPath + "scenes/scenes.plist";
+        if(!fileUtils->isFileExist(configSequance)){
+            return;
+        }
+        ValueVector sequance = fileUtils->getValueVectorFromFile(configSequance);
+
+        int index = -1;
+        for(int a = 0;a < sequance.size();a++){
+            if(sequance[a].asString() == sceneName[i]){
+                index = a;
+                break;
+            }
+        }
+        if(index > 0){
+            std::swap(sequance[index],sequance[index - 1]);
+            fileUtils->writeValueVectorToFile(sequance,configSequance);
+            auto reload = Scenes::createScene();
+            Director::getInstance()->replaceScene(reload);
+        }
+    });
 
     auto down = ui::Button::create("sprites/sorting.png","sprites/sorting_pressed.png");
     down->setRotation(180);
-    down->setPosition(Vec2(origin.x + visibleSize.width/2 - 150,y - 50));
+    down->setPosition(Vec2(origin.x + visibleSize.width/2 - 125,y - 50));
     down->setScale(0.1f);
     listScenes->addChild(down);
+    down->addClickEventListener([=](Object* sender){
+        auto fileUtils = FileUtils::getInstance();
+        auto configSequance = DATAmanager::getInstance()->projectPath + "scenes/scenes.plist";
+        if(!fileUtils->isFileExist(configSequance)){
+            return;
+        }
+        ValueVector sequance = fileUtils->getValueVectorFromFile(configSequance);
+
+        int index = -1;
+        for(int a = 0;a < sequance.size();a++){
+            if(sequance[a].asString() == sceneName[i]){
+                index = a;
+                break;
+            }
+        }
+        if(index < sequance.size() - 1){
+            std::swap(sequance[index],sequance[index + 1]);
+            fileUtils->writeValueVectorToFile(sequance,configSequance);
+            auto reload = Scenes::createScene();
+            Director::getInstance()->replaceScene(reload);
+        }
+    });
 
     auto next = ui::Button::create("sprites/continue_button.png","sprites/continue_button_pressed.png");
     next->setPosition(Vec2(origin.x + visibleSize.width/2 + 260,y));

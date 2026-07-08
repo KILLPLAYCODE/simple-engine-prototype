@@ -23,9 +23,11 @@ class DATAmanager
     std::string projectName = "";
     std::string sceneName = "";
     std::string objectName = "";
+    std::string soundName = "";
     bool LanguageLoad = false;
     //InsideScene
     uint8_t switcher = 0;
+    int sound_id = 0;
     private:
     DATAmanager() = default;
 };

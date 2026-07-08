@@ -45,9 +45,9 @@ bool CreateProj::init()
     this->addChild(layer,0);
 
     auto back = ui::Button::create("sprites/button_back.png"sv,"sprites/button_back_pressed.png"sv);
-    back->setScale(0.2f);
+    back->setScale(0.25f);
     auto backSize = back->getContentSize();
-    back->setPosition(Vec2(origin.x + visibleSize.width - backSize.width - 50,origin.y + visibleSize.height - backSize.height/8));
+    back->setPosition(Vec2(origin.x + 75,visibleSize.height - 75));
     back->addClickEventListener([=](Object* sender){
         auto nextScene = MainScene::createScene();
         Director::getInstance()->replaceScene(nextScene);
@@ -113,6 +113,24 @@ bool CreateProj::init()
             std::string file = folder + "icon.png";
             Data fileData = fileUtils->getDataFromFile(IconPlaceHolder);
             fileUtils->writeDataToFile(fileData,file);
+            std::string saveSequance = folder + "scenes/scenes.plist";
+            ValueVector sequance;
+            fileUtils->writeValueVectorToFile(sequance,saveSequance);
+
+            saveSequance = folder + "sounds/audio.plist";
+            fileUtils->writeValueVectorToFile(sequance,saveSequance);
+
+            saveSequance = folder + "fonts/fonts.plist";
+            fileUtils->writeValueVectorToFile(sequance,saveSequance);
+
+            saveSequance = folder + "textures/textures.plist";
+            fileUtils->writeValueVectorToFile(sequance,saveSequance);
+
+            std::string savePj = systemPath + "projects/projects.plist";
+            ValueVector pj = fileUtils->getValueVectorFromFile(savePj);
+            pj.push_back(Value(textfieldtxt));
+            fileUtils->writeValueVectorToFile(pj,savePj);
+
             auto nextScene = Scenes::createScene();
             Director::getInstance()->replaceScene(nextScene);
         }

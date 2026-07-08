@@ -39,9 +39,12 @@ import android.os.Bundle;
 import java.io.InputStream;
 import java.io.FileOutputStream;
 import java.io.File;
+import android.provider.OpenableColumns;
+import android.database.Cursor;
 
 public class AppActivity extends AxmolActivity {
     private static final int PICK_IMAGE = 1;
+    private static final int PICK_SOUND = 2;
     private static AppActivity _instance = null;
     static {
         SharedLoader.load();
@@ -75,14 +78,28 @@ public class AppActivity extends AxmolActivity {
             }
         });
     }
+    public static void openAudioFounder(){
+        if(_instance == null){
+            return;
+        }
+        _instance.runOnUiThread(new Runnable(){
+            @Override
+            public void run(){
+                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                intent.setType("audio/*");
+                _instance.startActivityForResult(Intent.createChooser(intent, "Select Audio"), PICK_SOUND);
+            }
+        });
+    }
     @Override
     protected void onActivityResult(int requestCode, int ResultCode, Intent data){
         super.onActivityResult(requestCode,ResultCode,data);
         if(requestCode == PICK_IMAGE && ResultCode == Activity.RESULT_OK && data != null && data.getData() != null){
-            Uri selectedImageUri = data.getData();
+            Uri selectedFileUri = data.getData();
+            String name = getFileName(selectedFileUri);
             try {
-            InputStream inputStream = getContentResolver().openInputStream(selectedImageUri);
-            File temp = new File(getCacheDir(), "icon.png");
+            InputStream inputStream = getContentResolver().openInputStream(selectedFileUri);
+            File temp = new File(getCacheDir(), name);
             if(temp.exists()){
                 temp.delete();
             }
@@ -102,7 +119,56 @@ public class AppActivity extends AxmolActivity {
         } catch (Exception e) {
                 android.util.Log.e("Simple Engine", "Ошибка при обработке картинки: " + e.getMessage());
             }
+        } else if(requestCode == PICK_SOUND && ResultCode == Activity.RESULT_OK && data != null && data.getData() != null){
+            Uri selectedFileUri = data.getData();
+            String name = getFileName(selectedFileUri);
+            try {
+            InputStream inputStream = getContentResolver().openInputStream(selectedFileUri);
+            File temp = new File(getCacheDir(), name);
+            if(temp.exists()){
+                temp.delete();
+            }
+            FileOutputStream outputStream = new FileOutputStream(temp);
+
+            byte[] buffer = new byte[65536];
+            int bytesRead;
+            while((bytesRead = inputStream.read(buffer)) != -1){
+                outputStream.write(buffer, 0, bytesRead);
+            }
+            
+            outputStream.flush();
+            inputStream.close();
+            outputStream.close();
+
+            onSoundSelectedNative(temp.getAbsolutePath(),name);
+        } catch (Exception e) {
+                android.util.Log.e("Simple Engine", "Ошибка при обработке звука: " + e.getMessage());
+            }
         }
     }
-    private native void onImageSelectedNative(String path);
+    private String getFileName(Uri selectedFileUri) {
+            String result = null;
+            if (selectedFileUri.getScheme().equals("content")) {
+                try (Cursor cursor = getContentResolver().query(selectedFileUri, null, null, null, null)) {
+                    if (cursor != null && cursor.moveToFirst()) {
+                        int index = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
+                        if (index != -1) {
+                            result = cursor.getString(index);
+                        }
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            if (result == null) {
+                result = selectedFileUri.getPath();
+                int cut = result.lastIndexOf('/');
+                if (cut != -1) {
+                    result = result.substring(cut + 1);
+                }
+            }
+        return result;
+    }
+    private static native void onImageSelectedNative(String path, String name);
+    private static native void onSoundSelectedNative(String path, String name);
 }

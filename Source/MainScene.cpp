@@ -67,7 +67,7 @@ bool MainScene::init()
     button->setTitleText(text[0]);
     button->setTitleFontName(font);
     button->setTitleFontSize(fontScale);
-    button->setTitleColor(Color3B::BLACK);
+    button->setTitleColor(Color3B(20,20,20));
     button->addClickEventListener([this](Object* sender){
         auto nextScene = CreateProj::createScene();
         Director::getInstance()->replaceScene(nextScene);
@@ -84,7 +84,7 @@ bool MainScene::init()
     button2->setTitleText(text[1]);
     button2->setTitleFontName(font);
     button2->setTitleFontSize(fontScale - 30);
-    button2->setTitleColor(Color3B::BLACK);
+    button2->setTitleColor(Color3B(20,20,20));
     button2->addClickEventListener([this](Object* sender){
         auto nextScene = ListProject::createScene();
         Director::getInstance()->replaceScene(nextScene);

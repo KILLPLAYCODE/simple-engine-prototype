@@ -44,7 +44,7 @@ public:
     bool init() override;
     void update(float delta) override;
     void menuCloseCallback(ax::Object* sender);
-    void onImageImported();
+    void onImported();
 
     CREATE_FUNC(InsideScene);
 

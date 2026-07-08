@@ -7,8 +7,12 @@
 #include "src/DATAmanager.h"
 #include <filesystem>
 #include <map>
+
 #if (AX_TARGET_PLATFORM == AX_PLATFORM_ANDROID)
 #include "platform/android/jni/JniHelper.h"
+#endif
+#if (AX_TARGET_PLATFORM == AX_PLATFORM_WIN32 || AX_TARGET_PLATFORM == AX_PLATFORM_LINUX)
+#include "src/portable-file-dialogs.h"
 #endif
 using namespace ax;
 
@@ -27,16 +31,44 @@ static void problemLoading(const char* filename)
         "ListProject.cpp\n");
 }
 static void openGallery(){
-    DATAmanager::getInstance()->savePath = DATAmanager::getInstance()->projectPath + "icon.png";
+    DATAmanager::getInstance()->savePath = DATAmanager::getInstance()->projectPath;
     #if (AX_TARGET_PLATFORM == AX_PLATFORM_ANDROID)
     JniMethodInfo methodInfo;
     if(JniHelper::getStaticMethodInfo(methodInfo, "dev/prototype/klengine/AppActivity", "openAndroidGallery", "()V")){
         methodInfo.env->CallStaticVoidMethod(methodInfo.classID, methodInfo.methodID);
         methodInfo.env->DeleteLocalRef(methodInfo.classID);
     }
+    #elif (AX_TARGET_PLATFORM == AX_PLATFORM_LINUX || AX_TARGET_PLATFORM == AX_PLATFORM_WIN32)
+    auto select = pfd::open_file(
+        "Select image",
+        "",
+        {"Image (*.png *.jpg *.jpeg)", "*.png *.jpg *.jpeg"},
+        pfd::opt::none
+    );
+    if(!select.result().empty()){
+        std::string fullPath = select.result()[0];
+        auto fileUtils = FileUtils::getInstance();
+        Data fileData = fileUtils->getDataFromFile(fullPath);
+        auto spritesPath = DATAmanager::getInstance()->savePath + "icon.png";
+        if(!fileData.isNull()){
+            fileUtils->writeDataToFile(fileData,spritesPath);
+            auto reload = ListProject::createScene();
+            Director::getInstance()->replaceScene(reload);
+        }
+    } else {
+        auto reload = ListProject::createScene();
+        Director::getInstance()->replaceScene(reload);
+    }
     #endif
 }
-void ListProject::onImageImported(){
+void ListProject::onImported(std::string cacheName){
+    auto fileUtils = FileUtils::getInstance();
+    auto cachePath = DATAmanager::getInstance()->projectPath + cacheName;
+    auto cacheTruePath = DATAmanager::getInstance()->projectPath + "icon.png";
+    Data cacheData = fileUtils->getDataFromFile(cachePath);
+    fileUtils->writeDataToFile(cacheData,cacheTruePath);
+    fileUtils->removeFile(cachePath);
+
     auto reload = ListProject::createScene();
     Director::getInstance()->replaceScene(reload);
 }
@@ -58,6 +90,14 @@ bool ListProject::init()
     std::string titleF = DATAmanager::getInstance()->titleFont;
     //std::string marker = DATAmanager::getInstance()->markerFont;
     DATAmanager::getInstance()->projectPath = "";
+
+    std::vector<std::string> folderNames;
+    auto fileUtils = FileUtils::getInstance();
+    std::string projectConfig = DATAmanager::getInstance()->projectsFolder + "projects.plist";
+    ValueVector projectSequance = fileUtils->getValueVectorFromFile(projectConfig);
+    for(const auto& value : projectSequance){
+        folderNames.push_back(value.asString());
+    }
 
     Color3B bgColor(135, 206, 235);
     auto layer = LayerColor::create(Color4B(bgColor),visibleSize.width,visibleSize.height);
@@ -147,6 +187,7 @@ bool ListProject::init()
         projectNameLabel->setVisible(false);
         auto oldName = DATAmanager::getInstance()->projectName;
         auto newName = std::string(nameProject->getString());
+        std::string sequancePath = DATAmanager::getInstance()->projectsFolder + "projects.plist";
         if(oldName == newName){
             return;
         }
@@ -156,6 +197,16 @@ bool ListProject::init()
         auto oldPath = DATAmanager::getInstance()->projectsFolder + oldName;
         auto newPath = DATAmanager::getInstance()->projectsFolder + newName;
         fileUtils->renameFile(oldPath,newPath);
+        ValueVector renameSequance = fileUtils->getValueVectorFromFile(sequancePath);
+
+        for(int i = 0; i < renameSequance.size(); i++){
+        if(renameSequance[i].asString() == oldName){
+            renameSequance[i] = Value(newName);
+            break;
+        }
+    }
+        fileUtils->writeValueVectorToFile(renameSequance,sequancePath);
+
         auto reload = ListProject::createScene();
         Director::getInstance()->replaceScene(reload);
     });
@@ -164,6 +215,16 @@ bool ListProject::init()
         auto fileUtils = FileUtils::getInstance();
         auto projectPlace = DATAmanager::getInstance()->projectsFolder + DATAmanager::getInstance()->projectName;
         fileUtils->removeDirectory(projectPlace);
+        auto projectConfig = DATAmanager::getInstance()->projectsFolder + "projects.plist";
+        ValueVector projects = fileUtils->getValueVectorFromFile(projectConfig);
+        for(auto it = projects.begin(); it != projects.end(); ++it){
+            if(it->asString() == DATAmanager::getInstance()->projectName){
+                projects.erase(it);
+                break;
+            }
+        }
+        fileUtils->writeValueVectorToFile(projects,projectConfig);
+
         auto reload = ListProject::createScene();
         Director::getInstance()->replaceScene(reload);
     });
@@ -171,7 +232,7 @@ bool ListProject::init()
     auto back = ui::Button::create("sprites/button_back.png"sv,"sprites/button_back_pressed.png"sv);
     back->setScale(0.2f);
     auto backSize = back->getContentSize();
-    back->setPosition(Vec2(origin.x + 75,visibleSize.height - 75));
+    back->setPosition(Vec2(origin.x + 50,visibleSize.height - 50));
     back->addClickEventListener([=](Object* sender){
         auto nextScene = MainScene::createScene();
         Director::getInstance()->replaceScene(nextScene);
@@ -179,7 +240,7 @@ bool ListProject::init()
     this->addChild(back, 25);
 
     auto label = Label::createWithTTF(text[1],"fonts/arial.ttf", 66);
-    label->setPosition(Vec2(origin.x + visibleSize.width/2 + 50,visibleSize.height - 100));
+    label->setPosition(Vec2(origin.x + visibleSize.width/2,visibleSize.height - 100));
     this->addChild(label, 21);
 
     auto scrollGroup = ui::ScrollView::create();
@@ -189,17 +250,8 @@ bool ListProject::init()
     scrollGroup->setBounceEnabled(true);
     this->addChild(scrollGroup);
 
-    std::vector<std::string> folderNames;
     std::string systemPath = DATAmanager::getInstance()->projectsFolder;
-try{
-    for(const auto& entry : std::filesystem::directory_iterator(systemPath)){
-        if(entry.is_directory()){
-            folderNames.push_back(entry.path().filename().string());
-        }
-    }
-} catch (const std::filesystem::filesystem_error& e) {
-    AXLOGE("file system error: {}", e.what());
-}
+
     float folderHeight = 232.0f;
     float totalHeight = folderHeight * folderNames.size();
     if(totalHeight < visibleSize.height - 150){
@@ -248,6 +300,21 @@ try{
             auto pjPath = systemPath + "projects/" + folderNames[i] + "/";
             DATAmanager::getInstance()->projectPath = pjPath;
             DATAmanager::getInstance()->projectName = folderNames[i];
+            std::string configPj = systemPath + "projects/projects.plist";
+            ValueVector pj = fileUtils->getValueVectorFromFile(configPj);
+            int index = -1;
+            for(int a = 0;a < pj.size();a++){
+                if(pj[a].asString() == folderNames[i]){
+                    index = a;
+                    break;
+                }
+            }
+
+            if(index > 0){
+            std::swap(pj[index],pj[0]);
+            fileUtils->writeValueVectorToFile(pj,configPj);
+            }
+
             auto nextScene = Scenes::createScene();
             Director::getInstance()->replaceScene(nextScene);
         });
@@ -343,11 +410,12 @@ void ListProject::menuCloseCallback(ax::Object* sender)
 
 #if (AX_TARGET_PLATFORM == AX_PLATFORM_ANDROID)
 extern "C" {
-    JNIEXPORT void JNICALL Java_dev_prototype_klengine_AppActivity_onImageSelectedNative(JNIEnv* env, jobject thiz, jstring path) {
+    JNIEXPORT void JNICALL Java_dev_prototype_klengine_AppActivity_onImageSelectedNative(JNIEnv* env, jobject thiz, jstring path, jstring name) {
         std::string cacheImagePath = JniHelper::jstring2string(path);
-        Director::getInstance()->getScheduler()->performFunctionInCocosThread([cacheImagePath](){
+        std::string cacheName = JniHelper::jstring2string(name);
+        Director::getInstance()->getScheduler()->performFunctionInCocosThread([cacheImagePath,cacheName](){
             auto fileUtils = FileUtils::getInstance();
-            std::string filePath = DATAmanager::getInstance()->savePath;
+            std::string filePath = DATAmanager::getInstance()->savePath + cacheName;
             Data fileData = fileUtils->getDataFromFile(cacheImagePath);
             auto currentScene = Director::getInstance()->getRunningScene();
             if(!fileData.isNull()){
@@ -356,10 +424,34 @@ extern "C" {
                 Director::getInstance()->getTextureCache()->removeTextureForKey(filePath);
                 if (currentScene) {
             if (auto insideScene = dynamic_cast<InsideScene*>(currentScene)) {
-                insideScene->onImageImported(); 
+                insideScene->onImported(cacheName); 
             }
             else if (auto listProject = dynamic_cast<ListProject*>(currentScene)) {
-                listProject->onImageImported();
+                listProject->onImported();
+            }
+            }
+            }
+        });
+    }
+}
+#endif
+
+#if (AX_TARGET_PLATFORM == AX_PLATFORM_ANDROID)
+extern "C" {
+    JNIEXPORT void JNICALL Java_dev_prototype_klengine_AppActivity_onSoundSelectedNative(JNIEnv* env, jobject thiz, jstring path, jstring name) {
+        std::string cacheSoundPath = JniHelper::jstring2string(path);
+        std::string cacheName = JniHelper::jstring2string(name);
+        Director::getInstance()->getScheduler()->performFunctionInCocosThread([cacheSoundPath, cacheName](){
+            auto fileUtils = FileUtils::getInstance();
+            std::string filePath = DATAmanager::getInstance()->savePath + cacheName;
+            Data fileData = fileUtils->getDataFromFile(cacheSoundPath);
+            auto currentScene = Director::getInstance()->getRunningScene();
+            if(!fileData.isNull()){
+                fileUtils->writeDataToFile(fileData,filePath);
+                fileUtils->removeFile(cacheSoundPath);
+                if (currentScene) {
+            if (auto insideScene = dynamic_cast<InsideScene*>(currentScene)) {
+                insideScene->onImported(); 
             }
             }
             }
