@@ -56,9 +56,9 @@ bool Settings::init()
     list->addChild(labelanguage, 20);
 
     auto back = ui::Button::create("sprites/button_back.png"sv,"sprites/button_back_pressed.png"sv);
-    back->setScale(0.2f);
+    back->setScale(0.25f);
     auto backSize = back->getContentSize();
-    back->setPosition(Vec2(origin.x + visibleSize.width - backSize.width - 50,origin.y + visibleSize.height - backSize.height/8));
+    back->setPosition(Vec2(origin.x + 75,visibleSize.height - 75));
     back->addClickEventListener([=](Object* sender){
         auto nextScene = MainScene::createScene();
         Director::getInstance()->replaceScene(nextScene);
@@ -119,68 +119,6 @@ bool Settings::init()
     scheduleUpdate();
 
     return true;
-}
-
-void Settings::onTouchesBegan(const std::vector<ax::Touch*>& touches, ax::Event* event)
-{
-    for (auto&& t : touches)
-    {
-        // AXLOGD("onTouchesBegan detected, X:{}  Y:{}", t->getLocation().x, t->getLocation().y);
-    }
-}
-
-void Settings::onTouchesMoved(const std::vector<ax::Touch*>& touches, ax::Event* event)
-{
-    for (auto&& t : touches)
-    {
-        // AXLOGD("onTouchesMoved detected, X:{}  Y:{}", t->getLocation().x, t->getLocation().y);
-    }
-}
-
-void Settings::onTouchesEnded(const std::vector<ax::Touch*>& touches, ax::Event* event)
-{
-    for (auto&& t : touches)
-    {
-        // AXLOGD("onTouchesEnded detected, X:{}  Y:{}", t->getLocation().x, t->getLocation().y);
-    }
-}
-
-bool Settings::onMouseDown(Event* event)
-{
-    EventMouse* e = static_cast<EventMouse*>(event);
-    // AXLOGD("onMouseDown detected, button: {}", static_cast<int>(e->getMouseButton()));
-    return true;
-}
-
-bool Settings::onMouseUp(Event* event)
-{
-    EventMouse* e = static_cast<EventMouse*>(event);
-    AXLOGD("onMouseUp detected, button: {}", static_cast<int>(e->getMouseButton()));
-    return true;
-}
-
-bool Settings::onMouseMove(Event* event)
-{
-    EventMouse* e = static_cast<EventMouse*>(event);
-    // AXLOGD("onMouseMove detected, X:{}  Y:{}", e->getLocation().x, e->getLocation().y);
-    return true;
-}
-
-bool Settings::onMouseScroll(Event* event)
-{
-    EventMouse* e = static_cast<EventMouse*>(event);
-    // AXLOGD("onMouseScroll detected, X:{}  Y:{}", e->getScrollX(), e->getScrollY());
-    return true;
-}
-
-void SettingsKeyPressed(EventKeyboard::KeyCode code, Event* event)
-{
-    AXLOGD("Scene: #{} onKeyPressed, keycode: {}", _sceneID, static_cast<int>(code));
-}
-
-void Settings::onKeyReleased(EventKeyboard::KeyCode code, Event* event)
-{
-    AXLOGD("onKeyReleased, keycode: {}", static_cast<int>(code));
 }
 
 void Settings::update(float delta)

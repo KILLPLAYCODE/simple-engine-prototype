@@ -4,6 +4,7 @@
 #include "axmol.h"
 #include "Scenes.h"
 #include "MainScene.h"
+#include "InsideScene.h"
 #include "src/DATAmanager.h"
 #include <filesystem>
 #include <map>
@@ -421,12 +422,18 @@ extern "C" {
             if(!fileData.isNull()){
                 fileUtils->writeDataToFile(fileData,filePath);
                 fileUtils->removeFile(cacheImagePath);
-                Director::getInstance()->getTextureCache()->removeTextureForKey(filePath);
                 if (currentScene) {
             if (auto insideScene = dynamic_cast<InsideScene*>(currentScene)) {
+                Director::getInstance()->getTextureCache()->removeTextureForKey(filePath);
+                auto clothesConfig = DATAmanager::getInstance()->savePath + "clothes.plist";
+                ValueVector clothesCF = fileUtils->getValueVectorFromFile(clothesConfig);
+                clothesCF.push_back(Value(cacheName));
+                fileUtils->writeValueVectorToFile(clothesCF,clothesConfig);
                 insideScene->onImported(cacheName); 
             }
             else if (auto listProject = dynamic_cast<ListProject*>(currentScene)) {
+                std::string truePath = DATAmanager::getInstance()->savePath + "icon.png";
+                Director::getInstance()->getTextureCache()->removeTextureForKey(truePath);
                 listProject->onImported();
             }
             }
@@ -451,6 +458,10 @@ extern "C" {
                 fileUtils->removeFile(cacheSoundPath);
                 if (currentScene) {
             if (auto insideScene = dynamic_cast<InsideScene*>(currentScene)) {
+                auto soundsConfig = DATAmanager::getInstance()->savePath + "audio.plist";
+                ValueVector soundsCF = fileUtils->getValueVectorFromFile(soundsConfig);
+                soundsCF.push_back(Value(fileName));
+                fileUtils->writeValueVectorToFile(soundsCF,soundsConfig);
                 insideScene->onImported(); 
             }
             }

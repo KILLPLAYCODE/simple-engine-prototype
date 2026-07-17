@@ -27,8 +27,8 @@ void loadEnglish(){
     enText[4] = "Language:";
     enText[5] = "Scene name:";
     enText[6] = "Scene name...";
-    enText[7] = "Cancel";
-    enText[8] = "Delete";
+    enText[7] = "CANCEL";
+    enText[8] = "DELETE";
     enText[9] = "OBJECT NAME";
     enText[10] = "Object name...";
 
