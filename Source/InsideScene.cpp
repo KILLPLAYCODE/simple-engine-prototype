@@ -853,16 +853,16 @@ bool InsideScene::init()
                 auto settings = ui::Button::create("sprites/settings_button.png","sprites/settings_button.png");
                 settings->setPosition(Vec2(origin.x + visibleSize.width/2 + 180,y));
                 settings->setScale(0.1f);
-                //listObjects->addChild(settings);
+                listObjects->addChild(settings);
                 settings->addClickEventListener([=](Object* sender){
                     frontWindow->setVisible(true);
                     backLayer->setVisible(true);
                     deleteObject->setVisible(true);
                     deleteLabel->setVisible(true);
-                    buttonTextField->setVisible(true);
-                    nameObject->setVisible(true);
-                    objectNameLabel->setVisible(true);
-                    nameObject->setString(soundsName[i]);            
+                    //buttonTextField->setVisible(true);
+                    //nameObject->setVisible(true);
+                    //objectNameLabel->setVisible(true);
+                    //nameObject->setString(soundsName[i]);            
                     DATAmanager::getInstance()->soundName = soundsName[i];
                 });
 
@@ -1675,16 +1675,16 @@ bool InsideScene::init()
                 auto settings = ui::Button::create("sprites/settings_button.png","sprites/settings_button.png");
                 settings->setPosition(Vec2(origin.x + visibleSize.width/2 + 180,y));
                 settings->setScale(0.1f);
-                //listObjects->addChild(settings);
+                listObjects->addChild(settings);
                 settings->addClickEventListener([=](Object* sender){
                     frontWindow->setVisible(true);
                     backLayer->setVisible(true);
                     deleteObject->setVisible(true);
                     deleteLabel->setVisible(true);
-                    buttonTextField->setVisible(true);
-                    nameObject->setVisible(true);
-                    objectNameLabel->setVisible(true);
-                    nameObject->setString(soundsName[i]);            
+                    //buttonTextField->setVisible(true);
+                    //nameObject->setVisible(true);
+                    //objectNameLabel->setVisible(true);
+                    //nameObject->setString(soundsName[i]);            
                     DATAmanager::getInstance()->soundName = soundsName[i];
                 });
 
