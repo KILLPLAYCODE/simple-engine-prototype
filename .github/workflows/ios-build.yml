@@ -11,37 +11,46 @@ jobs:
     runs-on: macos-latest
 
     steps:
+    # 1. Скачиваем вашу игру из вашего репозитория
     - name: Checkout repository
       uses: actions/checkout@v4
       with:
         submodules: recursive
 
+    # 2. Клонируем сам движок во вложенную папку engine
     - name: Clone Axmol Engine
       run: |
-        git clone --depth 1 https://github.com/axmolengine/axmol.git axmol
+        git clone --depth 1 https://github.com/axmolengine/axmol.git engine
 
+    # 3. Настраиваем Python
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
         python-version: '3.10'
 
+    # 4. Устанавливаем CMake и Ninja
     - name: Install Build Tools
       run: |
         brew install cmake ninja
 
+    # 5. Инициализируем движок внутри его рабочей папки
     - name: Setup Axmol Engine
+      working-directory: ./engine
       run: |
-        cd axmol
         python setup.py --force
+        # Передаем глобальные пути для Actions, чтобы команда axmol была доступна везде
         echo "$HOME/.axmol/bin" >> $GITHUB_PATH
         echo "/Users/runner/.axmol/bin" >> $GITHUB_PATH
 
+    # 6. Генерируем проект и запускаем компиляцию игры под iOS из корня репозитория
     - name: Build iOS Application
       run: |
-        axmol build -p ios -a arm64 -config Release
+        # Используем полный путь к консольной утилите axmol
+        $HOME/.axmol/bin/axmol build -p ios -a arm64 -config Release
 
+    # 7. Архивация результата (замените YourProjectName на имя папки проекта)
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
       with:
         name: ios-build-release
-        path: build_ios_arm64/bin/Release/Simple_Engine.app
+        path: build_ios_arm64/bin/Release/YourProjectName.app
