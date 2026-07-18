@@ -1,6 +1,5 @@
 name: iOS Build
 
-# Сборка будет запускаться автоматически при каждом пуше в ветку main
 on:
   push:
     branches: [ main ]
@@ -11,7 +10,7 @@ jobs:
   build-ios:
     runs-on: macos-latest
 
-        steps:
+    steps:
     - name: Checkout repository
       uses: actions/checkout@v4
       with:
@@ -34,20 +33,15 @@ jobs:
       run: |
         cd axmol
         python setup.py --force
-        # Добавляем утилиты Axmol в системный путь PATH сервера, чтобы команда 'axmol' работала глобально
         echo "$HOME/.axmol/bin" >> $GITHUB_PATH
         echo "/Users/runner/.axmol/bin" >> $GITHUB_PATH
 
     - name: Build iOS Application
       run: |
-        # Запускаем сборку из корневой папки вашей игры
         axmol build -p ios -a arm64 -config Release
-
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
       with:
         name: ios-build-release
-
-        path: build_ios_arm64/bin/Release/YourProjectName.app
-
+        path: build_ios_arm64/bin/Release/Simple_Engine.app
