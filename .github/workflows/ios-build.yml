@@ -38,7 +38,7 @@ jobs:
       run: |
         cd project
         
-        build -p ios -a arm64 -config Release --engine-dir ../engine
+        axmol build -p ios -a arm64 -config Release --engine-dir ../engine
         
         cd build_ios_arm64
         
