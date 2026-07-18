@@ -44,7 +44,7 @@ void IOSBridge::importMediaFile(std::string type) {
     NSArray<UTType *> *types = @[];
     if([objectType isEqualToString:@"audio"]){
         types = @[UTTypeAudio];
-    } else if(objectType isEqualToString:@"image"){
+    } else if([objectType isEqualToString:@"image"]){
         types = @[UTTypeImage];
     } else {
         types = @[UTTypeAudio, UTTypeImage];
