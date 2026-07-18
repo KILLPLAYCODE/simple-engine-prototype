@@ -13,7 +13,7 @@ class DATAmanager
 
     std::map<int,std::string> translater;
 
-    std::string language = "ru";
+    std::string language = "en";
     std::string buttonFont = "";
     std::string titleFont = "";
     //std::string markerFont = "";

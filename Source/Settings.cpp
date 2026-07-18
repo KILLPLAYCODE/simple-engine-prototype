@@ -60,6 +60,9 @@ bool Settings::init()
     auto backSize = back->getContentSize();
     back->setPosition(Vec2(origin.x + 75,visibleSize.height - 75));
     back->addClickEventListener([=](Object* sender){
+        auto fileUtils = FileUtils::getInstance();
+        std::string languageConfig = fileUtils->getWritablePath() + "language.cf";
+        fileUtils->writeStringToFile(DATAmanager::getInstance()->language,languageConfig);
         auto nextScene = MainScene::createScene();
         Director::getInstance()->replaceScene(nextScene);
     });

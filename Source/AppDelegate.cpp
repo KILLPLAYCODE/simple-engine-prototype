@@ -37,7 +37,7 @@ bool AppDelegate::applicationDidFinishLaunching()
 #if (AX_TARGET_PLATFORM == AX_PLATFORM_WIN32) || (AX_TARGET_PLATFORM == AX_PLATFORM_MAC) || \
     (AX_TARGET_PLATFORM == AX_PLATFORM_LINUX)
         renderView = RenderViewImpl::createWithRect(
-            "simple_prototype", ax::Rect(0, 0, 420, 700));
+            "simple_prototype", ax::Rect(0, 0, 360, 640));
 #else
         renderView = RenderViewImpl::create("simple_prototype");
 #endif

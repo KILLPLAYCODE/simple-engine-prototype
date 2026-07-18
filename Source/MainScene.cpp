@@ -42,8 +42,18 @@ bool MainScene::init()
     layer->setPosition(Vec2::ZERO);
     this->addChild(layer,0);
 
-    std::string l = DATAmanager::getInstance()->language;
+
+    auto fileUtils = FileUtils::getInstance();
+    std::string languageConfig = fileUtils->getWritablePath() + "language.cf";
+    if(fileUtils->isFileExist(languageConfig)){
+        DATAmanager::getInstance()->language = fileUtils->getStringFromFile(languageConfig);
+    } else {
+        std::string l = DATAmanager::getInstance()->language;
+        fileUtils->writeStringToFile(l,languageConfig);
+    }
+
     bool read = DATAmanager::getInstance()->LanguageLoad;
+    std::string l = DATAmanager::getInstance()->language;
     if(!read){
         LANGUAGE::changeLanguage(l);
         DATAmanager::getInstance()->LanguageLoad = true;
@@ -90,15 +100,14 @@ bool MainScene::init()
         Director::getInstance()->replaceScene(nextScene);
     });
     auto settings = ui::Button::create("sprites/settings.png","sprites/settings_pressed.png");
-    settings->setPosition(Vec2(origin.x + visibleSize.width/2 + 275,origin.y + 100));
-    settings->setScale(0.3f);
+    settings->setPosition(Vec2(visibleSize.width - 55,origin.y + 55));
+    settings->setScale(0.2f);
     this->addChild(settings,8);
     settings->addClickEventListener([this](Object* sender){
         auto nextScene = Settings::createScene();
         Director::getInstance()->replaceScene(nextScene);
     });
 
-    auto fileUtils = FileUtils::getInstance();
     std::string systemPath = fileUtils->getWritablePath() + "projects/";
     DATAmanager::getInstance()->projectsFolder = systemPath;
 

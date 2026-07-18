@@ -429,12 +429,12 @@ extern "C" {
                 ValueVector clothesCF = fileUtils->getValueVectorFromFile(clothesConfig);
                 clothesCF.push_back(Value(cacheName));
                 fileUtils->writeValueVectorToFile(clothesCF,clothesConfig);
-                insideScene->onImported(cacheName); 
+                insideScene->onImported(); 
             }
             else if (auto listProject = dynamic_cast<ListProject*>(currentScene)) {
                 std::string truePath = DATAmanager::getInstance()->savePath + "icon.png";
                 Director::getInstance()->getTextureCache()->removeTextureForKey(truePath);
-                listProject->onImported();
+                listProject->onImported(cacheName);
             }
             }
             }
@@ -460,7 +460,7 @@ extern "C" {
             if (auto insideScene = dynamic_cast<InsideScene*>(currentScene)) {
                 auto soundsConfig = DATAmanager::getInstance()->savePath + "audio.plist";
                 ValueVector soundsCF = fileUtils->getValueVectorFromFile(soundsConfig);
-                soundsCF.push_back(Value(fileName));
+                soundsCF.push_back(Value(cacheName));
                 fileUtils->writeValueVectorToFile(soundsCF,soundsConfig);
                 insideScene->onImported(); 
             }

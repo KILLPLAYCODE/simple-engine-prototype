@@ -115,7 +115,7 @@ public class AppActivity extends AxmolActivity {
             inputStream.close();
             outputStream.close();
 
-            onImageSelectedNative(temp.getAbsolutePath());
+            onImageSelectedNative(temp.getAbsolutePath(),name);
         } catch (Exception e) {
                 android.util.Log.e("Simple Engine", "Ошибка при обработке картинки: " + e.getMessage());
             }

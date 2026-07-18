@@ -23,6 +23,8 @@ void DrawCursor(Label* line,int selectedChar){
     float cursorX = 0;
     float cursorY = 40;
     int totalSymbol = line->getStringLength();
+    //std::cout<<"Total: "<<totalSymbol<<std::endl;
+    //std::cout<<"Chosen: "<<selectedChar<<std::endl;
     if(totalSymbol > 0){
         if(selectedChar < totalSymbol){
             auto letter = line->getLetter(selectedChar);
@@ -49,16 +51,13 @@ void DrawCursor(Label* line,int selectedChar){
             } else {
                 auto dis = line->getLetter(totalSymbol - 1);
                 if(dis != nullptr){
-                    if(!rightMode){
-                        cursorX = dis->getPositionX() - dis->getContentSize().width/2;
-                    } else {
-                        cursorX = dis->getPositionX() + dis->getContentSize().width/2;
-                    }
+                    cursorX = dis->getPositionX() + dis->getContentSize().width/2;
                 }
             }
         }
     }
     cursorDraw->drawSegment(Vec2(cursorX, cursorY + 30), Vec2(cursorX, cursorY - 30), 6.5f, Color4F::BLUE);
+    cursorDraw->setTag(70921);
     line->addChild(cursorDraw);
 
     cursorDraw->setOpacity(255);
@@ -81,7 +80,11 @@ void typeSymbol(std::string input,std::vector<std::string>& code,ui::ScrollView*
         auto lineLabel = dynamic_cast<Label*>(codeList->getChildByTag(selectedLine));
         if(lineLabel != nullptr){
         lineLabel->setString(code[selectedLine]);
-        DrawCursor(lineLabel,DATAmanager::getInstance()->selectedChar);
+        auto cursor = dynamic_cast<DrawNode*>(lineLabel->getChildByTag(70921));
+        if(cursor != nullptr){
+            auto pos = cursor->getPositionX();
+            cursor->setPositionX(pos + 25);
+        }
         return;
     }
 }
@@ -94,7 +97,17 @@ void typeSymbol(std::string input,std::vector<std::string>& code,ui::ScrollView*
             auto lineLabel = dynamic_cast<Label*>(codeList->getChildByTag(selectedLine));
             auto letter = lineLabel->getLetter(selectedSymbol);
             lineLabel->setString(code[selectedLine]);
-            DrawCursor(lineLabel,DATAmanager::getInstance()->selectedChar);
+            auto cursor = dynamic_cast<DrawNode*>(lineLabel->getChildByTag(70921));
+            if(cursor != nullptr){
+                if(letter != nullptr){
+                    auto letW = letter->getContentSize().width;
+                    auto pos = cursor->getPositionX();
+                    cursor->setPositionX(pos - letW);
+                } else {
+                    auto pos = cursor->getPositionX();
+                    cursor->setPositionX(pos - 25);  
+                }    
+            }
             } else if(selectedLine > 0){
                 int neighborLine = selectedLine - 1;
                 int updateSymbol = code[neighborLine].length();
@@ -189,8 +202,8 @@ bool InsideObject::init()
     codeList->setDirection(ui::ScrollView::Direction::BOTH);
     codeList->setScrollBarEnabled(true);
     this->addChild(codeList);
-    float distance = 50;
-    float total = distance * code.size();
+    float distance = 90;
+    float total = distance * 1.2f * code.size();
     if(total < visibleSize.height){
         total = visibleSize.height;
     }
@@ -212,8 +225,7 @@ bool InsideObject::init()
     }
     std::string fullCode = fileUtils->getStringFromFile(codePath);
     auto containerSizer = Label::createWithBMFont("fonts/classic.fnt",fullCode);
-    containerSizer->setScale(0.8f);
-    auto totalw = containerSizer->getContentSize().width + 100;
+    auto totalw = (containerSizer->getContentSize().width * 1.2f) + 150;
     if(totalw < visibleSize.width){
         totalw = visibleSize.width;
     }
@@ -222,11 +234,11 @@ bool InsideObject::init()
     for(int i = 0;i < code.size(); i++){
         auto keyTouchListener = EventListenerTouchOneByOne::create();
         keyTouchListener->setSwallowTouches(true);
-        float y = total - (75 * i) - 150;
+        float y = total - (90 * i) - 150;
         auto line = Label::createWithBMFont("fonts/classic.fnt",code[i]);
         line->setAnchorPoint(Vec2::ZERO);
         line->setPosition(Vec2(100,y));
-        line->setScale(0.8f);
+        line->setScale(1.2f);
         line->setTextColor(Color4B(255,255,255,255));
         line->setTag(i);
         codeList->addChild(line);
@@ -302,7 +314,7 @@ bool InsideObject::init()
         float x = 72 * i;
         std::string numString(1, numbers[i]);
         auto num = ui::Button::create("sprites/keyboard_button.png","sprites/keyboard_button_pressed.png");
-        num->setPosition(Vec2(36 + x,origin.y + 385));
+        num->setPosition(Vec2(36 + x,origin.y + 470));
         num->setScale(0.12f);
         num->setTag(1000 + i);
         this->addChild(num);
@@ -311,13 +323,13 @@ bool InsideObject::init()
         });
 
         auto numLabel = Label::createWithTTF(numString,"fonts/arial.ttf",35);
-        numLabel->setPosition(Vec2(38 + x,origin.y + 385));
+        numLabel->setPosition(Vec2(38 + x,origin.y + 470));
         numLabel->setTag(1010 + i);
         this->addChild(numLabel);
 
         std::string numString1(1,specialKeys[i]);
         auto num1 = ui::Button::create("sprites/keyboard_button.png","sprites/keyboard_button_pressed.png");
-        num1->setPosition(Vec2(36 + x,origin.y + 385));
+        num1->setPosition(Vec2(36 + x,origin.y + 470));
         num1->setVisible(false);
         num1->setScale(0.12f);
         num1->setTag(100 + i);
@@ -328,7 +340,7 @@ bool InsideObject::init()
 
         auto numLabel1 = Label::createWithTTF(numString1,"fonts/arial.ttf",35);
         numLabel1->setVisible(false);
-        numLabel1->setPosition(Vec2(38 + x,origin.y + 385));
+        numLabel1->setPosition(Vec2(38 + x,origin.y + 470));
         numLabel1->setTag(110 + i);
         this->addChild(numLabel1);
     }
@@ -336,7 +348,7 @@ bool InsideObject::init()
         float x = 72 * i;
         std::string keyString(1,keys[i]);
         auto key = ui::Button::create("sprites/keyboard_button.png","sprites/keyboard_button_pressed.png");
-        key->setPosition(Vec2(36 + x,origin.y + 300));
+        key->setPosition(Vec2(36 + x,origin.y + 385));
         key->setScale(0.12f);
         key->setTag(1020 + i);
         this->addChild(key);
@@ -345,14 +357,14 @@ bool InsideObject::init()
         });
 
         auto keyNum = Label::createWithTTF(keyString,"fonts/arial.ttf",35);
-        keyNum->setPosition(Vec2(38 + x,origin.y + 300));
+        keyNum->setPosition(Vec2(38 + x,origin.y + 385));
         keyNum->setTag(1030 + i);
         this->addChild(keyNum);
 
         std::string numString1(1,bigSymbols[i]);
         auto num1 = ui::Button::create("sprites/keyboard_button.png","sprites/keyboard_button_pressed.png");
         num1->setVisible(false);
-        num1->setPosition(Vec2(36 + x,origin.y + 300));
+        num1->setPosition(Vec2(36 + x,origin.y + 385));
         num1->setScale(0.12f);
         num1->setTag(120 + i);
         this->addChild(num1);
@@ -362,7 +374,7 @@ bool InsideObject::init()
 
         auto numLabel1 = Label::createWithTTF(numString1,"fonts/arial.ttf",35);
         numLabel1->setVisible(false);
-        numLabel1->setPosition(Vec2(38 + x,origin.y + 300));
+        numLabel1->setPosition(Vec2(38 + x,origin.y + 385));
         numLabel1->setTag(130 + i);
         this->addChild(numLabel1);
     }
@@ -371,7 +383,7 @@ bool InsideObject::init()
         int keyValue = 10 + i;
         std::string keyString(1,keys[keyValue]);
         auto key = ui::Button::create("sprites/keyboard_button.png","sprites/keyboard_button_pressed.png");
-        key->setPosition(Vec2(68 + x,origin.y + 215));
+        key->setPosition(Vec2(68 + x,origin.y + 300));
         key->setScale(0.12f);
         key->setTag(1040 + i);
         this->addChild(key);
@@ -380,14 +392,14 @@ bool InsideObject::init()
         });
 
         auto keyNum = Label::createWithTTF(keyString,"fonts/arial.ttf",35);
-        keyNum->setPosition(Vec2(68 + x,origin.y + 215));
+        keyNum->setPosition(Vec2(68 + x,origin.y + 300));
         keyNum->setTag(1050 + i);
         this->addChild(keyNum);
 
         std::string numString1(1,bigSymbols[keyValue]);
         auto num1 = ui::Button::create("sprites/keyboard_button.png","sprites/keyboard_button_pressed.png");
         num1->setVisible(false);
-        num1->setPosition(Vec2(68 + x,origin.y + 215));
+        num1->setPosition(Vec2(68 + x,origin.y + 300));
         num1->setScale(0.12f);
         num1->setTag(140 + i);
         this->addChild(num1);
@@ -397,7 +409,7 @@ bool InsideObject::init()
 
         auto numLabel1 = Label::createWithTTF(numString1,"fonts/arial.ttf",35);
         numLabel1->setVisible(false);
-        numLabel1->setPosition(Vec2(68 + x,origin.y + 215));
+        numLabel1->setPosition(Vec2(68 + x,origin.y + 300));
         numLabel1->setTag(150 + i);
         this->addChild(numLabel1);
     }
@@ -406,7 +418,7 @@ bool InsideObject::init()
         int keyValue = 19 + i;
         std::string keyString(1,keys[keyValue]);
         auto key = ui::Button::create("sprites/keyboard_button.png","sprites/keyboard_button_pressed.png");
-        key->setPosition(Vec2(140 + x,origin.y + 130));
+        key->setPosition(Vec2(140 + x,origin.y + 215));
         key->setScale(0.12f);
         key->setTag(1060 + i);
         this->addChild(key);
@@ -415,14 +427,14 @@ bool InsideObject::init()
         });
 
         auto keyNum = Label::createWithTTF(keyString,"fonts/arial.ttf",35);
-        keyNum->setPosition(Vec2(140 + x,origin.y + 130));
+        keyNum->setPosition(Vec2(140 + x,origin.y + 215));
         keyNum->setTag(1070 + i);
         this->addChild(keyNum);
 
         std::string numString1(1,bigSymbols[keyValue]);
         auto num1 = ui::Button::create("sprites/keyboard_button.png","sprites/keyboard_button_pressed.png");
         num1->setVisible(false);
-        num1->setPosition(Vec2(140 + x,origin.y + 130));
+        num1->setPosition(Vec2(140 + x,origin.y + 215));
         num1->setScale(0.12f);
         num1->setTag(160 + i);
         this->addChild(num1);
@@ -432,13 +444,13 @@ bool InsideObject::init()
 
         auto numLabel1 = Label::createWithTTF(numString1,"fonts/arial.ttf",35);
         numLabel1->setVisible(false);
-        numLabel1->setPosition(Vec2(140 + x,origin.y + 130));
+        numLabel1->setPosition(Vec2(140 + x,origin.y + 215));
         numLabel1->setTag(170 + i);
         this->addChild(numLabel1);
     }
     
     auto space = ui::Button::create("sprites/keyboard_button_space.png","sprites/keyboard_button_space_pressed.png");
-    space->setPosition(Vec2(visibleSize.width/2,origin.y + 45));
+    space->setPosition(Vec2(visibleSize.width/2,origin.y + 130));
     space->setScale(0.4f);
     this->addChild(space);
     space->addClickEventListener([this](Object* sender){
@@ -447,12 +459,13 @@ bool InsideObject::init()
     });
 
     auto spaceLabel = Label::createWithTTF("Space","fonts/arial.ttf",35);
-    spaceLabel->setPosition(Vec2(visibleSize.width/2,origin.y + 45));
+    spaceLabel->setPosition(Vec2(visibleSize.width/2,origin.y + 130));
     this->addChild(spaceLabel);
 
     auto erase = ui::Button::create("sprites/keyboard_button_erase.png","sprites/keyboard_button_erase_pressed.png");
-    erase->setPosition(Vec2(visibleSize.width - 56,origin.y + 130));
-    erase->setScale(0.17f);
+    erase->setPosition(Vec2(visibleSize.width - 56,origin.y + 215));
+    erase->setScale(0.175f);
+    erase->setScaleX(0.16f);
     this->addChild(erase);
     erase->addClickEventListener([this](Object* sender){
         std::string sym = "Erase";
@@ -460,7 +473,7 @@ bool InsideObject::init()
     });
 
     auto enter = ui::Button::create("sprites/keyboard_button_caps.png","sprites/keyboard_button_caps_pressed.png");
-    enter->setPosition(Vec2(visibleSize.width - 56,origin.y + 45));
+    enter->setPosition(Vec2(visibleSize.width - 56,origin.y + 130));
     enter->setScale(0.17f);
     enter->setScaleX(0.15f);
     this->addChild(enter);
@@ -470,17 +483,17 @@ bool InsideObject::init()
     });
 
     auto enterLab = Label::createWithTTF("Enter","fonts/arial.ttf",35);
-    enterLab->setPosition(Vec2(visibleSize.width - 56,origin.y + 45));
+    enterLab->setPosition(Vec2(visibleSize.width - 56,origin.y + 130));
     this->addChild(enterLab);
 
     auto caps = ui::Button::create("sprites/keyboard_button_caps.png","sprites/keyboard_button_caps_pressed.png");
-    caps->setPosition(Vec2(origin.x + 52,origin.y + 128));
-    caps->setScale(0.18f);
+    caps->setPosition(Vec2(origin.x + 52,origin.y + 215));
+    caps->setScale(0.175f);
     caps->setScaleX(0.15f);
     this->addChild(caps);
 
     auto capsLab = Label::createWithTTF("Caps","fonts/arial.ttf",35);
-    capsLab->setPosition(Vec2(origin.x + 52,origin.y + 128));
+    capsLab->setPosition(Vec2(origin.x + 52,origin.y + 215));
     this->addChild(capsLab);
     caps->addClickEventListener([keys,numbers,this](Object* sender){
         if(capsLock){
