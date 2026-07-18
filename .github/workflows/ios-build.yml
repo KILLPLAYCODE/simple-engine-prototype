@@ -15,6 +15,7 @@ jobs:
       uses: actions/checkout@v4
       with:
         submodules: recursive
+        path: project
 
     - name: Checkout Axmol Engine
       uses: actions/checkout@v4
@@ -32,20 +33,19 @@ jobs:
         cd engine
         pwsh ./setup.ps1
         echo "AXMOL_ROOT=$GITHUB_WORKSPACE/engine" >> $GITHUB_ENV
-        echo "$GITHUB_WORKSPACE/engine/bin" >> $GITHUB_PATH
 
     - name: Build iOS Application
       run: |
-        $HOME/.axmol/bin/axmol build -p ios -a arm64 -config Release --engine-dir ./engine
+        cd project
+        
+        ../engine/bin/axmol build -p ios -a arm64 -config Release --engine-dir ../engine
         
         cd build_ios_arm64
         
         xcodebuild -project axmol.xcodeproj -scheme axmol -target simple_prototype -configuration Release -sdk iphoneos CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO clean build
 
-
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
       with:
         name: ios-build-release
-        path: build_ios_arm64/
-
+        path: project/build_ios_arm64/
