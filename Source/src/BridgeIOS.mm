@@ -1,4 +1,4 @@
-#import "IOSBridge.h"
+#import "BridgeIOS.h"
 #import <UIKit/UIKit.h>
 #import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
 
