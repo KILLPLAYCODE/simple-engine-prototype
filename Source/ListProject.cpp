@@ -15,6 +15,9 @@
 #if (AX_TARGET_PLATFORM == AX_PLATFORM_WIN32 || AX_TARGET_PLATFORM == AX_PLATFORM_LINUX)
 #include "src/portable-file-dialogs.h"
 #endif
+#if (AX_TARGET_PLATFORM == AX_PLATFORM_IOS)
+#include "src/BridgeIOS.h"
+#endif
 using namespace ax;
 
 static int s_sceneID = 1001;
@@ -60,8 +63,25 @@ static void openGallery(){
         auto reload = ListProject::createScene();
         Director::getInstance()->replaceScene(reload);
     }
+    #elif (AX_TARGET_PLATFORM == AX_PLATFORM_IOS)
+    BridgeIOS::importMediaFile("images");
     #endif
 }
+
+#if (AX_TARGET_PLATFORM == AX_PLATFORM_IOS)
+void BridgeIOS::onFileSelected(const std::string& cachePath, std::string fileName){
+    auto spritesPath = DATAmanager::getInstance()->savePath + "icon.png";
+    auto fileUtils = FileUtils::getInstance();
+    Data cacheData = fileUtils->getDataFromFile(cachePath);
+    fileUtils->writeDataToFile(cacheData,spritesPath);
+    fileUtils->removeFile(cachePath);
+    Director::getInstance()->getTextureCache()->removeTextureForKey(spritesPath);
+
+    auto reload = ListProject::createScene();
+    Director::getInstance()->replaceScene(reload);
+}
+#endif
+
 void ListProject::onImported(std::string cacheName){
     auto fileUtils = FileUtils::getInstance();
     auto cachePath = DATAmanager::getInstance()->projectPath + cacheName;
@@ -73,6 +93,7 @@ void ListProject::onImported(std::string cacheName){
     auto reload = ListProject::createScene();
     Director::getInstance()->replaceScene(reload);
 }
+
 bool ListProject::init()
 {
     if (!Scene::init())

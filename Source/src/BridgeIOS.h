@@ -7,7 +7,7 @@ class IOSBridge {
 public:
     static void importMediaFile(std::string type);
     
-    static void onFileSelected(const std::string& cachePath);
+    static void onFileSelected(const std::string& cachePath, std::string fileName);
 };
 
 #endif

@@ -2,7 +2,6 @@
 #import <UIKit/UIKit.h>
 #import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
 
-// Класс-делегат, который поймает событие выбора файла в iOS
 @interface DocumentPickerDelegate : NSObject <UIDocumentPickerDelegate>
 @end
 
@@ -12,16 +11,13 @@
     NSURL *selectedURL = [urls firstObject];
     if (!selectedURL) return;
 
-    // iOS требует запросить безопасный доступ к файлу из чужого пространства
     if ([selectedURL startAccessingSecurityScopedResource]) {
         
-        // Получаем путь к папке кэша или документов вашей игры в Axmol
         NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
         NSString *cacheDirectory = [paths objectAtIndex:0];
         NSString *fileName = [selectedURL lastPathComponent];
         NSString *destinationPath = [cacheDirectory stringByAppendingPathComponent:fileName];
         
-        // Копируем файл в папку игры, так как напрямую из iCloud/Медиатеки Axmol его не прочитает
         NSFileManager *fileManager = [NSFileManager defaultManager];
         NSError *error = nil;
         
@@ -33,20 +29,26 @@
         [selectedURL stopAccessingSecurityScopedResource];
         
         if (!error) {
-            // Передаем путь обратно в ваш C++ код Axmol
             std::string cppPath = [destinationPath UTF8String];
-            IOSBridge::onFileSelected(cppPath);
+            std::string cppFileName = [fileName UTF8String];
+            IOSBridge::onFileSelected(cppPath,cppFileName);
         }
     }
 }
 @end
 
-// Статическое хранилище для делегата, чтобы он не удалился из памяти
 static DocumentPickerDelegate* pickerDelegate = nil;
 
-void IOSBridge::importMediaFile() {
-    // Указываем, какие типы файлов нам нужны (например, изображения и аудио)
-    NSArray<UTType *> *types = @[UTTypeImage, UTTypeAudio];
+void IOSBridge::importMediaFile(std::string type) {
+    NSString* objectType = [NSString stringWithUTF8String:type.data()];
+    NSArray<UTType *> *types = @[];
+    if([objectType isEqualToString:@"audio"]){
+        types = @[UTTypeAudio];
+    } else if(objectType isEqualToString:@"image"){
+        types = @[UTTypeImage];
+    } else {
+        types = @[UTTypeAudio, UTTypeImage];
+    }
     
     UIDocumentPickerViewController *picker = [[UIDocumentPickerViewController alloc] initWithContentTypes:types asCopy:YES];
     
@@ -55,7 +57,6 @@ void IOSBridge::importMediaFile() {
     }
     picker.delegate = pickerDelegate;
     
-    // Получаем главное окно игры Axmol для вывода системного экрана поверх неё
     UIViewController *rootViewController = [UIApplication sharedApplication].keyWindow.rootViewController;
     [rootViewController presentViewController:picker animated:YES completion:nil];
 }

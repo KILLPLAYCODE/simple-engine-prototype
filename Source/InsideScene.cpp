@@ -17,6 +17,10 @@
 #if (AX_TARGET_PLATFORM == AX_PLATFORM_WIN32 || AX_TARGET_PLATFORM == AX_PLATFORM_LINUX)
 #include "src/portable-file-dialogs.h"
 #endif
+#if (AX_TARGET_PLATFORM == AX_PLATFORM_IOS)
+#include "src/BridgeIOS.h"
+#endif
+
 using namespace ax;
 
 static int _sceneID = 1005;
@@ -69,18 +73,20 @@ static void openGallery(){ //IMPORT IMAGE
         auto reload = InsideScene::createScene();
         Director::getInstance()->replaceScene(reload);
     }
+    #elif (AX_TARGET_PLATFORM == AX_PLATFORM_IOS) //IOS
+    BridgeIOS::importMediaFile("image");
     #endif
 }
 static void openSound(){
     DATAmanager::getInstance()->savePath = DATAmanager::getInstance()->projectPath + "sounds/";
 
-    #if (AX_TARGET_PLATFORM == AX_PLATFORM_ANDROID)
+    #if (AX_TARGET_PLATFORM == AX_PLATFORM_ANDROID) //ANDROID
     JniMethodInfo methodInfo;
     if(JniHelper::getStaticMethodInfo(methodInfo, "dev/prototype/klengine/AppActivity", "openAudioFounder", "()V")){
         methodInfo.env->CallStaticVoidMethod(methodInfo.classID, methodInfo.methodID);
         methodInfo.env->DeleteLocalRef(methodInfo.classID);
     }
-    #elif (AX_TARGET_PLATFORM == AX_PLATFORM_LINUX || AX_TARGET_PLATFORM == AX_PLATFORM_WIN32)
+    #elif (AX_TARGET_PLATFORM == AX_PLATFORM_LINUX || AX_TARGET_PLATFORM == AX_PLATFORM_WIN32) //WIN,LINUX
     auto select = pfd::open_file(
         "Select sound",
         "",
@@ -107,8 +113,51 @@ static void openSound(){
         auto reload = InsideScene::createScene();
         Director::getInstance()->replaceScene(reload);
     }
+    #elif (AX_TARGET_PLATFORM == AX_PLATFORM_IOS) //IOS
+    BridgeIOS::importMediaFile("audio");
     #endif
 }
+
+#if (AX_TARGET_PLATFORM == AX_PLATFORM_IOS)
+void BridgeIOS::onFileSelected(const std::string& cachePath, std::string fileName){
+    uint8_t type = DATAmanager::getInstance()->switcher;
+    if(type == 0){
+        auto spritesPath = DATAmanager::getInstance()->savePath + fileName;
+        auto fileUtils = FileUtils::getInstance();
+        Data cacheData = fileUtils->getDataFromFile(cachePath);
+        if(!cacheData.isNull()){
+            fileUtils->writeDataToFile(cacheData,spritesPath);
+            fileUtils->removeFile(cachePath);    
+            Director::getInstance()->getTextureCache()->removeTextureForKey(spritesPath);
+        }
+        auto clothesConfig = DATAmanager::getInstance()->savePath + "clothes.plist";
+        ValueVector clothesCF = fileUtils->getValueVectorFromFile(clothesConfig);
+        clothesCF.push_back(Value(fileName));
+        fileUtils->writeValueVectorToFile(clothesCF,clothesConfig);
+
+        auto reload = InsideObject::createScene();
+        Director::getInstance()->replaceScene(reload);
+    }
+    if(type == 1){
+        auto soundsPath = DATAmanager::getInstance()->savePath + fileName;
+        auto fileUtils = FileUtils::getInstance();
+        Data cacheData = fileUtils->getDataFromFile(cachePath);
+        if(cacheData.isNull()){
+            return;
+        }
+        fileUtils->writeDataToFile(cacheData,soundsPath);
+        fileUtils->removeFile(cachePath);    
+        auto soundsConfig = DATAmanager::getInstance()->savePath + "audio.plist";
+        ValueVector soundsCF = fileUtils->getValueVectorFromFile(soundsConfig);
+        soundsCF.push_back(Value(fileName));
+        fileUtils->writeValueVectorToFile(soundsCF,soundsConfig);
+
+        auto reload = InsideScene::createScene();
+        Director::getInstance()->replaceScene(reload);
+    }
+}
+#endif
+
 void InsideScene::onImported(){
     auto reload = InsideScene::createScene();
     Director::getInstance()->replaceScene(reload);
@@ -254,7 +303,7 @@ bool InsideScene::init()
                 auto clothesPath = systemPath + "clothes/";
                 auto clothesConfig = clothesPath + "clothes.plist";
                 auto script = systemPath + "code.cx";
-                std::string start = "print('Hello, world!')";
+                std::string start = "print(text(Hello, world!))";
                 ValueVector clothes;
                 fileUtils->createDirectories(systemPath);
                 fileUtils->createDirectories(clothesPath);
