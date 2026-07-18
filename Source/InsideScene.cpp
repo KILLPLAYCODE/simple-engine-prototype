@@ -468,7 +468,6 @@ bool InsideScene::init()
                 auto clothesConfig = DATAmanager::getInstance()->projectPath + "scenes/" + DATAmanager::getInstance()->sceneName + "/" + objectsName[i] + "/clothes/clothes.plist";
                 ValueVector cloth = fileUtils->getValueVectorFromFile(clothesConfig);
                 std::string spritesPath = DATAmanager::getInstance()->projectPath + "scenes/" + DATAmanager::getInstance()->sceneName + "/" + objectsName[i] + "/clothes/" + cloth[0].asString();
-                AXLOG(spritesPath);
                 if(!fileUtils->isFileExist(spritesPath)){
                     spritesPath = "sprites/null.png";
                 }
