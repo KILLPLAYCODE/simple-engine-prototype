@@ -88,6 +88,9 @@ include(AXGameTargetSetup)
 ax_setup_app_config(${APP_NAME})
 
 # Add any libraries you need to link to the project after this point
+if(IOS)
+  target_link_libraries(${APP_NAME} "-framework UniformTypeIdentifiers")
+endif()
 
 # Default Platform-specific setup
 include(AXGamePlatformSetup)
