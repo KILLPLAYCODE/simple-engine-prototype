@@ -31,21 +31,19 @@ jobs:
       run: |
         cd engine
         pwsh ./setup.ps1
-        echo "/Users/runner/.axmol/bin" >> $GITHUB_PATH
-        echo "$HOME/.axmol/bin" >> $GITHUB_PATH
+        echo "AXMOL_ROOT=$GITHUB_WORKSPACE/engine" >> $GITHUB_ENV
+        echo "$GITHUB_WORKSPACE/engine/bin" >> $GITHUB_PATH
 
     - name: Build iOS Application
       run: |
-        cd engine
-        pwsh -Command "axmol build -p ios -a arm64 -config Release -project-dir .."
+        axmol build -p ios -a arm64 -config Release --engine-dir ./engine
         
         cd build_ios_arm64
         
-        xcodebuild -project axmol.xcodeproj -alltargets -configuration Release -sdk iphoneos CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO clean build
+        xcodebuild -project axmol.xcodeproj -scheme axmol -target simple_prototype -configuration Release -sdk iphoneos CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO clean build
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
       with:
         name: ios-build-release
-        path: engine/build_ios_arm64/
-
+        path: build_ios_arm64/bin/Release/
