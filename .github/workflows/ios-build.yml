@@ -36,11 +36,12 @@ jobs:
 
     - name: Build iOS Application
       run: |
-        ./engine/bin/axmol build -p ios -a arm64 -config Release --engine-dir ./engine
+        $HOME/.axmol/bin/axmol build -p ios -a arm64 -config Release --engine-dir ./engine
         
         cd build_ios_arm64
         
         xcodebuild -project axmol.xcodeproj -scheme axmol -target simple_prototype -configuration Release -sdk iphoneos CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO clean build
+
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
