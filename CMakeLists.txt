@@ -53,6 +53,13 @@ file(GLOB_RECURSE GAME_SOURCE
   Source/*.cpp Source/*.c
 )
 
+if(APPLE)
+  file(GLOB_RECURSE APPLE_SOURCE
+    Source/*.mm
+  )
+  list(APPEND GAME_SOURCE ${APPLE_SOURCE})
+endif()
+
 set(GAME_INC_DIRS
   "${CMAKE_CURRENT_SOURCE_DIR}/Source"
 )
