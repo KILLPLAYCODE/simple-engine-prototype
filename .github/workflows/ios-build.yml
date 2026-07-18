@@ -37,10 +37,15 @@ jobs:
     - name: Build iOS Application
       run: |
         cd engine
-        pwsh -Command "axmol build -p ios -a arm64 -config Release -k -project-dir .."
+        pwsh -Command "axmol build -p ios -a arm64 -config Release -project-dir .."
+        
+        cd build_ios_arm64
+        
+        xcodebuild -project axmol.xcodeproj -scheme simple_prototype -configuration Release -sdk iphoneos CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO clean build
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
       with:
         name: ios-build-release
-        path: ${{ github.workspace }}/engine/build_ios_arm64/
+        path: engine/build_ios_arm64/bin/Release/
+
