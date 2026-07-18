@@ -69,7 +69,7 @@ static void openGallery(){
 }
 
 #if (AX_TARGET_PLATFORM == AX_PLATFORM_IOS)
-void IOSBridge::onFileSelected(const std::string& cachePath, std::string fileName){
+void IOSBridge::onFileSelected(const std::string& cachePath, std::string_view fileName){
     auto spritesPath = DATAmanager::getInstance()->savePath + "icon.png";
     auto fileUtils = FileUtils::getInstance();
     Data cacheData = fileUtils->getDataFromFile(cachePath);
