@@ -64,12 +64,12 @@ static void openGallery(){
         Director::getInstance()->replaceScene(reload);
     }
     #elif (AX_TARGET_PLATFORM == AX_PLATFORM_IOS)
-    BridgeIOS::importMediaFile("images");
+    IOSBridge::importMediaFile("images");
     #endif
 }
 
 #if (AX_TARGET_PLATFORM == AX_PLATFORM_IOS)
-void BridgeIOS::onFileSelected(const std::string& cachePath, std::string fileName){
+void IOSBridge::onFileSelected(const std::string& cachePath, std::string fileName){
     auto spritesPath = DATAmanager::getInstance()->savePath + "icon.png";
     auto fileUtils = FileUtils::getInstance();
     Data cacheData = fileUtils->getDataFromFile(cachePath);

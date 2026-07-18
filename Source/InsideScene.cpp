@@ -74,7 +74,7 @@ static void openGallery(){ //IMPORT IMAGE
         Director::getInstance()->replaceScene(reload);
     }
     #elif (AX_TARGET_PLATFORM == AX_PLATFORM_IOS) //IOS
-    BridgeIOS::importMediaFile("image");
+    IOSBridge::importMediaFile("image");
     #endif
 }
 static void openSound(){
@@ -114,12 +114,12 @@ static void openSound(){
         Director::getInstance()->replaceScene(reload);
     }
     #elif (AX_TARGET_PLATFORM == AX_PLATFORM_IOS) //IOS
-    BridgeIOS::importMediaFile("audio");
+    IOSBridge::importMediaFile("audio");
     #endif
 }
 
 #if (AX_TARGET_PLATFORM == AX_PLATFORM_IOS)
-void BridgeIOS::onFileSelected(const std::string& cachePath, std::string fileName){
+void IOSBridge::onFileSelected(const std::string& cachePath, std::string fileName){
     uint8_t type = DATAmanager::getInstance()->switcher;
     if(type == 0){
         auto spritesPath = DATAmanager::getInstance()->savePath + fileName;
