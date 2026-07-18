@@ -36,11 +36,11 @@ jobs:
 
     - name: Build iOS Application
       run: |
-        # Флаг -k (или --package) заставляет утилиту axmol автоматически упаковать .app в архив .ipa
-        $HOME/.axmol/bin/axmol build -p ios -a arm64 -config Release -k
+        cd engine
+        pwsh -Command "axmol build -p ios -a arm64 -config Release -k -project-dir .."
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
       with:
         name: ios-build-release
-        path: build_ios_arm64/**/*.ipa
+        path: build_ios_arm64/**/simple_prototype.ipa
