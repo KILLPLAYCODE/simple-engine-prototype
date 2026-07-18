@@ -89,6 +89,7 @@ ax_setup_app_config(${APP_NAME})
 
 # Add any libraries you need to link to the project after this point
 if(IOS)
+  set(CMAKE_XCODE_ATTRIBUTE_IPHONEOS_DEPLOYMENT_TARGET "14.0")
   target_link_libraries(${APP_NAME} "-framework UniformTypeIdentifiers")
 endif()
 
