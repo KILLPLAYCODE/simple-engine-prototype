@@ -41,7 +41,7 @@ jobs:
         
         cd build_ios_arm64
         
-        xcodebuild -project axmol.xcodeproj -scheme simple_prototype -configuration Release -sdk iphoneos CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO clean build
+        xcodebuild -project axmol.xcodeproj -alltargets -configuration Release -sdk iphoneos CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO clean build
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
