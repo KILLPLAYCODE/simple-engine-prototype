@@ -92,5 +92,9 @@ ax_setup_app_config(${APP_NAME})
 # Default Platform-specific setup
 include(AXGamePlatformSetup)
 
+if(IOS)
+  target_link_libraries(${APP_NAME} PRIVATE "-framework UniformTypeIdentifiers")
+endif()
+
 # Make sure the AXGameFinalSetup is included at the end of this file
 include(AXGameFinalSetup)
