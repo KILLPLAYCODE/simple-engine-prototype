@@ -65,7 +65,7 @@ static void openGallery(){
     }
     #elif (AX_TARGET_PLATFORM == AX_PLATFORM_IOS)
     DATAmanager::getInstance()->iosRequestSender = 1;
-    IOSBridge::importMediaFile("images");
+    IOSBridge::importMediaFile("image");
     #endif
 }
 

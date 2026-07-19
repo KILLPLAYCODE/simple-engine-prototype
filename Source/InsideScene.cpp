@@ -174,7 +174,6 @@ void IOSBridge::onFileSelected(const std::string& cachePath, std::string fileNam
 }
 #endif
 
-
 void InsideScene::onImported(){
     auto reload = InsideScene::createScene();
     Director::getInstance()->replaceScene(reload);

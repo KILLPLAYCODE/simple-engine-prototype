@@ -1,32 +1,36 @@
-/****************************************************************************
- Copyright (c) 2010-2013 cocos2d-x.org
- Copyright (c) 2013-2016 Chukong Technologies Inc.
- Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
- Copyright (c) 2019-present Axmol Engine contributors (see AUTHORS.md).
-
- https://axmol.dev/
-
- Permission is hereby granted, free of charge, to any person obtaining a copy
- of this software and associated documentation files (the "Software"), to deal
- in the Software without restriction, including without limitation the rights
- to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- copies of the Software, and to permit persons to whom the Software is
- furnished to do so, subject to the following conditions:
-
- The above copyright notice and this permission notice shall be included in
- all copies or substantial portions of the Software.
-
- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- THE SOFTWARE.
- ****************************************************************************/
-
 #import "GameAppController.h"
 #import "GameViewController.h"
+#include <execinfo.h>
+#include <signal.h>
+#include <stdlib.h>
+
+static void handleCrashSignal(int sig) {
+    void *callstack[128];
+    int frames = backtrace(callstack, 128);
+    char **strs = backtrace_symbols(callstack, frames);
+
+    NSMutableString *log = [NSMutableString stringWithFormat:@"Crash signal: %d\n", sig];
+    for (int i = 0; i < frames; i++) {
+        [log appendFormat:@"%s\n", strs[i]];
+    }
+    free(strs);
+
+    NSString *docsPath = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) firstObject];
+    NSString *logPath = [docsPath stringByAppendingPathComponent:@"crash_log.txt"];
+    [log writeToFile:logPath atomically:YES encoding:NSUTF8StringEncoding error:nil];
+
+    signal(sig, SIG_DFL);
+    raise(sig);
+}
+
+static void installCrashHandler() {
+    signal(SIGABRT, handleCrashSignal);
+    signal(SIGILL, handleCrashSignal);
+    signal(SIGSEGV, handleCrashSignal);
+    signal(SIGBUS, handleCrashSignal);
+    signal(SIGFPE, handleCrashSignal);
+    signal(SIGTRAP, handleCrashSignal);
+}
 
 @implementation GameAppController
 
@@ -34,6 +38,8 @@
 #pragma mark Application lifecycle
 
 - createRootViewController {
+    installCrashHandler();
+
     GameViewController* viewController = [[GameViewController alloc] init];
     return viewController;
 }
