@@ -26,6 +26,9 @@ class DATAmanager
     std::string objectName = "";
     std::string soundName = "";
     bool LanguageLoad = false;
+    //IOS
+    int iosRequestSender = 0; //1 - ListProject, 2 - InsideScene
+    //int iosDataType = 0; //1 - image, 2 - audio
     //InsideScene
     uint8_t switcher = 0;
     int sound_id = 0;

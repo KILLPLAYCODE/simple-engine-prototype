@@ -64,32 +64,23 @@ static void openGallery(){
         Director::getInstance()->replaceScene(reload);
     }
     #elif (AX_TARGET_PLATFORM == AX_PLATFORM_IOS)
+    DATAmanager::getInstance()->iosRequestSender = 1;
     IOSBridge::importMediaFile("images");
     #endif
 }
 
-#if (AX_TARGET_PLATFORM == AX_PLATFORM_IOS)
-void IOSBridge::onFileSelected(const std::string& cachePath, std::string fileName){
-    auto spritesPath = DATAmanager::getInstance()->savePath + "icon.png";
-    auto fileUtils = FileUtils::getInstance();
-    Data cacheData = fileUtils->getDataFromFile(cachePath);
-    fileUtils->writeDataToFile(cacheData,spritesPath);
-    fileUtils->removeFile(cachePath);
-    Director::getInstance()->getTextureCache()->removeTextureForKey(spritesPath);
-
-    auto reload = ListProject::createScene();
-    Director::getInstance()->replaceScene(reload);
-}
-#endif
-
 void ListProject::onImported(std::string cacheName){
-    auto fileUtils = FileUtils::getInstance();
-    auto cachePath = DATAmanager::getInstance()->projectPath + cacheName;
+    if(cacheName != "icon.png" && cacheName != "icon"){
+        auto fileUtils = FileUtils::getInstance();
+        auto cachePath = DATAmanager::getInstance()->projectPath + cacheName;
+        auto cacheTruePath = DATAmanager::getInstance()->projectPath + "icon.png";
+        Data cacheData = fileUtils->getDataFromFile(cachePath);
+        fileUtils->writeDataToFile(cacheData,cacheTruePath);
+        fileUtils->removeFile(cachePath);
+    }
     auto cacheTruePath = DATAmanager::getInstance()->projectPath + "icon.png";
-    Data cacheData = fileUtils->getDataFromFile(cachePath);
-    fileUtils->writeDataToFile(cacheData,cacheTruePath);
-    fileUtils->removeFile(cachePath);
-
+    Director::getInstance()->getTextureCache()->removeTextureForKey(cacheTruePath);
+    DATAmanager::getInstance()->iosRequestSender = 0;
     auto reload = ListProject::createScene();
     Director::getInstance()->replaceScene(reload);
 }

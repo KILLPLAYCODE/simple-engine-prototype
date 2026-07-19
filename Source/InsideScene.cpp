@@ -74,6 +74,7 @@ static void openGallery(){ //IMPORT IMAGE
         Director::getInstance()->replaceScene(reload);
     }
     #elif (AX_TARGET_PLATFORM == AX_PLATFORM_IOS) //IOS
+    DATAmanager::getInstance()->iosRequestSender = 2;
     IOSBridge::importMediaFile("image");
     #endif
 }
@@ -114,14 +115,27 @@ static void openSound(){
         Director::getInstance()->replaceScene(reload);
     }
     #elif (AX_TARGET_PLATFORM == AX_PLATFORM_IOS) //IOS
-    IOSBridge::importMediaFile("audio");
+    if(DATAmanager::getInstance()->iosRequestSender == 0){
+        DATAmanager::getInstance()->iosRequestSender = 2;
+        IOSBridge::importMediaFile("audio");
+    }
     #endif
 }
-
 #if (AX_TARGET_PLATFORM == AX_PLATFORM_IOS)
 void IOSBridge::onFileSelected(const std::string& cachePath, std::string fileName){
-    uint8_t type = DATAmanager::getInstance()->switcher;
-    if(type == 0){
+    if(DATAmanager::getInstance()->iosRequestSender = 1){ //LISTPROJECT
+        auto spritesPath = DATAmanager::getInstance()->savePath + "icon.png";
+        auto fileUtils = FileUtils::getInstance();
+        Data cacheData = fileUtils->getDataFromFile(cachePath);
+        fileUtils->writeDataToFile(cacheData,spritesPath);
+        fileUtils->removeFile(cachePath);
+        auto currentScene = Director::getInstance()->getRunningScene();
+        auto listProject = dynamic_cast<ListProject*>(currentScene);
+        listProject->onImported(fileName);
+    }
+    if(DATAmanager::getInstance()->iosRequestSender = 2){ //INSIDESCENE
+        uint8_t type = DATAmanager::getInstance()->switcher;
+    if(type == 0){ //IMAGE
         auto spritesPath = DATAmanager::getInstance()->savePath + fileName;
         auto fileUtils = FileUtils::getInstance();
         Data cacheData = fileUtils->getDataFromFile(cachePath);
@@ -138,7 +152,7 @@ void IOSBridge::onFileSelected(const std::string& cachePath, std::string fileNam
         auto reload = InsideObject::createScene();
         Director::getInstance()->replaceScene(reload);
     }
-    if(type == 1){
+    if(type == 1){ //AUDIO
         auto soundsPath = DATAmanager::getInstance()->savePath + fileName;
         auto fileUtils = FileUtils::getInstance();
         Data cacheData = fileUtils->getDataFromFile(cachePath);
@@ -155,8 +169,11 @@ void IOSBridge::onFileSelected(const std::string& cachePath, std::string fileNam
         auto reload = InsideScene::createScene();
         Director::getInstance()->replaceScene(reload);
     }
+    DATAmanager::getInstance()->iosRequestSender = 0;
+    }
 }
 #endif
+
 
 void InsideScene::onImported(){
     auto reload = InsideScene::createScene();
