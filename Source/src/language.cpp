@@ -31,12 +31,26 @@ void loadEnglish(){
     enText[8] = "DELETE";
     enText[9] = "OBJECT NAME";
     enText[10] = "Object name...";
+    enText[11] = "CONDITIONS";
+    enText[12] = "COSTUMES";
+    enText[13] = "CYCLES";
+    enText[14] = "EVENTS";
+    enText[15] = "PHYSICS";
+    enText[16] = "HITBOXES";
+    enText[17] = "AUDIO";
+    enText[18] = "SCENES";
+    enText[19] = "CLONES";
+    enText[20] = "VARIABLES";
+    enText[21] = "LISTS";
+    enText[22] = "MORE";
+    enText[23] = "PROGRAMMER";
 
     DATAmanager::getInstance()->language = "en";
     DATAmanager::getInstance()->translater = std::move(enText);
     DATAmanager::getInstance()->buttonFont = "fonts/Gokart Bubble.otf";
     DATAmanager::getInstance()->fontSize = 128;
-    DATAmanager::getInstance()->titleFont = "fonts/Magic Yellow.otf";
+    DATAmanager::getInstance()->titleFont = "fonts/TT Rounds Neue.ttf";
+    //DATAmanager::getInstance()->titleFont = "fonts/Magic Yellow.otf";
     //DATAmanager::getInstance()->markerFont = "fonts/Marker Felt.ttf";
 }
 void loadRussian(){
@@ -52,12 +66,26 @@ void loadRussian(){
     ruText[8] = "Удалить";
     ruText[9] = "НАЗВАНИЕ ОБЪЕКТА";
     ruText[10] = "Название объекта...";
+    ruText[11] = "Условия";
+    ruText[12] = "Костюмы";
+    ruText[13] = "Циклы";
+    ruText[14] = "События";
+    ruText[15] = "Физика";
+    ruText[16] = "Хитбоксы";
+    ruText[17] = "Аудио";
+    ruText[18] = "Сцены";
+    ruText[19] = "Клоны";
+    ruText[20] = "Переменные";
+    ruText[21] = "Списки";
+    ruText[22] = "Прочее";
+    ruText[23] = "ПРОГРАМНИК";
 
     DATAmanager::getInstance()->language = "ru";
     DATAmanager::getInstance()->translater = std::move(ruText);
     DATAmanager::getInstance()->buttonFont = "fonts/Simple.ttf";
     DATAmanager::getInstance()->fontSize = 128;
-    DATAmanager::getInstance()->titleFont = "fonts/Ice Age SHA.otf";
+    DATAmanager::getInstance()->titleFont = "fonts/TT Rounds Neue.ttf";
+    //DATAmanager::getInstance()->titleFont = "fonts/Ice Age SHA.otf";
     //DATAmanager::getInstance()->markerFont = "fonts/SPORE-Regular.ttf";
 }
 void loadUkraine(){
@@ -73,11 +101,25 @@ void loadUkraine(){
     ukrText[8] = "Видалити";
     ukrText[9] = "НАЗВА ОБ'ЄКТУ";
     ukrText[10] = "Назва об'єкту";
+    ukrText[11] = "Умови";
+    ukrText[12] = "Костюми";
+    ukrText[13] = "Цикли";
+    ukrText[14] = "Події";
+    ukrText[15] = "Фізика";
+    ukrText[16] = "Хітбокси";
+    ukrText[17] = "Аудіо";
+    ukrText[18] = "Сцени";
+    ukrText[19] = "Клони";
+    ukrText[20] = "Змінні";
+    ukrText[21] = "Списки";
+    ukrText[22] = "Інше";
+    ukrText[23] = "ПІДРУЧНИК";
     
     DATAmanager::getInstance()->language = "ukr";
     DATAmanager::getInstance()->translater = std::move(ukrText);
     DATAmanager::getInstance()->buttonFont = "fonts/Simple.ttf";
     DATAmanager::getInstance()->fontSize = 128;
-    DATAmanager::getInstance()->titleFont = "fonts/Ice Age SHA.otf";
+    DATAmanager::getInstance()->titleFont = "fonts/TT Rounds Neue.ttf";
+    //DATAmanager::getInstance()->titleFont = "fonts/Ice Age SHA.otf";
     //DATAmanager::getInstance()->markerFont = "fonts/SPORE-Regular.ttf";
 }

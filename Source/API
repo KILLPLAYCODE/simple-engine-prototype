@@ -1,0 +1,161 @@
+CONDITIONS
+if()-
+
+-- else -
+
+--
+
+//////////////////////////////////////////////////////
+
+COSTUMES
+
+setCostume(number or name)
+nextCostume
+lastCostume
+hide
+show
+setSize()
+setSizeX()
+setSizeY()
+changeSize()
+changeSizeX()
+changeSizeY()
+setDirection()
+changeDirection()
+setLayer()
+changeLayer()
+
+//////////////////////////////////////////////////////
+
+CYCLES
+
+repeat(n)-
+
+--
+
+while(true)-
+
+--
+
+forever -
+
+--
+
+//////////////////////////////////////////////////////
+
+EVENTS
+
+sendMessage([object-recipient(default:ALL)], nameMessage)
+sendPackage([name message,object-recipient(default:ALL)], data)
+
+Message(name message) =
+
+==
+
+Package([name message],data) =
+
+==
+
+onTouch() =
+
+==
+
+onTouchEnd() =
+
+==
+
+onTouchDisplay() =
+
+==
+
+onTouchEndDisplay() =
+
+==
+
+onTouchObject(name object) =
+
+==
+
+onTouchEndObject(name object) =
+
+==
+
+onTimer(['>' | '<' or '>=' | '<='] timecode) =
+
+==
+
+//////////////////////////////////////////////////////
+
+PHYSICS
+
+setPosition(x,y)
+setX(x)
+setY(y)
+changeX()
+changeY()
+step()
+setPhysicType(static,dynamic,non)
+
+//////////////////////////////////////////////////////
+
+HITBOXES
+
+setSquareHitbox()
+setCircleHitbox()
+
+//////////////////////////////////////////////////////
+
+AUDIO
+
+audioPlay()
+audioStop()
+audioPause()
+audioResume()
+audioTimeCode()
+audioSetSpeed()
+audioChangeSpeed()
+audioSetVolume()
+audioChangeVolume()
+audioSetPan()
+audioChangePan()
+
+//////////////////////////////////////////////////////
+
+SCENES
+
+sceneRun()
+sceneResume()
+sceneClean()
+sceneLoad()
+
+//////////////////////////////////////////////////////
+
+CLONES
+
+createClone(unique id)
+giveBrainClone(id)
+deleteClone(id)
+
+cloneBrain(id)=
+
+==
+
+//////////////////////////////////////////////////////
+
+VARIABLES
+
+public var variableName --public variable for ALL objects
+private var variableName --private variable for specific object
+
+//////////////////////////////////////////////////////
+
+LISTS
+
+public list listName --public list for ALL objects
+private list listName --private list
+
+addListKey([listName],value)
+pasteListKey([listName],number,value)
+removeListKey([listName],number)
+cleanList([listName])
+

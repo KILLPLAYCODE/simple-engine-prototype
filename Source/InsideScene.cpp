@@ -123,7 +123,11 @@ static void openSound(){
 }
 #if (AX_TARGET_PLATFORM == AX_PLATFORM_IOS)
 void IOSBridge::onFileSelected(const std::string& cachePath, std::string fileName){
-    if(DATAmanager::getInstance()->iosRequestSender = 1){ //LISTPROJECT
+    if(cachePath.empty() || fileName.empty()){
+        IOSBridge::showNativeAlert("Пустые переменные","Были присланы пустые переменные от BridgeIOS.mm");
+        return;
+    }
+    if(DATAmanager::getInstance()->iosRequestSender == 1){ //LISTPROJECT
         auto spritesPath = DATAmanager::getInstance()->savePath + "icon.png";
         auto fileUtils = FileUtils::getInstance();
         Data cacheData = fileUtils->getDataFromFile(cachePath);
@@ -133,7 +137,7 @@ void IOSBridge::onFileSelected(const std::string& cachePath, std::string fileNam
         auto listProject = dynamic_cast<ListProject*>(currentScene);
         listProject->onImported(fileName);
     }
-    if(DATAmanager::getInstance()->iosRequestSender = 2){ //INSIDESCENE
+    if(DATAmanager::getInstance()->iosRequestSender == 2){ //INSIDESCENE
         uint8_t type = DATAmanager::getInstance()->switcher;
     if(type == 0){ //IMAGE
         auto spritesPath = DATAmanager::getInstance()->savePath + fileName;
@@ -157,6 +161,8 @@ void IOSBridge::onFileSelected(const std::string& cachePath, std::string fileNam
         auto fileUtils = FileUtils::getInstance();
         Data cacheData = fileUtils->getDataFromFile(cachePath);
         if(cacheData.isNull()){
+            IOSBridge::showNativeAlert("Пустой файл в кеше","Данные из кеша отсутствуют");
+            DATAmanager::getInstance()->iosRequestSender = 0;
             return;
         }
         fileUtils->writeDataToFile(cacheData,soundsPath);
@@ -532,8 +538,11 @@ bool InsideScene::init()
                 float y = total - (iconHeight * i) - iconHeight/2;
                 auto clothesConfig = DATAmanager::getInstance()->projectPath + "scenes/" + DATAmanager::getInstance()->sceneName + "/" + objectsName[i] + "/clothes/clothes.plist";
                 ValueVector cloth = fileUtils->getValueVectorFromFile(clothesConfig);
-                std::string spritesPath = DATAmanager::getInstance()->projectPath + "scenes/" + DATAmanager::getInstance()->sceneName + "/" + objectsName[i] + "/clothes/" + cloth[0].asString();
-                if(!fileUtils->isFileExist(spritesPath)){
+                std::string spritesPath;
+                if(!cloth.empty()){
+                    std::string spritesPath = DATAmanager::getInstance()->projectPath + "scenes/" + DATAmanager::getInstance()->sceneName + "/" + objectsName[i] + "/clothes/" + cloth[0].asString();
+                }
+                if(!fileUtils->isFileExist(spritesPath) || spritesPath.empty()){
                     spritesPath = "sprites/null.png";
                 }
                 auto picture = Sprite::create(spritesPath);

@@ -28,7 +28,6 @@ class DATAmanager
     bool LanguageLoad = false;
     //IOS
     int iosRequestSender = 0; //1 - ListProject, 2 - InsideScene
-    //int iosDataType = 0; //1 - image, 2 - audio
     //InsideScene
     uint8_t switcher = 0;
     int sound_id = 0;
@@ -40,6 +39,8 @@ class DATAmanager
     int selectedChar = 0;
     bool rightMode = true;
     ax::DrawNode* cursor = nullptr;
+    //CodeHelper
+    int bookName = 0;
     private:
     DATAmanager() = default;
 };

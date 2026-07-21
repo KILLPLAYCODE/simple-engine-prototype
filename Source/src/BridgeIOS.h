@@ -8,6 +8,8 @@ public:
     static void importMediaFile(std::string type);
     
     static void onFileSelected(const std::string& cachePath, std::string fileName);
+
+    static void showNativeAlert(const std::string& title, const std::string& message);
 };
 
 #endif
