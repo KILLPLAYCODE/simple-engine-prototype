@@ -13,6 +13,37 @@ using namespace ax;
 
 void SaveCode(std::vector<std::string> &code);
 
+void findWord(Label* line, int selectedSymbol){
+    auto letter = line->getLetter(selectedSymbol);
+    if(letter == nullptr && selectedSymbol > 0){
+        selectedSymbol--;
+        letter = line->getLetter(selectedSymbol);
+        if(letter == nullptr || selectedSymbol <= 0){
+            return;
+        }
+    }
+    while(letter != nullptr && selectedSymbol > 0){
+        selectedSymbol--;
+        letter = line->getLetter(selectedSymbol);
+    }
+    int start = selectedSymbol;
+    selectedSymbol++;
+    letter = line->getLetter(selectedSymbol);
+    auto stringLength = line->getStringLength();
+    while(letter != nullptr && selectedSymbol < stringLength){
+        selectedSymbol++;
+        letter = line->getLetter(selectedSymbol);
+    }
+    int end = selectedSymbol;
+    if(selectedSymbol == stringLength && selectedSymbol > 0){
+        end = stringLength;
+    }
+
+    auto text = line->getString();
+    auto word = text.substr(start,end - start);
+    std::cout<<word<<std::endl;
+}
+
 void DrawCursor(Label* line,int selectedChar){
     auto oldCursor = DATAmanager::getInstance()->cursor;
     bool rightMode = DATAmanager::getInstance()->rightMode;
@@ -68,12 +99,14 @@ void DrawCursor(Label* line,int selectedChar){
     cursorDraw->runAction(RepeatForever::create(animationSeq));
 
     DATAmanager::getInstance()->cursor = cursorDraw;
+    findWord(line,selectedChar);
 }
 
 void typeSymbol(std::string input,std::vector<std::string>& code,ui::ScrollView* codeList){
     bool rightMode = DATAmanager::getInstance()->rightMode;
     int selectedSymbol = DATAmanager::getInstance()->selectedChar;
     int selectedLine = DATAmanager::getInstance()->selectedLine;
+    std::cout<<codeList->getInnerContainerPosition().x<<std::endl;
 
     if(input == "Space"){
         code[selectedLine].insert(selectedSymbol," ");
@@ -86,24 +119,34 @@ void typeSymbol(std::string input,std::vector<std::string>& code,ui::ScrollView*
             auto pos = cursor->getPositionX();
             cursor->setPositionX(pos + 25);
         }
+        auto total = codeList->getInnerContainerSize().height;
+        auto visibleSize = codeList->getContentSize().width;
+        auto totalw = (lineLabel->getContentSize().width * 1.2f) + 150;
+        if(totalw < visibleSize){
+            totalw = visibleSize;
+        }
+        codeList->setInnerContainerSize(Size(totalw,total));
         return;
     }
 }
     if(input == "Erase"){
-        //std::cout<<selectedSymbol<<std::endl;
         if(selectedSymbol > 0){
             selectedSymbol -= 1;
             code[selectedLine].erase(selectedSymbol,1);
             DATAmanager::getInstance()->selectedChar -= 1;
             auto lineLabel = dynamic_cast<Label*>(codeList->getChildByTag(selectedLine));
             auto letter = lineLabel->getLetter(selectedSymbol);
+            auto lastLetter = lineLabel->getLetter(selectedSymbol - 1);
             lineLabel->setString(code[selectedLine]);
             auto cursor = dynamic_cast<DrawNode*>(lineLabel->getChildByTag(70921));
             if(cursor != nullptr){
                 if(letter != nullptr){
-                    auto letW = letter->getContentSize().width;
                     auto pos = cursor->getPositionX();
-                    cursor->setPositionX(pos - letW);
+                    auto width = letter->getContentSize().width * 1.1f;
+                    cursor->setPositionX(pos - width);
+                    if(lastLetter != nullptr){
+                        DrawCursor(lineLabel,selectedSymbol);
+                    }
                 } else {
                     auto pos = cursor->getPositionX();
                     cursor->setPositionX(pos - 25);  
@@ -142,6 +185,24 @@ void typeSymbol(std::string input,std::vector<std::string>& code,ui::ScrollView*
         lineData->setString(code[selectedLine]);
         DrawCursor(lineData,DATAmanager::getInstance()->selectedChar);
     }
+    auto lineLabel = dynamic_cast<Label*>(codeList->getChildByTag(selectedLine));
+    auto total = codeList->getInnerContainerSize().height;
+    auto visibleSize = codeList->getInnerContainerSize().width;
+    auto symbol = lineLabel->getLetter(DATAmanager::getInstance()->selectedChar - 1);
+    auto totalSymbols = lineLabel->getStringLength();
+    if(symbol == nullptr){
+        return;
+    }
+    auto updateX = codeList->getContentSize().width/2 - symbol->getPositionX() - symbol->getContentSize().width;
+    auto saveY = codeList->getInnerContainerPosition().y;
+    auto totalw = (lineLabel->getContentSize().width * 1.2f) + 150;
+    if(totalw < visibleSize){
+        totalw = visibleSize;
+    }
+    codeList->setInnerContainerSize(Size(totalw,total));
+    if(codeList->getInnerContainerPosition().x > updateX - 100){
+        codeList->setInnerContainerPosition(Vec2(updateX,saveY));
+    }
 }
 
 void SaveCode(std::vector<std::string> &code){
@@ -175,13 +236,18 @@ bool InsideObject::init()
     std::string keys = "qwertyuiopasdfghjklzxcvbnm";
     std::string bigSymbols = "QWERTYUIOPASDFGHJKLZXCVBNM";
     std::string numbers = "1234567890";
-    std::string specialKeys = "!@#$%^&*()";
+    std::string specialKeys = "!?<>.,-=()";
     capsLock = true;
 
     Color3B bgColor(24,28,80);
     auto layer = LayerColor::create(Color4B(bgColor),visibleSize.width,visibleSize.height);
     layer->setPosition(Vec2::ZERO);
     this->addChild(layer,0);
+
+    auto DrawNode = DrawNode::create();
+    auto color = Color4F(0,0.29f,0.71f,1.0f);
+    DrawNode->drawSolidRect(Vec2(0,visibleSize.height), Vec2(visibleSize.width,visibleSize.height - 100),color);
+    this->addChild(DrawNode,20);
 
     auto back = ui::Button::create("sprites/button_back.png"sv,"sprites/button_back_pressed.png"sv);
     back->setScale(0.2f);
@@ -198,16 +264,11 @@ bool InsideObject::init()
     this->addChild(back, 25);
 
     codeList = ui::ScrollView::create();
-    codeList->setContentSize(Size(visibleSize.width,visibleSize.height - 50));
+    codeList->setContentSize(Size(visibleSize.width,visibleSize.height - 100));
     codeList->setPosition(Vec2(origin.x,origin.y));
     codeList->setDirection(ui::ScrollView::Direction::BOTH);
     codeList->setScrollBarEnabled(true);
     this->addChild(codeList);
-    float distance = 90;
-    float total = distance * 1.2f * code.size();
-    if(total < visibleSize.height){
-        total = visibleSize.height;
-    }
 
     auto fileUtils = FileUtils::getInstance();
     std::string codePath = DATAmanager::getInstance()->projectPath + "scenes/" + DATAmanager::getInstance()->sceneName + "/" + DATAmanager::getInstance()->objectName + "/code.cx";
@@ -226,15 +287,30 @@ bool InsideObject::init()
     }
     std::string fullCode = fileUtils->getStringFromFile(codePath);
     auto containerSizer = Label::createWithBMFont("fonts/classic.fnt",fullCode);
+
+    float distance = 120;
+    float total = distance * 1.2f * code.size();
+    if(total < visibleSize.height - 100){
+        total = visibleSize.height - 100;
+    }
+
     auto totalw = (containerSizer->getContentSize().width * 1.2f) + 150;
     if(totalw < visibleSize.width){
         totalw = visibleSize.width;
     }
     codeList->setInnerContainerSize(Size(totalw,total));
+    if(DATAmanager::getInstance()->selectedLine == 0){
+        codeList->setInnerContainerPosition(Vec2(0,((visibleSize.height - 100) - total)));
+    } else {
+        auto liner = dynamic_cast<Label*>(codeList->getChildByTag(DATAmanager::getInstance()->selectedLine));
+        if(liner != nullptr){
+            codeList->setInnerContainerPosition(Vec2(0,((liner->getPositionY() + 100) - total)));
+        }
+    }
 
     for(int i = 0;i < code.size(); i++){
         auto keyTouchListener = EventListenerTouchOneByOne::create();
-        keyTouchListener->setSwallowTouches(true);
+        //keyTouchListener->setSwallowTouches(true);
         float y = total - (90 * i) - 150;
         auto line = Label::createWithBMFont("fonts/classic.fnt",code[i]);
         line->setAnchorPoint(Vec2::ZERO);
@@ -243,9 +319,21 @@ bool InsideObject::init()
         line->setTextColor(Color4B(255,255,255,255));
         line->setTag(i);
         codeList->addChild(line);
-        keyTouchListener->onTouchBegan = [line,i,y](Touch* touch,Event* event) -> bool {
+        auto dash = DrawNode::create();
+        dash->drawSegment(Vec2(80,y + 75),Vec2(80,y - 10),8,Color4F(0,0.63f,0.85f,1));
+        codeList->addChild(dash);
+        std::string count = std::to_string(i);
+        auto lineCount = Label::createWithTTF(count,"fonts/TT Rounds Neue.ttf",65 - count.length() * 2);
+        lineCount->setTextColor(Color4B(0,161,217,255));
+        lineCount->setPosition(Vec2(40,y + 42));
+        codeList->addChild(lineCount);
+        keyTouchListener->onTouchBegan = [line,i,y,this](Touch* touch,Event* event) -> bool {
+            auto lineW = line->getContentSize().width;
+            if(lineW < 25){
+                lineW = 25;
+            }
             Vec2 clickPoint = line->convertToNodeSpace(touch->getLocation());
-            Rect rect = Rect(0,0,line->getContentSize().width,75);
+            Rect rect = Rect(0,0,lineW,75);
             if(rect.containsPoint(clickPoint)){
                 DATAmanager::getInstance()->selectedLine = i;
                 float selectX = clickPoint.x;
@@ -292,6 +380,8 @@ bool InsideObject::init()
                         }
                     }
                     DrawCursor(line,DATAmanager::getInstance()->selectedChar);
+                } else if(i < code.size()){
+                    DrawCursor(line,0);
                 }
                 return true;
             }
@@ -305,7 +395,7 @@ bool InsideObject::init()
     //KEYBOARD SETTINGS
 
     auto create = ui::Button::create("sprites/keyboard_button_create.png","sprites/keyboard_button_create_pressed.png");
-    create->setPosition(Vec2(visibleSize.width - 80,origin.y + 775));
+    create->setPosition(Vec2(visibleSize.width - 80,origin.y + 800));
     create->setScale(0.2f);
     create->setTag(188);
     this->addChild(create);
@@ -316,22 +406,40 @@ bool InsideObject::init()
         Director::getInstance()->replaceScene(nextScene);
     });
 
+    auto touchPannel = EventListenerTouchOneByOne::create();
+    touchPannel->setSwallowTouches(true);
+
     auto keyboardPannel = Sprite::create("sprites/keyboard_panel.png");
-    keyboardPannel->setPosition(Vec2(visibleSize.width/2,origin.y + 600));
+    keyboardPannel->setPosition(Vec2(visibleSize.width/2,origin.y + 625));
     keyboardPannel->setTag(190);
     this->addChild(keyboardPannel);
+    touchPannel->onTouchBegan = [keyboardPannel](Touch* touch, Event* event)->bool {
+        bool hide = DATAmanager::getInstance()->hideKeyboard;
+        Vec2 clickPoint = keyboardPannel->convertToNodeSpace(touch->getLocation());
+        Rect rect = Rect(0,-600,keyboardPannel->getContentSize().width,keyboardPannel->getContentSize().height);
+        if(rect.containsPoint(clickPoint)){
+            if(!hide){
+                return true;
+            } else {
+                return false;
+            }
+        }
+        return false;
+    };
+    _eventDispatcher->addEventListenerWithSceneGraphPriority(touchPannel,keyboardPannel);
 
     auto keyboardButton = ui::Button::create("sprites/keyboard_panel_button.png","sprites/keyboard_panel_button_pressed.png");
-    keyboardButton->setPosition(Vec2(visibleSize.width/2,origin.y + 675));
+    keyboardButton->setPosition(Vec2(visibleSize.width/2,origin.y + 700));
     keyboardButton->setTag(191);
     this->addChild(keyboardButton);
 
     for(int i = 0;i < 10;i++){
-        float x = 72 * i;
+        float x = 71 * i;
         std::string numString(1, numbers[i]);
         auto num = ui::Button::create("sprites/keyboard_button.png","sprites/keyboard_button_pressed.png");
-        num->setPosition(Vec2(36 + x,origin.y + 470));
-        num->setScale(0.12f);
+        num->setPosition(Vec2(42 + x,origin.y + 520));
+        num->setScale(0.14f);
+        num->setScaleX(0.16f);
         num->setTag(1000 + i);
         this->addChild(num);
         num->addClickEventListener([numString,this](Object* sender){
@@ -339,15 +447,16 @@ bool InsideObject::init()
         });
 
         auto numLabel = Label::createWithTTF(numString,"fonts/arial.ttf",35);
-        numLabel->setPosition(Vec2(38 + x,origin.y + 470));
+        numLabel->setPosition(Vec2(42 + x,origin.y + 520));
         numLabel->setTag(1010 + i);
         this->addChild(numLabel);
 
         std::string numString1(1,specialKeys[i]);
         auto num1 = ui::Button::create("sprites/keyboard_button.png","sprites/keyboard_button_pressed.png");
-        num1->setPosition(Vec2(36 + x,origin.y + 470));
+        num1->setPosition(Vec2(42 + x,origin.y + 520));
         num1->setVisible(false);
-        num1->setScale(0.12f);
+        num1->setScale(0.14f);
+        num1->setScaleX(0.16f);
         num1->setTag(100 + i);
         this->addChild(num1);
         num1->addClickEventListener([numString1,this](Object* sender){
@@ -356,16 +465,17 @@ bool InsideObject::init()
 
         auto numLabel1 = Label::createWithTTF(numString1,"fonts/arial.ttf",35);
         numLabel1->setVisible(false);
-        numLabel1->setPosition(Vec2(38 + x,origin.y + 470));
+        numLabel1->setPosition(Vec2(42 + x,origin.y + 520));
         numLabel1->setTag(110 + i);
         this->addChild(numLabel1);
     }
     for(int i = 0;i < 10;i++){
-        float x = 72 * i;
+        float x = 71 * i;
         std::string keyString(1,keys[i]);
         auto key = ui::Button::create("sprites/keyboard_button.png","sprites/keyboard_button_pressed.png");
-        key->setPosition(Vec2(36 + x,origin.y + 385));
-        key->setScale(0.12f);
+        key->setPosition(Vec2(42 + x,origin.y + 420));
+        key->setScale(0.14f);
+        key->setScaleX(0.16f);
         key->setTag(1020 + i);
         this->addChild(key);
         key->addClickEventListener([keyString,this](Object* sender){
@@ -373,15 +483,16 @@ bool InsideObject::init()
         });
 
         auto keyNum = Label::createWithTTF(keyString,"fonts/arial.ttf",35);
-        keyNum->setPosition(Vec2(38 + x,origin.y + 385));
+        keyNum->setPosition(Vec2(42 + x,origin.y + 420));
         keyNum->setTag(1030 + i);
         this->addChild(keyNum);
 
         std::string numString1(1,bigSymbols[i]);
         auto num1 = ui::Button::create("sprites/keyboard_button.png","sprites/keyboard_button_pressed.png");
         num1->setVisible(false);
-        num1->setPosition(Vec2(36 + x,origin.y + 385));
-        num1->setScale(0.12f);
+        num1->setPosition(Vec2(42 + x,origin.y + 420));
+        num1->setScale(0.14f);
+        num1->setScaleX(0.16f);
         num1->setTag(120 + i);
         this->addChild(num1);
         num1->addClickEventListener([numString1,this](Object* sender){
@@ -390,7 +501,7 @@ bool InsideObject::init()
 
         auto numLabel1 = Label::createWithTTF(numString1,"fonts/arial.ttf",35);
         numLabel1->setVisible(false);
-        numLabel1->setPosition(Vec2(38 + x,origin.y + 385));
+        numLabel1->setPosition(Vec2(42 + x,origin.y + 420));
         numLabel1->setTag(130 + i);
         this->addChild(numLabel1);
     }
@@ -399,8 +510,9 @@ bool InsideObject::init()
         int keyValue = 10 + i;
         std::string keyString(1,keys[keyValue]);
         auto key = ui::Button::create("sprites/keyboard_button.png","sprites/keyboard_button_pressed.png");
-        key->setPosition(Vec2(68 + x,origin.y + 300));
-        key->setScale(0.12f);
+        key->setPosition(Vec2(68 + x,origin.y + 318));
+        key->setScale(0.14f);
+        key->setScaleX(0.16f);
         key->setTag(1040 + i);
         this->addChild(key);
         key->addClickEventListener([keyString,this](Object* sender){
@@ -408,15 +520,16 @@ bool InsideObject::init()
         });
 
         auto keyNum = Label::createWithTTF(keyString,"fonts/arial.ttf",35);
-        keyNum->setPosition(Vec2(68 + x,origin.y + 300));
+        keyNum->setPosition(Vec2(68 + x,origin.y + 318));
         keyNum->setTag(1050 + i);
         this->addChild(keyNum);
 
         std::string numString1(1,bigSymbols[keyValue]);
         auto num1 = ui::Button::create("sprites/keyboard_button.png","sprites/keyboard_button_pressed.png");
         num1->setVisible(false);
-        num1->setPosition(Vec2(68 + x,origin.y + 300));
-        num1->setScale(0.12f);
+        num1->setPosition(Vec2(68 + x,origin.y + 318));
+        num1->setScale(0.14f);
+        num1->setScaleX(0.16f);
         num1->setTag(140 + i);
         this->addChild(num1);
         num1->addClickEventListener([numString1,this](Object* sender){
@@ -425,7 +538,7 @@ bool InsideObject::init()
 
         auto numLabel1 = Label::createWithTTF(numString1,"fonts/arial.ttf",35);
         numLabel1->setVisible(false);
-        numLabel1->setPosition(Vec2(68 + x,origin.y + 300));
+        numLabel1->setPosition(Vec2(68 + x,origin.y + 318));
         numLabel1->setTag(150 + i);
         this->addChild(numLabel1);
     }
@@ -435,7 +548,8 @@ bool InsideObject::init()
         std::string keyString(1,keys[keyValue]);
         auto key = ui::Button::create("sprites/keyboard_button.png","sprites/keyboard_button_pressed.png");
         key->setPosition(Vec2(140 + x,origin.y + 215));
-        key->setScale(0.12f);
+        key->setScale(0.14f);
+        key->setScaleX(0.16f);
         key->setTag(1060 + i);
         this->addChild(key);
         key->addClickEventListener([keyString,this](Object* sender){
@@ -451,7 +565,8 @@ bool InsideObject::init()
         auto num1 = ui::Button::create("sprites/keyboard_button.png","sprites/keyboard_button_pressed.png");
         num1->setVisible(false);
         num1->setPosition(Vec2(140 + x,origin.y + 215));
-        num1->setScale(0.12f);
+        num1->setScale(0.14f);
+        num1->setScaleX(0.16f);
         num1->setTag(160 + i);
         this->addChild(num1);
         num1->addClickEventListener([numString1,this](Object* sender){
@@ -481,9 +596,9 @@ bool InsideObject::init()
     this->addChild(spaceLabel);
 
     auto erase = ui::Button::create("sprites/keyboard_button_erase.png","sprites/keyboard_button_erase_pressed.png");
-    erase->setPosition(Vec2(visibleSize.width - 56,origin.y + 215));
-    erase->setScale(0.175f);
-    erase->setScaleX(0.16f);
+    erase->setPosition(Vec2(visibleSize.width - 56,origin.y + 218));
+    erase->setScale(0.18f);
+    erase->setScaleX(0.17f);
     erase->setTag(182);
     this->addChild(erase);
     erase->addClickEventListener([this](Object* sender){
@@ -508,14 +623,14 @@ bool InsideObject::init()
     this->addChild(enterLab);
 
     auto caps = ui::Button::create("sprites/keyboard_button_caps.png","sprites/keyboard_button_caps_pressed.png");
-    caps->setPosition(Vec2(origin.x + 52,origin.y + 215));
-    caps->setScale(0.175f);
-    caps->setScaleX(0.15f);
+    caps->setPosition(Vec2(origin.x + 52,origin.y + 218));
+    caps->setScale(0.18f);
+    caps->setScaleX(0.16f);
     caps->setTag(185);
     this->addChild(caps);
 
     auto capsLab = Label::createWithTTF("Caps","fonts/arial.ttf",35);
-    capsLab->setPosition(Vec2(origin.x + 52,origin.y + 215));
+    capsLab->setPosition(Vec2(origin.x + 52,origin.y + 218));
     capsLab->setTag(186);
     this->addChild(capsLab);
     caps->addClickEventListener([keys,numbers,this](Object* sender){
@@ -973,8 +1088,8 @@ bool InsideObject::init()
             hEnterL->setVisible(true);
             hErase->setVisible(true);
             hPanel->setVisible(true);
-            hCreate->setPositionY(origin.y + 775);
-            hButton->setPositionY(origin.y + 675);
+            hCreate->setPositionY(origin.y + 800);
+            hButton->setPositionY(origin.y + 700);
         }
     });
 
@@ -1264,8 +1379,8 @@ bool InsideObject::init()
             hEnterL->setVisible(true);
             hErase->setVisible(true);
             hPanel->setVisible(true);
-            hCreate->setPositionY(origin.y + 775);
-            hButton->setPositionY(origin.y + 675);
+            hCreate->setPositionY(origin.y + 800);
+            hButton->setPositionY(origin.y + 700);
         }
 
     scheduleUpdate();

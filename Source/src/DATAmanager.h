@@ -4,14 +4,36 @@
 #include "axmol.h"
 #include <string>
 #include <map>
+#include <unordered_map>
 #include "ui/CocosGUI.h"
+
+struct SystemCommands {
+    std::string name;
+    std::string command;
+};
+struct CustomLibs {
+    std::string name;
+    std::string description;
+    std::string picture;
+    std::string version;
+};
+struct CustomCommands {
+    std::string command;
+};
 
 class DATAmanager 
 {
     public:
     static DATAmanager* getInstance();
 
+    std::vector<SystemCommands> commands;
     std::map<int,std::string> translater;
+    std::unordered_map<std::string,std::vector<SystemCommands>> systemCommands;
+    std::unordered_map<std::string,std::vector<CustomLibs>> customLibrary;
+    std::unordered_map<std::string,std::vector<CustomCommands>> customCommands;
+
+    static void loadSystemCommands(std::vector<SystemCommands> &commands,std::unordered_map<std::string,std::vector<SystemCommands>> &systemCommands);
+    //static void autoPasteRun(std::vector<SystemCommands> &commands, std::unordered_map<std::string,std::vector<SystemCommands>> &systemCommands);
 
     std::string language = "en";
     std::string buttonFont = "";
@@ -39,6 +61,7 @@ class DATAmanager
     int selectedChar = 0;
     bool rightMode = true;
     ax::DrawNode* cursor = nullptr;
+    ax::Vec2 scrollPosition = ax::Vec2::ZERO;
     //CodeHelper
     int bookName = 0;
     private:

@@ -1,0 +1,411 @@
+{
+  "schemaVersion": 1,
+  "version": "1.0.0",
+  "displayName": "EXAMPLE",
+  "description": "",
+  "icon": ".png",
+  "types": {
+    "PhysicBodyType": {
+      "kind": "enum",
+      "values": ["static", "dynamic", "non"]
+    }
+  },
+  "categories": [
+    {
+      "name": "conditions",
+      "icon": ".png",
+      "luaFile": ".lua",
+      "commands": [
+        {
+          "name": "if",
+          "luaFunction": "",
+          "displayName": "",
+          "description": "",
+          "args": [
+            { "name": "type", "type": "PhysicBodyType" }
+          ],
+          "returns": "void",
+          "example": "if() - \n\n--"
+        },
+        {
+          "name": "else",
+          "luaFunction": "",
+          "displayName": "",
+          "description": "",
+          "args": [
+            { "name": "x", "type": "number" },
+            { "name": "y", "type": "number" }
+          ],
+          "returns": "void",
+          "example": "else - \n\n--"
+        }
+      ]
+    },
+    {
+      "name": "costumes",
+      "icon": ".png",
+      "luaFile": ".lua",
+      "commands": [
+        {
+          "name": "setCostume",
+          "luaFunction": "",
+          "displayName": "",
+          "description": "",
+          "args": [
+            { "name": "type", "type": "PhysicBodyType" }
+          ],
+          "returns": "void",
+          "example": "setCostume(text(costume))"
+        },
+        {
+          "name": "nextCostume",
+          "luaFunction": "",
+          "displayName": "",
+          "description": "",
+          "args": [
+            { "name": "x", "type": "number" },
+            { "name": "y", "type": "number" }
+          ],
+          "returns": "void",
+          "example": "nextCostume"
+        },
+        {
+          "name": "lastCostume",
+          "luaFunction": "",
+          "displayName": "",
+          "description": "",
+          "args": [
+            { "name": "x", "type": "number" },
+            { "name": "y", "type": "number" }
+          ],
+          "returns": "void",
+          "example": "lastCostume"
+        },
+        {
+          "name": "hide",
+          "luaFunction": "",
+          "displayName": "",
+          "description": "",
+          "args": [
+            { "name": "x", "type": "number" },
+            { "name": "y", "type": "number" }
+          ],
+          "returns": "void",
+          "example": "hide"
+        },
+        {
+          "name": "show",
+          "luaFunction": "",
+          "displayName": "",
+          "description": "",
+          "args": [
+            { "name": "x", "type": "number" },
+            { "name": "y", "type": "number" }
+          ],
+          "returns": "void",
+          "example": "show"
+        },
+        {
+          "name": "setSize",
+          "luaFunction": "",
+          "displayName": "",
+          "description": "",
+          "args": [
+            { "name": "x", "type": "number" },
+            { "name": "y", "type": "number" }
+          ],
+          "returns": "void",
+          "example": "setSize(1)"
+        },
+        {
+          "name": "setSizeX",
+          "luaFunction": "",
+          "displayName": "",
+          "description": "",
+          "args": [
+            { "name": "x", "type": "number" },
+            { "name": "y", "type": "number" }
+          ],
+          "returns": "void",
+          "example": "setSizeX(1)"
+        },
+        {
+          "name": "setSizeY",
+          "luaFunction": "",
+          "displayName": "",
+          "description": "",
+          "args": [
+            { "name": "x", "type": "number" },
+            { "name": "y", "type": "number" }
+          ],
+          "returns": "void",
+          "example": "setSizeY(1)"
+        },
+        {
+          "name": "changeSize",
+          "luaFunction": "",
+          "displayName": "",
+          "description": "",
+          "args": [
+            { "name": "x", "type": "number" },
+            { "name": "y", "type": "number" }
+          ],
+          "returns": "void",
+          "example": "changeSize(2)"
+        },
+        {
+          "name": "changeSizeX",
+          "luaFunction": "",
+          "displayName": "",
+          "description": "",
+          "args": [
+            { "name": "x", "type": "number" },
+            { "name": "y", "type": "number" }
+          ],
+          "returns": "void",
+          "example": "changeSizeX(1)"
+        },
+        {
+          "name": "changeSizeY",
+          "luaFunction": "",
+          "displayName": "",
+          "description": "",
+          "args": [
+            { "name": "x", "type": "number" },
+            { "name": "y", "type": "number" }
+          ],
+          "returns": "void",
+          "example": "changeSizeY(1)"
+        },
+        {
+          "name": "setDirection",
+          "luaFunction": "",
+          "displayName": "",
+          "description": "",
+          "args": [
+            { "name": "x", "type": "number" },
+            { "name": "y", "type": "number" }
+          ],
+          "returns": "void",
+          "example": "setDirection(0)"
+        },
+        {
+          "name": "changeDirection",
+          "luaFunction": "",
+          "displayName": "",
+          "description": "",
+          "args": [
+            { "name": "x", "type": "number" },
+            { "name": "y", "type": "number" }
+          ],
+          "returns": "void",
+          "example": "changeDirection(15)"
+        },
+        {
+          "name": "setLayer",
+          "luaFunction": "",
+          "displayName": "",
+          "description": "",
+          "args": [
+            { "name": "x", "type": "number" },
+            { "name": "y", "type": "number" }
+          ],
+          "returns": "void",
+          "example": "setLayer(0)"
+        },
+        {
+          "name": "changeLayer",
+          "luaFunction": "",
+          "displayName": "",
+          "description": "",
+          "args": [
+            { "name": "x", "type": "number" },
+            { "name": "y", "type": "number" }
+          ],
+          "returns": "void",
+          "example": "changeLayer(1)"
+        }
+  ]
+},
+{
+  "name": "cyscles",
+  "icon": ".png",
+  "luaFile": ".lua",
+  "commands": [
+    {
+      "name": "repeat",
+      "luaFunction": "",
+      "displayName": "",
+      "description": "",
+      "args": [
+        { "name": "type", "type": "PhysicBodyType" }
+      ],
+      "returns": "void",
+      "example": "repeat(5)- \n\n--"
+    },
+    {
+      "name": "while",
+      "luaFunction": "",
+      "displayName": "",
+      "description": "",
+      "args": [
+        { "name": "x", "type": "number" },
+        { "name": "y", "type": "number" }
+      ],
+      "returns": "void",
+      "example": "while(true)- \n\n--"  
+    },
+    {
+      "name": "forever",
+      "luaFunction": "",
+      "displayName": "",
+      "description": "",
+      "args": [
+        { "name": "x", "type": "number" },
+        { "name": "y", "type": "number" }
+      ],
+      "returns": "void",
+      "example": "forever - \n\n--"  
+    }
+  ]  
+},
+{
+  "name": "events",
+  "icon": ".png",
+  "luaFile": ".lua",
+  "commands": [
+    {
+      "name": "sendMessage",
+      "luaFunction": "",
+      "displayName": "",
+      "description": "",
+      "args": [
+        { "name": "type", "type": "PhysicBodyType" }
+      ],
+      "returns": "void",
+      "example": "sendMessage([ALL], message)"
+    },
+    {
+      "name": "sendPackage",
+      "luaFunction": "",
+      "displayName": "",
+      "description": "",
+      "args": [
+        { "name": "x", "type": "number" },
+        { "name": "y", "type": "number" }
+      ],
+      "returns": "void",
+      "example": "sendPackage([message,ALL], data)"  
+    },
+    {
+      "name": "Message",
+      "luaFunction": "",
+      "displayName": "",
+      "description": "",
+      "args": [
+        { "name": "x", "type": "number" },
+        { "name": "y", "type": "number" }
+      ],
+      "returns": "void",
+      "example": "Message(message)= \n\n=="  
+    },
+    {
+      "name": "Package",
+      "luaFunction": "",
+      "displayName": "",
+      "description": "",
+      "args": [
+        { "name": "x", "type": "number" },
+        { "name": "y", "type": "number" }
+      ],
+      "returns": "void",
+      "example": "Package([message], data)= \n\n=="  
+    },
+    {
+      "name": "onTouch",
+      "luaFunction": "",
+      "displayName": "",
+      "description": "",
+      "args": [
+        { "name": "x", "type": "number" },
+        { "name": "y", "type": "number" }
+      ],
+      "returns": "void",
+      "example": "onTouch()= \n\n=="  
+    },
+    {
+      "name": "onTouchEnd",
+      "luaFunction": "",
+      "displayName": "",
+      "description": "",
+      "args": [
+        { "name": "x", "type": "number" },
+        { "name": "y", "type": "number" }
+      ],
+      "returns": "void",
+      "example": "onTouchEnd()= \n\n=="  
+    },
+    {
+      "name": "onTouchDisplay",
+      "luaFunction": "",
+      "displayName": "",
+      "description": "",
+      "args": [
+        { "name": "x", "type": "number" },
+        { "name": "y", "type": "number" }
+      ],
+      "returns": "void",
+      "example": "onTouchDisplay()= \n\n=="  
+    },
+    {
+      "name": "onTouchDisplayEnd",
+      "luaFunction": "",
+      "displayName": "",
+      "description": "",
+      "args": [
+        { "name": "x", "type": "number" },
+        { "name": "y", "type": "number" }
+      ],
+      "returns": "void",
+      "example": "onTouchDisplayEnd()= \n\n=="  
+    },
+    {
+      "name": "onTouchObject",
+      "luaFunction": "",
+      "displayName": "",
+      "description": "",
+      "args": [
+        { "name": "x", "type": "number" },
+        { "name": "y", "type": "number" }
+      ],
+      "returns": "void",
+      "example": "onTouchObject(object)= \n\n=="  
+    },
+    {
+      "name": "onTouchObjectEnd",
+      "luaFunction": "",
+      "displayName": "",
+      "description": "",
+      "args": [
+        { "name": "x", "type": "number" },
+        { "name": "y", "type": "number" }
+      ],
+      "returns": "void",
+      "example": "onTouchObjectEnd(object)= \n\n=="  
+    },
+    {
+      "name": "onTimer",
+      "luaFunction": "",
+      "displayName": "",
+      "description": "",
+      "args": [
+        { "name": "x", "type": "number" },
+        { "name": "y", "type": "number" }
+      ],
+      "returns": "void",
+      "example": "onTimer([>] timecode)= \n\n=="  
+    }
+  ]  
+}
+]
+}

@@ -8,6 +8,8 @@
 #include "axmol.h"
 #include <map>
 #include "Settings.h"
+#define JSON_HAS_CPP_20 0
+#include "src/json.hpp"
 using namespace ax;
 
 static int s_sceneID = 1000;
@@ -42,7 +44,6 @@ bool MainScene::init()
     layer->setPosition(Vec2::ZERO);
     this->addChild(layer,0);
 
-
     auto fileUtils = FileUtils::getInstance();
     std::string languageConfig = fileUtils->getWritablePath() + "language.cf";
     if(fileUtils->isFileExist(languageConfig)){
@@ -55,6 +56,7 @@ bool MainScene::init()
     bool read = DATAmanager::getInstance()->LanguageLoad;
     std::string l = DATAmanager::getInstance()->language;
     if(!read){
+        DATAmanager::loadSystemCommands(DATAmanager::getInstance()->commands,DATAmanager::getInstance()->systemCommands);
         LANGUAGE::changeLanguage(l);
         DATAmanager::getInstance()->LanguageLoad = true;
     }
@@ -111,9 +113,19 @@ bool MainScene::init()
     std::string systemPath = fileUtils->getWritablePath() + "projects/";
     DATAmanager::getInstance()->projectsFolder = systemPath;
 
+    std::string simpleLibs = fileUtils->getWritablePath() + "libs/";
+    std::string defaultLib = simpleLibs + "system/";
+    std::string customLib = simpleLibs + "custom/";
+
     if(!fileUtils->isDirectoryExist(systemPath)){
         fileUtils->createDirectories(systemPath);
     }
+    if(!fileUtils->isDirectoryExist(simpleLibs)){
+        fileUtils->createDirectories(simpleLibs);
+        fileUtils->createDirectories(defaultLib);
+        fileUtils->createDirectories(customLib); 
+    }
+
     scheduleUpdate();
 
     return true;

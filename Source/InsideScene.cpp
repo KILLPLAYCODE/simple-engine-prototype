@@ -280,7 +280,7 @@ bool InsideScene::init()
                 std::string objectsConfig = DATAmanager::getInstance()->projectPath + "scenes/" + DATAmanager::getInstance()->sceneName + "/objects.plist";
                 ValueVector sequance = fileUtils->getValueVectorFromFile(objectsConfig);
                 for(auto it = sequance.begin();it != sequance.end();++it){
-                    if(it->asString() == DATAmanager::getInstance()->sceneName){
+                    if(it->asString() == DATAmanager::getInstance()->objectName){
                         sequance.erase(it);
                         break;
                     }
@@ -538,11 +538,9 @@ bool InsideScene::init()
                 float y = total - (iconHeight * i) - iconHeight/2;
                 auto clothesConfig = DATAmanager::getInstance()->projectPath + "scenes/" + DATAmanager::getInstance()->sceneName + "/" + objectsName[i] + "/clothes/clothes.plist";
                 ValueVector cloth = fileUtils->getValueVectorFromFile(clothesConfig);
-                std::string spritesPath;
-                if(!cloth.empty()){
-                    std::string spritesPath = DATAmanager::getInstance()->projectPath + "scenes/" + DATAmanager::getInstance()->sceneName + "/" + objectsName[i] + "/clothes/" + cloth[0].asString();
-                }
-                if(!fileUtils->isFileExist(spritesPath) || spritesPath.empty()){
+                std::string spritesPath = DATAmanager::getInstance()->projectPath + "scenes/" + DATAmanager::getInstance()->sceneName + "/" + objectsName[i] + "/clothes/" + cloth[0].asString();
+
+                if(!fileUtils->isFileExist(spritesPath) || cloth.empty()){
                     spritesPath = "sprites/null.png";
                 }
                 auto picture = Sprite::create(spritesPath);
