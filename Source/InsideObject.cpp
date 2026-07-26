@@ -236,7 +236,7 @@ bool InsideObject::init()
     std::string keys = "qwertyuiopasdfghjklzxcvbnm";
     std::string bigSymbols = "QWERTYUIOPASDFGHJKLZXCVBNM";
     std::string numbers = "1234567890";
-    std::string specialKeys = "!?<>.,-=()";
+    std::string specialKeys = ".,!?-=[]()";
     capsLock = true;
 
     Color3B bgColor(24,28,80);
@@ -288,7 +288,7 @@ bool InsideObject::init()
     std::string fullCode = fileUtils->getStringFromFile(codePath);
     auto containerSizer = Label::createWithBMFont("fonts/classic.fnt",fullCode);
 
-    float distance = 120;
+    float distance = 140;
     float total = distance * 1.2f * code.size();
     if(total < visibleSize.height - 100){
         total = visibleSize.height - 100;
@@ -327,10 +327,10 @@ bool InsideObject::init()
         lineCount->setTextColor(Color4B(0,161,217,255));
         lineCount->setPosition(Vec2(40,y + 42));
         codeList->addChild(lineCount);
-        keyTouchListener->onTouchBegan = [line,i,y,this](Touch* touch,Event* event) -> bool {
+        keyTouchListener->onTouchBegan = [visibleSize,line,i,y,this](Touch* touch,Event* event) -> bool {
             auto lineW = line->getContentSize().width;
             if(lineW < 25){
-                lineW = 25;
+                lineW = visibleSize.width;
             }
             Vec2 clickPoint = line->convertToNodeSpace(touch->getLocation());
             Rect rect = Rect(0,0,lineW,75);
