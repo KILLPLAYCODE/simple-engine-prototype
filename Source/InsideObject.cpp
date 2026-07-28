@@ -13,6 +13,26 @@ using namespace ax;
 
 void SaveCode(std::vector<std::string> &code);
 
+void refreshLine(Label* line, std::vector<std::string>& code, int id){
+    std::string render = code[id];
+    for(auto& sym : render){
+        if(sym == ' '){
+            sym = '|';
+        }
+    }
+    line->setString(render);
+    std::string original = code[id];
+
+    for(int i = 0;i < original.length(); i++){
+        if(original[i] == ' '){
+            auto letter = line->getLetter(i);
+            if(letter != nullptr){
+                letter->setOpacity(0);
+            }
+        }
+    }
+}
+
 void findWord(Label* line, int selectedSymbol){
     auto letter = line->getLetter(selectedSymbol);
     if(letter == nullptr && selectedSymbol > 0){
@@ -22,9 +42,25 @@ void findWord(Label* line, int selectedSymbol){
             return;
         }
     }
+    if(letter == nullptr){
+        return;
+    }
+    if(letter->getOpacity() == 0 && selectedSymbol > 0){
+        selectedSymbol--;
+        letter = line->getLetter(selectedSymbol);
+        if(letter->getOpacity() == 0 || selectedSymbol <= 0){
+            return;
+        }
+    }
     while(letter != nullptr && selectedSymbol > 0){
         selectedSymbol--;
         letter = line->getLetter(selectedSymbol);
+        if(letter != nullptr){
+            if(letter->getOpacity() == 0){
+                selectedSymbol++;
+                break;
+            }
+        }
     }
     int start = selectedSymbol;
     selectedSymbol++;
@@ -33,6 +69,11 @@ void findWord(Label* line, int selectedSymbol){
     while(letter != nullptr && selectedSymbol < stringLength){
         selectedSymbol++;
         letter = line->getLetter(selectedSymbol);
+        if(letter != nullptr){
+            if(letter->getOpacity() == 0){
+                break;
+            }
+        }
     }
     int end = selectedSymbol;
     if(selectedSymbol == stringLength && selectedSymbol > 0){
@@ -106,27 +147,28 @@ void typeSymbol(std::string input,std::vector<std::string>& code,ui::ScrollView*
     bool rightMode = DATAmanager::getInstance()->rightMode;
     int selectedSymbol = DATAmanager::getInstance()->selectedChar;
     int selectedLine = DATAmanager::getInstance()->selectedLine;
-    std::cout<<codeList->getInnerContainerPosition().x<<std::endl;
+    //std::cout<<codeList->getInnerContainerPosition().x<<std::endl;
 
     if(input == "Space"){
         code[selectedLine].insert(selectedSymbol," ");
         DATAmanager::getInstance()->selectedChar += 1;
         auto lineLabel = dynamic_cast<Label*>(codeList->getChildByTag(selectedLine));
         if(lineLabel != nullptr){
-        lineLabel->setString(code[selectedLine]);
-        auto cursor = dynamic_cast<DrawNode*>(lineLabel->getChildByTag(70921));
-        if(cursor != nullptr){
-            auto pos = cursor->getPositionX();
-            cursor->setPositionX(pos + 25);
-        }
-        auto total = codeList->getInnerContainerSize().height;
-        auto visibleSize = codeList->getContentSize().width;
-        auto totalw = (lineLabel->getContentSize().width * 1.2f) + 150;
-        if(totalw < visibleSize){
-            totalw = visibleSize;
-        }
-        codeList->setInnerContainerSize(Size(totalw,total));
-        return;
+            refreshLine(lineLabel, code, selectedLine);
+            //lineLabel->setString(code[selectedLine]);
+            auto cursor = dynamic_cast<DrawNode*>(lineLabel->getChildByTag(70921));
+            if(cursor != nullptr){
+                auto pos = cursor->getPositionX();
+                cursor->setPositionX(pos + 19);
+            }
+            auto total = codeList->getInnerContainerSize().height;
+            auto visibleSize = codeList->getContentSize().width;
+            auto totalw = (lineLabel->getContentSize().width * 1.2f) + 150;
+            if(totalw < visibleSize){
+                totalw = visibleSize;
+            }
+            codeList->setInnerContainerSize(Size(totalw,total));
+            return;
     }
 }
     if(input == "Erase"){
@@ -142,14 +184,14 @@ void typeSymbol(std::string input,std::vector<std::string>& code,ui::ScrollView*
             if(cursor != nullptr){
                 if(letter != nullptr){
                     auto pos = cursor->getPositionX();
-                    auto width = letter->getContentSize().width * 1.1f;
+                    auto width = letter->getContentSize().width;
                     cursor->setPositionX(pos - width);
                     if(lastLetter != nullptr){
                         DrawCursor(lineLabel,selectedSymbol);
                     }
                 } else {
                     auto pos = cursor->getPositionX();
-                    cursor->setPositionX(pos - 25);  
+                    cursor->setPositionX(pos - 20);  
                 }    
             }
             } else if(selectedLine > 0){
@@ -187,22 +229,32 @@ void typeSymbol(std::string input,std::vector<std::string>& code,ui::ScrollView*
     }
     auto lineLabel = dynamic_cast<Label*>(codeList->getChildByTag(selectedLine));
     auto total = codeList->getInnerContainerSize().height;
-    auto visibleSize = codeList->getInnerContainerSize().width;
+    auto visibleSize = codeList->getContentSize().width;
     auto symbol = lineLabel->getLetter(DATAmanager::getInstance()->selectedChar - 1);
     auto totalSymbols = lineLabel->getStringLength();
     if(symbol == nullptr){
         return;
     }
-    auto updateX = codeList->getContentSize().width/2 - symbol->getPositionX() - symbol->getContentSize().width;
-    auto saveY = codeList->getInnerContainerPosition().y;
-    auto totalw = (lineLabel->getContentSize().width * 1.2f) + 150;
+    float symbolAbsoluteX = lineLabel->getPositionX() + symbol->getPositionX() * lineLabel->getScaleX();
+    float symbolWidth = symbol->getContentSize().width * lineLabel->getScaleX();
+    float saveY = codeList->getInnerContainerPosition().y;
+    float currentContainerX = codeList->getInnerContainerPosition().x;
+    float margin = 50;
+    float symbolOnScreenX = currentContainerX + symbolAbsoluteX;
+    float newContainerX = currentContainerX;
+
+    if(symbolOnScreenX + symbolWidth > visibleSize - margin){
+        newContainerX = visibleSize - margin - symbolAbsoluteX - symbolWidth;
+    }
+    else if(symbolOnScreenX < margin){
+        newContainerX = margin - symbolAbsoluteX;
+    }
+    auto totalw = (lineLabel->getContentSize().width * lineLabel->getScaleX() * 1.2f) + 150;
     if(totalw < visibleSize){
         totalw = visibleSize;
     }
     codeList->setInnerContainerSize(Size(totalw,total));
-    if(codeList->getInnerContainerPosition().x > updateX - 100){
-        codeList->setInnerContainerPosition(Vec2(updateX,saveY));
-    }
+    codeList->setInnerContainerPosition(Vec2(newContainerX, saveY));
 }
 
 void SaveCode(std::vector<std::string> &code){
@@ -287,9 +339,10 @@ bool InsideObject::init()
     }
     std::string fullCode = fileUtils->getStringFromFile(codePath);
     auto containerSizer = Label::createWithBMFont("fonts/classic.fnt",fullCode);
+    //refreshLine(containerSizer,code);
 
-    float distance = 140;
-    float total = distance * 1.2f * code.size();
+    float distance = 150;
+    float total = distance * code.size();
     if(total < visibleSize.height - 100){
         total = visibleSize.height - 100;
     }
@@ -299,20 +352,13 @@ bool InsideObject::init()
         totalw = visibleSize.width;
     }
     codeList->setInnerContainerSize(Size(totalw,total));
-    if(DATAmanager::getInstance()->selectedLine == 0){
-        codeList->setInnerContainerPosition(Vec2(0,((visibleSize.height - 100) - total)));
-    } else {
-        auto liner = dynamic_cast<Label*>(codeList->getChildByTag(DATAmanager::getInstance()->selectedLine));
-        if(liner != nullptr){
-            codeList->setInnerContainerPosition(Vec2(0,((liner->getPositionY() + 100) - total)));
-        }
-    }
 
     for(int i = 0;i < code.size(); i++){
         auto keyTouchListener = EventListenerTouchOneByOne::create();
         //keyTouchListener->setSwallowTouches(true);
         float y = total - (90 * i) - 150;
         auto line = Label::createWithBMFont("fonts/classic.fnt",code[i]);
+        refreshLine(line, code, i);
         line->setAnchorPoint(Vec2::ZERO);
         line->setPosition(Vec2(100,y));
         line->setScale(1.2f);
@@ -329,7 +375,7 @@ bool InsideObject::init()
         codeList->addChild(lineCount);
         keyTouchListener->onTouchBegan = [visibleSize,line,i,y,this](Touch* touch,Event* event) -> bool {
             auto lineW = line->getContentSize().width;
-            if(lineW < 25){
+            if(lineW < visibleSize.width){
                 lineW = visibleSize.width;
             }
             Vec2 clickPoint = line->convertToNodeSpace(touch->getLocation());
@@ -389,6 +435,18 @@ bool InsideObject::init()
         };
         _eventDispatcher->addEventListenerWithSceneGraphPriority(keyTouchListener,line);
     }
+    if(DATAmanager::getInstance()->selectedLine > 4){
+        auto liner = dynamic_cast<Label*>(codeList->getChildByTag(DATAmanager::getInstance()->selectedLine));
+        if(liner != nullptr){
+            float lineY = liner->getPositionY();
+            float viewportHeight = codeList->getContentSize().height;
+            float containerY = viewportHeight/2 - lineY;
+            codeList->setInnerContainerPosition(Vec2(0, containerY + 100));
+        } else {
+            codeList->setInnerContainerPosition(Vec2(0,((visibleSize.height - 100) - total)));
+        }
+    }
+
     auto startLine = dynamic_cast<Label*>(codeList->getChildByTag(DATAmanager::getInstance()->selectedLine));
     DrawCursor(startLine,DATAmanager::getInstance()->selectedChar);
 

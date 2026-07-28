@@ -61,7 +61,6 @@ class DATAmanager
     int selectedChar = 0;
     bool rightMode = true;
     ax::DrawNode* cursor = nullptr;
-    ax::Vec2 scrollPosition = ax::Vec2::ZERO;
     //CodeHelper
     int bookName = 0;
     private:
