@@ -12,6 +12,7 @@
 using namespace ax;
 
 void SaveCode(std::vector<std::string> &code);
+void capsButton(bool &capsLock, Node* scene);
 
 void refreshLine(Label* line, std::vector<std::string>& code, int id){
     std::string render = code[id];
@@ -162,7 +163,7 @@ void typeSymbol(std::string input,std::vector<std::string>& code,ui::ScrollView*
                 cursor->setPositionX(pos + 19);
             }
             auto total = codeList->getInnerContainerSize().height;
-            auto visibleSize = codeList->getContentSize().width;
+            auto visibleSize = codeList->getInnerContainerSize().width;
             auto totalw = (lineLabel->getContentSize().width * 1.2f) + 150;
             if(totalw < visibleSize){
                 totalw = visibleSize;
@@ -177,21 +178,21 @@ void typeSymbol(std::string input,std::vector<std::string>& code,ui::ScrollView*
             code[selectedLine].erase(selectedSymbol,1);
             DATAmanager::getInstance()->selectedChar -= 1;
             auto lineLabel = dynamic_cast<Label*>(codeList->getChildByTag(selectedLine));
-            auto letter = lineLabel->getLetter(selectedSymbol);
-            auto lastLetter = lineLabel->getLetter(selectedSymbol - 1);
-            lineLabel->setString(code[selectedLine]);
+            refreshLine(lineLabel,code, selectedLine);
+            auto letter = lineLabel->getLetter(selectedSymbol - 1);
+            //auto lastLetter = lineLabel->getLetter(selectedSymbol - 2);
             auto cursor = dynamic_cast<DrawNode*>(lineLabel->getChildByTag(70921));
             if(cursor != nullptr){
                 if(letter != nullptr){
                     auto pos = cursor->getPositionX();
                     auto width = letter->getContentSize().width;
                     cursor->setPositionX(pos - width);
-                    if(lastLetter != nullptr){
+                    if(letter != nullptr){
                         DrawCursor(lineLabel,selectedSymbol);
                     }
                 } else {
                     auto pos = cursor->getPositionX();
-                    cursor->setPositionX(pos - 20);  
+                    cursor->setPositionX(pos - 18);  
                 }    
             }
             } else if(selectedLine > 0){
@@ -229,7 +230,8 @@ void typeSymbol(std::string input,std::vector<std::string>& code,ui::ScrollView*
     }
     auto lineLabel = dynamic_cast<Label*>(codeList->getChildByTag(selectedLine));
     auto total = codeList->getInnerContainerSize().height;
-    auto visibleSize = codeList->getContentSize().width;
+    auto visibleSize = codeList->getInnerContainerSize().width;
+    auto visibleSizeDisplay = codeList->getContentSize().width;
     auto symbol = lineLabel->getLetter(DATAmanager::getInstance()->selectedChar - 1);
     auto totalSymbols = lineLabel->getStringLength();
     if(symbol == nullptr){
@@ -243,8 +245,8 @@ void typeSymbol(std::string input,std::vector<std::string>& code,ui::ScrollView*
     float symbolOnScreenX = currentContainerX + symbolAbsoluteX;
     float newContainerX = currentContainerX;
 
-    if(symbolOnScreenX + symbolWidth > visibleSize - margin){
-        newContainerX = visibleSize - margin - symbolAbsoluteX - symbolWidth;
+    if(symbolOnScreenX + symbolWidth > visibleSizeDisplay - margin){
+        newContainerX = visibleSizeDisplay - margin - symbolAbsoluteX - symbolWidth;
     }
     else if(symbolOnScreenX < margin){
         newContainerX = margin - symbolAbsoluteX;
@@ -659,9 +661,27 @@ bool InsideObject::init()
     erase->setScaleX(0.17f);
     erase->setTag(182);
     this->addChild(erase);
-    erase->addClickEventListener([this](Object* sender){
-        std::string sym = "Erase";
-        typeSymbol(sym,code,codeList);
+    erase->addTouchEventListener([this](Object* sender, ui::Widget::TouchEventType type){
+        switch(type){
+            case ui::Widget::TouchEventType::BEGAN:
+            {
+                typeSymbol("Erase",code,codeList);
+
+                this->scheduleOnce([this](float dt){
+                    this->schedule([this](float dt){
+                        typeSymbol("Erase",code,codeList);
+                    }, 0.08f, "erase_cycle");
+                }, 0.4f, "erase_delay");
+                break;
+            }
+            case ui::Widget::TouchEventType::ENDED:
+            case ui::Widget::TouchEventType::CANCELED:
+            {
+                this->unschedule("erase_cycle");
+                this->unschedule("erase_delay");
+                break;
+            }
+        }
     });
 
     auto enter = ui::Button::create("sprites/keyboard_button_caps.png","sprites/keyboard_button_caps_pressed.png");
@@ -691,172 +711,9 @@ bool InsideObject::init()
     capsLab->setPosition(Vec2(origin.x + 52,origin.y + 218));
     capsLab->setTag(186);
     this->addChild(capsLab);
+
     caps->addClickEventListener([keys,numbers,this](Object* sender){
-        if(capsLock){
-            capsLock = false;
-            for(int i = 0;i < 10;i++){
-                auto keyChanger = dynamic_cast<ui::Button*>(this->getChildByTag(100 + i));
-                auto key = dynamic_cast<ui::Button*>(this->getChildByTag(1000 + i));
-
-                if(keyChanger == nullptr || key == nullptr){
-                    continue;
-                }
-                keyChanger->setVisible(true);
-                key->setVisible(false);
-            }
-            for(int i = 0;i < 10;i++){
-                auto labelChanger = dynamic_cast<Label*>(this->getChildByTag(110 + i));
-                auto label = dynamic_cast<Label*>(this->getChildByTag(1010 + i));
-
-                if(labelChanger == nullptr || label == nullptr){
-                    continue;
-                }
-                labelChanger->setVisible(true);
-                label->setVisible(false);
-            }
-            for(int i = 0;i < 10;i++){
-                auto keyChanger = dynamic_cast<ui::Button*>(this->getChildByTag(120 + i));
-                auto key = dynamic_cast<ui::Button*>(this->getChildByTag(1020 + i));
-
-                if(keyChanger == nullptr || key == nullptr){
-                    continue;
-                }
-                keyChanger->setVisible(true);
-                key->setVisible(false);
-            }
-            for(int i = 0;i < 10;i++){
-                auto labelChanger = dynamic_cast<Label*>(this->getChildByTag(130 + i));
-                auto label = dynamic_cast<Label*>(this->getChildByTag(1030 + i));
-
-                if(labelChanger == nullptr || label == nullptr){
-                    continue;
-                }
-                labelChanger->setVisible(true);
-                label->setVisible(false);
-            }
-            for(int i = 0;i < 10;i++){
-                auto keyChanger = dynamic_cast<ui::Button*>(this->getChildByTag(140 + i));
-                auto key = dynamic_cast<ui::Button*>(this->getChildByTag(1040 + i));
-
-                if(keyChanger == nullptr || key == nullptr){
-                    continue;
-                }
-                keyChanger->setVisible(true);
-                key->setVisible(false);
-            }
-            for(int i = 0;i < 10;i++){
-                auto labelChanger = dynamic_cast<Label*>(this->getChildByTag(150 + i));
-                auto label = dynamic_cast<Label*>(this->getChildByTag(1050 + i));
-
-                if(labelChanger == nullptr || label == nullptr){
-                    continue;
-                }
-                labelChanger->setVisible(true);
-                label->setVisible(false);
-            }
-            for(int i = 0;i < 10;i++){
-                auto keyChanger = dynamic_cast<ui::Button*>(this->getChildByTag(160 + i));
-                auto key = dynamic_cast<ui::Button*>(this->getChildByTag(1060 + i));
-
-                if(keyChanger == nullptr || key == nullptr){
-                    continue;
-                }
-                keyChanger->setVisible(true);
-                key->setVisible(false);
-            }
-            for(int i = 0;i < 10;i++){
-                auto labelChanger = dynamic_cast<Label*>(this->getChildByTag(170 + i));
-                auto label = dynamic_cast<Label*>(this->getChildByTag(1070 + i));
-
-                if(labelChanger == nullptr || label == nullptr){
-                    continue;
-                }
-                labelChanger->setVisible(true);
-                label->setVisible(false);
-            }
-        } else { /////////////////////////////////////////////////////////////////////////
-            capsLock = true;
-            for(int i = 0;i < 10;i++){
-                auto keyChanger = dynamic_cast<ui::Button*>(this->getChildByTag(100 + i));
-                auto key = dynamic_cast<ui::Button*>(this->getChildByTag(1000 + i));
-
-                if(keyChanger == nullptr || key == nullptr){
-                    continue;
-                }
-                keyChanger->setVisible(false);
-                key->setVisible(true);
-            }
-            for(int i = 0;i < 10;i++){
-                auto labelChanger = dynamic_cast<Label*>(this->getChildByTag(110 + i));
-                auto label = dynamic_cast<Label*>(this->getChildByTag(1010 + i));
-
-                if(labelChanger == nullptr || label == nullptr){
-                    continue;
-                }
-                labelChanger->setVisible(false);
-                label->setVisible(true);
-            }
-            for(int i = 0;i < 10;i++){
-                auto keyChanger = dynamic_cast<ui::Button*>(this->getChildByTag(120 + i));
-                auto key = dynamic_cast<ui::Button*>(this->getChildByTag(1020 + i));
-
-                if(keyChanger == nullptr || key == nullptr){
-                    continue;
-                }
-                keyChanger->setVisible(false);
-                key->setVisible(true);
-            }
-            for(int i = 0;i < 10;i++){
-                auto labelChanger = dynamic_cast<Label*>(this->getChildByTag(130 + i));
-                auto label = dynamic_cast<Label*>(this->getChildByTag(1030 + i));
-
-                if(labelChanger == nullptr || label == nullptr){
-                    continue;
-                }
-                labelChanger->setVisible(false);
-                label->setVisible(true);
-            }
-            for(int i = 0;i < 10;i++){
-                auto keyChanger = dynamic_cast<ui::Button*>(this->getChildByTag(140 + i));
-                auto key = dynamic_cast<ui::Button*>(this->getChildByTag(1040 + i));
-
-                if(keyChanger == nullptr || key == nullptr){
-                    continue;
-                }
-                keyChanger->setVisible(false);
-                key->setVisible(true);
-            }
-            for(int i = 0;i < 10;i++){
-                auto labelChanger = dynamic_cast<Label*>(this->getChildByTag(150 + i));
-                auto label = dynamic_cast<Label*>(this->getChildByTag(1050 + i));
-
-                if(labelChanger == nullptr || label == nullptr){
-                    continue;
-                }
-                labelChanger->setVisible(false);
-                label->setVisible(true);
-            }
-            for(int i = 0;i < 10;i++){
-                auto keyChanger = dynamic_cast<ui::Button*>(this->getChildByTag(160 + i));
-                auto key = dynamic_cast<ui::Button*>(this->getChildByTag(1060 + i));
-
-                if(keyChanger == nullptr || key == nullptr){
-                    continue;
-                }
-                keyChanger->setVisible(false);
-                key->setVisible(true);
-            }
-            for(int i = 0;i < 10;i++){
-                auto labelChanger = dynamic_cast<Label*>(this->getChildByTag(170 + i));
-                auto label = dynamic_cast<Label*>(this->getChildByTag(1070 + i));
-
-                if(labelChanger == nullptr || label == nullptr){
-                    continue;
-                }
-                labelChanger->setVisible(false);
-                label->setVisible(true);
-            }
-        }
+        capsButton(capsLock,this);
     });
 
     keyboardButton->addClickEventListener([origin,this](Object* sender){
@@ -1509,4 +1366,171 @@ void InsideObject::update(float delta)
 void InsideObject::menuCloseCallback(ax::Object* sender)
 {
     _director->end();
+}
+void capsButton(bool &capsLock, Node* scene){
+    if(capsLock){
+            capsLock = false;
+            for(int i = 0;i < 10;i++){
+                auto keyChanger = dynamic_cast<ui::Button*>(scene->getChildByTag(100 + i));
+                auto key = dynamic_cast<ui::Button*>(scene->getChildByTag(1000 + i));
+
+                if(keyChanger == nullptr || key == nullptr){
+                    continue;
+                }
+                keyChanger->setVisible(true);
+                key->setVisible(false);
+            }
+            for(int i = 0;i < 10;i++){
+                auto labelChanger = dynamic_cast<Label*>(scene->getChildByTag(110 + i));
+                auto label = dynamic_cast<Label*>(scene->getChildByTag(1010 + i));
+
+                if(labelChanger == nullptr || label == nullptr){
+                    continue;
+                }
+                labelChanger->setVisible(true);
+                label->setVisible(false);
+            }
+            for(int i = 0;i < 10;i++){
+                auto keyChanger = dynamic_cast<ui::Button*>(scene->getChildByTag(120 + i));
+                auto key = dynamic_cast<ui::Button*>(scene->getChildByTag(1020 + i));
+
+                if(keyChanger == nullptr || key == nullptr){
+                    continue;
+                }
+                keyChanger->setVisible(true);
+                key->setVisible(false);
+            }
+            for(int i = 0;i < 10;i++){
+                auto labelChanger = dynamic_cast<Label*>(scene->getChildByTag(130 + i));
+                auto label = dynamic_cast<Label*>(scene->getChildByTag(1030 + i));
+
+                if(labelChanger == nullptr || label == nullptr){
+                    continue;
+                }
+                labelChanger->setVisible(true);
+                label->setVisible(false);
+            }
+            for(int i = 0;i < 10;i++){
+                auto keyChanger = dynamic_cast<ui::Button*>(scene->getChildByTag(140 + i));
+                auto key = dynamic_cast<ui::Button*>(scene->getChildByTag(1040 + i));
+
+                if(keyChanger == nullptr || key == nullptr){
+                    continue;
+                }
+                keyChanger->setVisible(true);
+                key->setVisible(false);
+            }
+            for(int i = 0;i < 10;i++){
+                auto labelChanger = dynamic_cast<Label*>(scene->getChildByTag(150 + i));
+                auto label = dynamic_cast<Label*>(scene->getChildByTag(1050 + i));
+
+                if(labelChanger == nullptr || label == nullptr){
+                    continue;
+                }
+                labelChanger->setVisible(true);
+                label->setVisible(false);
+            }
+            for(int i = 0;i < 10;i++){
+                auto keyChanger = dynamic_cast<ui::Button*>(scene->getChildByTag(160 + i));
+                auto key = dynamic_cast<ui::Button*>(scene->getChildByTag(1060 + i));
+
+                if(keyChanger == nullptr || key == nullptr){
+                    continue;
+                }
+                keyChanger->setVisible(true);
+                key->setVisible(false);
+            }
+            for(int i = 0;i < 10;i++){
+                auto labelChanger = dynamic_cast<Label*>(scene->getChildByTag(170 + i));
+                auto label = dynamic_cast<Label*>(scene->getChildByTag(1070 + i));
+
+                if(labelChanger == nullptr || label == nullptr){
+                    continue;
+                }
+                labelChanger->setVisible(true);
+                label->setVisible(false);
+            }
+        } else { /////////////////////////////////////////////////////////////////////////
+            capsLock = true;
+            for(int i = 0;i < 10;i++){
+                auto keyChanger = dynamic_cast<ui::Button*>(scene->getChildByTag(100 + i));
+                auto key = dynamic_cast<ui::Button*>(scene->getChildByTag(1000 + i));
+
+                if(keyChanger == nullptr || key == nullptr){
+                    continue;
+                }
+                keyChanger->setVisible(false);
+                key->setVisible(true);
+            }
+            for(int i = 0;i < 10;i++){
+                auto labelChanger = dynamic_cast<Label*>(scene->getChildByTag(110 + i));
+                auto label = dynamic_cast<Label*>(scene->getChildByTag(1010 + i));
+
+                if(labelChanger == nullptr || label == nullptr){
+                    continue;
+                }
+                labelChanger->setVisible(false);
+                label->setVisible(true);
+            }
+            for(int i = 0;i < 10;i++){
+                auto keyChanger = dynamic_cast<ui::Button*>(scene->getChildByTag(120 + i));
+                auto key = dynamic_cast<ui::Button*>(scene->getChildByTag(1020 + i));
+
+                if(keyChanger == nullptr || key == nullptr){
+                    continue;
+                }
+                keyChanger->setVisible(false);
+                key->setVisible(true);
+            }
+            for(int i = 0;i < 10;i++){
+                auto labelChanger = dynamic_cast<Label*>(scene->getChildByTag(130 + i));
+                auto label = dynamic_cast<Label*>(scene->getChildByTag(1030 + i));
+
+                if(labelChanger == nullptr || label == nullptr){
+                    continue;
+                }
+                labelChanger->setVisible(false);
+                label->setVisible(true);
+            }
+            for(int i = 0;i < 10;i++){
+                auto keyChanger = dynamic_cast<ui::Button*>(scene->getChildByTag(140 + i));
+                auto key = dynamic_cast<ui::Button*>(scene->getChildByTag(1040 + i));
+
+                if(keyChanger == nullptr || key == nullptr){
+                    continue;
+                }
+                keyChanger->setVisible(false);
+                key->setVisible(true);
+            }
+            for(int i = 0;i < 10;i++){
+                auto labelChanger = dynamic_cast<Label*>(scene->getChildByTag(150 + i));
+                auto label = dynamic_cast<Label*>(scene->getChildByTag(1050 + i));
+
+                if(labelChanger == nullptr || label == nullptr){
+                    continue;
+                }
+                labelChanger->setVisible(false);
+                label->setVisible(true);
+            }
+            for(int i = 0;i < 10;i++){
+                auto keyChanger = dynamic_cast<ui::Button*>(scene->getChildByTag(160 + i));
+                auto key = dynamic_cast<ui::Button*>(scene->getChildByTag(1060 + i));
+
+                if(keyChanger == nullptr || key == nullptr){
+                    continue;
+                }
+                keyChanger->setVisible(false);
+                key->setVisible(true);
+            }
+            for(int i = 0;i < 10;i++){
+                auto labelChanger = dynamic_cast<Label*>(scene->getChildByTag(170 + i));
+                auto label = dynamic_cast<Label*>(scene->getChildByTag(1070 + i));
+
+                if(labelChanger == nullptr || label == nullptr){
+                    continue;
+                }
+                labelChanger->setVisible(false);
+                label->setVisible(true);
+            }
+        }
 }
