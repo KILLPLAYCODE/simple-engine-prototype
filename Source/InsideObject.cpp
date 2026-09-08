@@ -6,6 +6,7 @@
 #include "InsideScene.h"
 #include "CodeHelper.h"
 #include <map>
+#include <vector>
 #include <sstream>
 #include <iostream>
 #include <fstream>
@@ -13,6 +14,7 @@ using namespace ax;
 
 void SaveCode(std::vector<std::string> &code);
 void capsButton(bool &capsLock, Node* scene);
+void DrawCursor(Label* line,int selectedChar,std::vector<std::string>& code);
 
 void refreshLine(Label* line, std::vector<std::string>& code, int id){
     std::string render = code[id];
@@ -34,22 +36,161 @@ void refreshLine(Label* line, std::vector<std::string>& code, int id){
     }
 }
 
-void findWord(Label* line, int selectedSymbol){
+void DrawPanel(Label* line,std::vector<std::string>& listCommands,std::vector<std::string>& listExamples,std::vector<std::string>& code){
+    auto oldpanelTouch = DATAmanager::getInstance()->panelTouch;
+    auto oldPanel = DATAmanager::getInstance()->panel;
+    if(oldPanel != nullptr && oldPanel->getParent() != nullptr){
+        oldPanel->removeAllChildren();
+        oldPanel->removeFromParent();
+        DATAmanager::getInstance()->panel = nullptr;
+        std::cout<<"ERASE#1\n";
+    }
+    if(oldpanelTouch != nullptr){
+        Director::getInstance()->getEventDispatcher()->removeEventListener(oldpanelTouch);
+        DATAmanager::getInstance()->panelTouch = nullptr;
+    }
+    if(listCommands.size() == 0){
+        return;
+    }
+    auto panelTouch = EventListenerTouchOneByOne::create();
+    panelTouch->setSwallowTouches(true);
+    auto panel = ui::Layout::create();
+    auto selectedSymbol = DATAmanager::getInstance()->selectedChar;
+    auto cursor = DATAmanager::getInstance()->cursor;
+    //auto scene = Director::getInstance()->getRunningScene();
+    //auto scroll = dynamic_cast<ui::ScrollView*>(scene->getChildByTag(63));
+    if(cursor == nullptr){
+        return;
+    }
+    if(line != nullptr){
+        float posY = 40 * listCommands.size();
+        auto symbol = line->getLetter(selectedSymbol);
+        float pos = 0;
+        if(symbol == nullptr){
+            symbol = line->getLetter(selectedSymbol - 1);
+        }
+        if(DATAmanager::getInstance()->rightMode){
+            pos = symbol->getPositionX() + symbol->getContentSize().width/2;
+        } else {
+            pos = symbol->getPositionX() - symbol->getContentSize().width/2;
+        }
+        if(listCommands.size() > 8){
+            posY = 320;
+        }
+        //panel->drawSolidRect(Vec2(pos, 0), Vec2(pos + 300,-posY),Color4F(0.31f,0.31f,0.31f,1));
+        panel->setContentSize(Size(300,posY));
+        panel->setBackGroundColorType(ui::Layout::BackGroundColorType::SOLID);
+        panel->setBackGroundColor(Color3B(80, 80, 80));
+        panel->setPosition(Vec2(pos,-posY));
+        panel->setTouchEnabled(true);
+        line->addChild(panel,100);
+        DATAmanager::getInstance()->panel = panel;
+        DATAmanager::getInstance()->panelTouch = panelTouch;
+
+        float elementY = 40 * listCommands.size();
+
+        auto commandList = ui::ScrollView::create();
+        commandList->setContentSize(Size(300,posY));
+        commandList->setDirection(ui::ScrollView::Direction::VERTICAL);
+        commandList->setScrollBarEnabled(true);
+        panel->addChild(commandList);
+        commandList->setPosition(Vec2(0,0));
+        commandList->setInnerContainerSize(Size(300,elementY));
+
+        /*panelTouch->onTouchBegan = [panel,posY](Touch* touch,Event* event) -> bool {
+            Vec2 clickPoint = panel->convertToNodeSpace(touch->getLocation());
+            Rect zone = Rect(0,0,300,-posY);
+            if(zone.containsPoint(clickPoint)){
+                return true;
+            }
+            return false;
+        };
+        Director::getInstance()->getEventDispatcher()->addEventListenerWithSceneGraphPriority(panelTouch,panel);*/
+
+        for(int i = 0;i < listCommands.size();i++){
+            auto y = elementY - (40 * i) - 30;
+            auto button = ui::Button::create("sprites/command.png","sprites/command_pressed.png");
+            button->setPosition(Vec2(150,y));
+            button->setScale(0.5f);
+            commandList->addChild(button);
+            
+            auto title = Label::createWithTTF(listCommands[i],"fonts/PB_Pixel.ttf",55);
+            title->setPosition(Vec2(150,y + 30));
+            commandList->addChild(title,10);
+
+            button->addClickEventListener([line,&code,i,listExamples](Object* sender){
+                auto length = DATAmanager::getInstance()->endPoint - DATAmanager::getInstance()->startPoint;
+                code[DATAmanager::getInstance()->selectedLine].erase(DATAmanager::getInstance()->startPoint,length);
+                code[DATAmanager::getInstance()->selectedLine].insert(DATAmanager::getInstance()->startPoint,listExamples[i]);
+                refreshLine(line,code,DATAmanager::getInstance()->selectedLine);
+                DrawCursor(line,DATAmanager::getInstance()->startPoint,code);
+            });
+
+            //std::cout<<listCommands[i]<<std::endl;
+        }
+    } else {
+        std::cout<<"EMPTY"<<std::endl;
+        return;
+    }
+}
+
+void searchCommands(std::string word,std::vector<SystemCommands>& commands,std::vector<std::string>& listExamples,std::vector<std::string>& listCommands,Label* line,std::vector<std::string>& code){
+    listCommands.clear();
+    listExamples.clear();
+    if(word.empty()){
+        return;
+    }
+    for(int i = 0; i < commands.size();i++){
+        SystemCommands& sys = commands[i];
+        if(word.length() < sys.name.length()){
+            std::string cut = sys.name.substr(0,word.length());
+            if(cut == word){
+                listCommands.push_back(sys.name);
+                listExamples.push_back(sys.command);
+                //std::cout<<sys.name<<std::endl;
+            }
+        }
+    }
+    DrawPanel(line,listCommands,listExamples,code);
+}
+
+void findWord(Label* line, int selectedSymbol,std::vector<std::string>& code){
     auto letter = line->getLetter(selectedSymbol);
     if(letter == nullptr && selectedSymbol > 0){
         selectedSymbol--;
         letter = line->getLetter(selectedSymbol);
         if(letter == nullptr || selectedSymbol <= 0){
+            /*auto oldPanel = DATAmanager::getInstance()->panel;
+            if(oldPanel != nullptr && oldPanel->getParent() != nullptr){
+                oldPanel->removeAllChildren();
+                oldPanel->removeFromParent();
+                DATAmanager::getInstance()->panel = nullptr;
+                std::cout<<"ERASE#2\n";
+            }*/
             return;
         }
     }
     if(letter == nullptr){
+        /*auto oldPanel = DATAmanager::getInstance()->panel;
+        if(oldPanel != nullptr && oldPanel->getParent() != nullptr){
+            oldPanel->removeAllChildren();
+            oldPanel->removeFromParent();
+            DATAmanager::getInstance()->panel = nullptr;
+            std::cout<<"ERASE#3\n";
+        }*/
         return;
     }
     if(letter->getOpacity() == 0 && selectedSymbol > 0){
         selectedSymbol--;
         letter = line->getLetter(selectedSymbol);
         if(letter->getOpacity() == 0 || selectedSymbol <= 0){
+            auto oldPanel = DATAmanager::getInstance()->panel;
+            if(oldPanel != nullptr && oldPanel->getParent() != nullptr){
+                oldPanel->removeAllChildren();
+                oldPanel->removeFromParent();
+                DATAmanager::getInstance()->panel = nullptr;
+                std::cout<<"ERASE#4\n";
+            }
             return;
         }
     }
@@ -82,16 +223,20 @@ void findWord(Label* line, int selectedSymbol){
     }
 
     auto text = line->getString();
-    auto word = text.substr(start,end - start);
-    std::cout<<word<<std::endl;
+    std::string word = std::string(text.substr(start,end - start));
+    DATAmanager::getInstance()->startPoint = start;
+    DATAmanager::getInstance()->endPoint = end - start;
+    searchCommands(word,DATAmanager::getInstance()->commands, DATAmanager::getInstance()->listCommands,DATAmanager::getInstance()->listExamples,line,code);
+    //std::cout<<word<<std::endl;
 }
 
-void DrawCursor(Label* line,int selectedChar){
+void DrawCursor(Label* line,int selectedChar,std::vector<std::string>& code){
     auto oldCursor = DATAmanager::getInstance()->cursor;
     bool rightMode = DATAmanager::getInstance()->rightMode;
     if(oldCursor != nullptr && oldCursor->getParent() != nullptr){
-        oldCursor->removeFromParent();
         DATAmanager::getInstance()->cursor = nullptr;
+        oldCursor->removeAllChildren();
+        oldCursor->removeFromParent();
     }
     auto cursorDraw = DrawNode::create();
     float cursorX = 0;
@@ -141,7 +286,109 @@ void DrawCursor(Label* line,int selectedChar){
     cursorDraw->runAction(RepeatForever::create(animationSeq));
 
     DATAmanager::getInstance()->cursor = cursorDraw;
-    findWord(line,selectedChar);
+    findWord(line,selectedChar,code);
+}
+
+void createNewLine(int selectedLine, ui::ScrollView* codeList, std::vector<std::string>& code){
+    float y = codeList->getContentSize().height - (90 * selectedLine) - 250;
+    auto keyTouchListener = EventListenerTouchOneByOne::create();
+    auto line = Label::createWithBMFont("fonts/classic.fnt","");
+    refreshLine(line, code, selectedLine + 1);
+    line->setAnchorPoint(Vec2::ZERO);
+    line->setPosition(Vec2(100,y));
+    line->setScale(1.2f);
+    line->setTextColor(Color4B(255,255,255,255));
+    line->setTag(selectedLine + 1);
+    codeList->addChild(line);
+    auto dash = DrawNode::create();
+    dash->drawSegment(Vec2(80,y + 85),Vec2(80,y - 10),8,Color4F(0,0.63f,0.85f,1));
+    codeList->addChild(dash);
+    std::string count = std::to_string(selectedLine + 1);
+    auto lineCount = Label::createWithTTF(count,"fonts/TT Rounds Neue.ttf",60 - count.length() * 2);
+    lineCount->setTextColor(Color4B(0,161,217,255));
+    lineCount->setPosition(Vec2(40,y + 42));
+    codeList->addChild(lineCount);
+    auto visibleSize = codeList->getContentSize();
+    auto node = Director::getInstance()->getRunningScene();
+    int i = selectedLine + 1;
+    auto totalw = codeList->getInnerContainerSize().width;
+
+    keyTouchListener->onTouchBegan = [visibleSize,line,i,y,node,code](Touch* touch,Event* event) -> bool {    
+        auto lineW = line->getContentSize().width;
+        if(lineW < visibleSize.width){
+            lineW = visibleSize.width;
+        }
+        Vec2 clickPoint = line->convertToNodeSpace(touch->getLocation());
+        Rect rect = Rect(0,0,lineW,75);
+        if(rect.containsPoint(clickPoint)){
+            DATAmanager::getInstance()->selectedLine = i;
+            float selectX = clickPoint.x;
+            int totalSymbols = line->getStringLength();
+            DATAmanager::getInstance()->selectedChar = 0;
+            if(totalSymbols > 0){
+                float distance = 1000000.0f;
+                for(int c = 0;c < totalSymbols;c++){
+                    auto letter = line->getLetter(c);
+                    if(letter != nullptr){
+                        float letterLX = letter->getPositionX();
+                        float letterW = letter->getContentSize().width/2;
+                        float letterRX = letterLX + letterW;
+
+                        if(std::abs(selectX - letterLX) < distance){
+                            distance = std::abs(selectX - letterLX);
+                            DATAmanager::getInstance()->selectedChar = c;
+                        }
+
+                        if(std::abs(selectX - letterRX) < distance){
+                            distance = std::abs(selectX - letterRX);
+                            DATAmanager::getInstance()->selectedChar = c + 1;
+                        }
+
+                        if(std::abs(selectX - letterLX) < std::abs(selectX - letterRX)){
+                            DATAmanager::getInstance()->rightMode = false;
+                            } else {
+                                DATAmanager::getInstance()->rightMode = true;
+                            }
+                        } else {
+                            float letterLX = 0;
+                            float letterRX = 25;
+                            if(std::abs(selectX - letterLX) < distance){
+                                distance = std::abs(selectX - letterLX);
+                                DATAmanager::getInstance()->selectedChar = c;
+                            }
+                            if(std::abs(selectX - letterRX) < distance){
+                                distance = std::abs(selectX - letterRX);
+                                DATAmanager::getInstance()->selectedChar = c + 1;
+                            }
+                            if(std::abs(selectX - letterLX) < std::abs(selectX - letterRX)){
+                                DATAmanager::getInstance()->rightMode = false;
+                            } else {
+                                DATAmanager::getInstance()->rightMode = true;
+                            }
+                        }
+                    }
+                    //DrawCursor(line,DATAmanager::getInstance()->selectedChar,code);
+                } else if(i < code.size()){
+                    //DrawCursor(line,0,code);
+                }
+                return true;
+            }
+            return false;
+        };
+        Director::getInstance()->getEventDispatcher()->addEventListenerWithSceneGraphPriority(keyTouchListener,line);
+
+        if(DATAmanager::getInstance()->selectedLine > 4){
+        auto liner = dynamic_cast<Label*>(codeList->getChildByTag(DATAmanager::getInstance()->selectedLine));
+        //codeList->setInnerContainerSize(Size(totalw,total));
+        if(liner != nullptr){
+            float lineY = liner->getPositionY();
+            float viewportHeight = codeList->getContentSize().height;
+            float containerY = viewportHeight/2 - lineY;
+            codeList->setInnerContainerPosition(Vec2(0, containerY + 100));
+        } else {
+            //codeList->setInnerContainerPosition(Vec2(0,((visibleSize.height - 100) - total)));
+        }
+    }
 }
 
 void typeSymbol(std::string input,std::vector<std::string>& code,ui::ScrollView* codeList){
@@ -187,8 +434,11 @@ void typeSymbol(std::string input,std::vector<std::string>& code,ui::ScrollView*
                     auto pos = cursor->getPositionX();
                     auto width = letter->getContentSize().width;
                     cursor->setPositionX(pos - width);
-                    if(letter != nullptr){
-                        DrawCursor(lineLabel,selectedSymbol);
+                    if(letter->getOpacity() != 0){
+                        DrawCursor(lineLabel,selectedSymbol,code);
+                    } else {
+                        auto pos = cursor->getPositionX();
+                        cursor->setPositionX(pos - 18);
                     }
                 } else {
                     auto pos = cursor->getPositionX();
@@ -209,6 +459,7 @@ void typeSymbol(std::string input,std::vector<std::string>& code,ui::ScrollView*
         return;
     }
     if(input == "Enter"){
+        auto lineLabel = dynamic_cast<Label*>(codeList->getChildByTag(selectedLine));
         std::string lineText = code[selectedLine];
         std::string leftPart = lineText.substr(0,selectedSymbol);
         std::string rightPart = lineText.substr(selectedSymbol);
@@ -216,17 +467,22 @@ void typeSymbol(std::string input,std::vector<std::string>& code,ui::ScrollView*
         code.insert(code.begin() + selectedLine + 1,rightPart);
         DATAmanager::getInstance()->selectedLine = selectedLine + 1;
         DATAmanager::getInstance()->selectedChar = 0;
+        //refreshLine(lineLabel,code,selectedLine);
+        //createNewLine(selectedLine,codeList,code);
         SaveCode(code);
         auto reload = InsideObject::createScene();
         Director::getInstance()->replaceScene(reload);
         return;
     }
     code[selectedLine].insert(selectedSymbol,input);
-    DATAmanager::getInstance()->selectedChar += 1;
     auto lineData = dynamic_cast<Label*>(codeList->getChildByTag(selectedLine));
     if(lineData != nullptr){
-        lineData->setString(code[selectedLine]);
-        DrawCursor(lineData,DATAmanager::getInstance()->selectedChar);
+        refreshLine(lineData,code,selectedLine);
+        //lineData->setString(code[selectedLine]);
+        DATAmanager::getInstance()->selectedChar += 1;
+        DrawCursor(lineData,DATAmanager::getInstance()->selectedChar,code);
+    } else {
+        return;
     }
     auto lineLabel = dynamic_cast<Label*>(codeList->getChildByTag(selectedLine));
     auto total = codeList->getInnerContainerSize().height;
@@ -266,6 +522,8 @@ void SaveCode(std::vector<std::string> &code){
         output << line << "\n";
     }
     output.close();
+    DATAmanager::getInstance()->panel = nullptr;
+    DATAmanager::getInstance()->panelTouch = nullptr;
 }
 Scene* InsideObject::createScene() 
 {
@@ -322,6 +580,7 @@ bool InsideObject::init()
     codeList->setPosition(Vec2(origin.x,origin.y));
     codeList->setDirection(ui::ScrollView::Direction::BOTH);
     codeList->setScrollBarEnabled(true);
+    codeList->setTag(63);
     this->addChild(codeList);
 
     auto fileUtils = FileUtils::getInstance();
@@ -343,8 +602,8 @@ bool InsideObject::init()
     auto containerSizer = Label::createWithBMFont("fonts/classic.fnt",fullCode);
     //refreshLine(containerSizer,code);
 
-    float distance = 150;
-    float total = distance * code.size();
+    float distance = 150 * code.size();
+    float total = distance - 150;
     if(total < visibleSize.height - 100){
         total = visibleSize.height - 100;
     }
@@ -366,12 +625,12 @@ bool InsideObject::init()
         line->setScale(1.2f);
         line->setTextColor(Color4B(255,255,255,255));
         line->setTag(i);
-        codeList->addChild(line);
+        codeList->addChild(line,0);
         auto dash = DrawNode::create();
         dash->drawSegment(Vec2(80,y + 75),Vec2(80,y - 10),8,Color4F(0,0.63f,0.85f,1));
         codeList->addChild(dash);
         std::string count = std::to_string(i);
-        auto lineCount = Label::createWithTTF(count,"fonts/TT Rounds Neue.ttf",65 - count.length() * 2);
+        auto lineCount = Label::createWithTTF(count,"fonts/TT Rounds Neue.ttf",60 - count.length() * 2);
         lineCount->setTextColor(Color4B(0,161,217,255));
         lineCount->setPosition(Vec2(40,y + 42));
         codeList->addChild(lineCount);
@@ -427,9 +686,9 @@ bool InsideObject::init()
                             }
                         }
                     }
-                    DrawCursor(line,DATAmanager::getInstance()->selectedChar);
+                    DrawCursor(line,DATAmanager::getInstance()->selectedChar,code);
                 } else if(i < code.size()){
-                    DrawCursor(line,0);
+                    DrawCursor(line,0,code);
                 }
                 return true;
             }
@@ -444,13 +703,19 @@ bool InsideObject::init()
             float viewportHeight = codeList->getContentSize().height;
             float containerY = viewportHeight/2 - lineY;
             codeList->setInnerContainerPosition(Vec2(0, containerY + 100));
+            std::cout<<"IMPORT#1\n";
         } else {
             codeList->setInnerContainerPosition(Vec2(0,((visibleSize.height - 100) - total)));
+            std::cout<<"IMPORT#2\n";
         }
+    } else {
+        auto h = codeList->getInnerContainerSize().height;
+        codeList->setInnerContainerPosition(Vec2(0,h - 100));
+        std::cout<<"IMPORT#3\n";
     }
 
     auto startLine = dynamic_cast<Label*>(codeList->getChildByTag(DATAmanager::getInstance()->selectedLine));
-    DrawCursor(startLine,DATAmanager::getInstance()->selectedChar);
+    DrawCursor(startLine,DATAmanager::getInstance()->selectedChar,code);
 
     //KEYBOARD SETTINGS
 
@@ -576,6 +841,7 @@ bool InsideObject::init()
         key->setTag(1040 + i);
         this->addChild(key);
         key->addClickEventListener([keyString,this](Object* sender){
+            Device::vibrate(0.05f);
             typeSymbol(keyString,code,codeList);
         });
 
@@ -593,6 +859,7 @@ bool InsideObject::init()
         num1->setTag(140 + i);
         this->addChild(num1);
         num1->addClickEventListener([numString1,this](Object* sender){
+            Device::vibrate(0.05f);
             typeSymbol(numString1,code,codeList);
         });
 
@@ -613,6 +880,7 @@ bool InsideObject::init()
         key->setTag(1060 + i);
         this->addChild(key);
         key->addClickEventListener([keyString,this](Object* sender){
+            Device::vibrate(0.05f);
             typeSymbol(keyString,code,codeList);
         });
 
@@ -630,6 +898,7 @@ bool InsideObject::init()
         num1->setTag(160 + i);
         this->addChild(num1);
         num1->addClickEventListener([numString1,this](Object* sender){
+            Device::vibrate(0.05f);
             typeSymbol(numString1,code,codeList);
         });
 
@@ -665,10 +934,12 @@ bool InsideObject::init()
         switch(type){
             case ui::Widget::TouchEventType::BEGAN:
             {
+                Device::vibrate(0.05f);
                 typeSymbol("Erase",code,codeList);
 
                 this->scheduleOnce([this](float dt){
                     this->schedule([this](float dt){
+                        Device::vibrate(0.05f);
                         typeSymbol("Erase",code,codeList);
                     }, 0.08f, "erase_cycle");
                 }, 0.4f, "erase_delay");
@@ -691,6 +962,7 @@ bool InsideObject::init()
     enter->setTag(183);
     this->addChild(enter);
     enter->addClickEventListener([this](Object* sender){
+        Device::vibrate(0.05f);
         std::string sym = "Enter";
         typeSymbol(sym,code,codeList);
     });
@@ -713,6 +985,7 @@ bool InsideObject::init()
     this->addChild(capsLab);
 
     caps->addClickEventListener([keys,numbers,this](Object* sender){
+        Device::vibrate(0.05f);
         capsButton(capsLock,this);
     });
 

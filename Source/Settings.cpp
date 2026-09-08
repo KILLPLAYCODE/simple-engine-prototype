@@ -38,11 +38,19 @@ bool Settings::init()
     std::map<int,std::string> text = DATAmanager::getInstance()->translater;
     std::string font = DATAmanager::getInstance()->buttonFont;
     std::string LabelFont = DATAmanager::getInstance()->titleFont;
+    int theme = DATAmanager::getInstance()->theme;
 
-    Color3B bgColor(255,43,43);
-    auto layer = LayerColor::create(Color4B(bgColor),visibleSize.width,visibleSize.height);
-    layer->setPosition(Vec2::ZERO);
-    this->addChild(layer,0);
+    if(theme == 0){
+        Color3B bgColor(135, 206, 235);
+        auto layer = LayerColor::create(Color4B(bgColor),visibleSize.width,visibleSize.height);
+        layer->setPosition(Vec2::ZERO);
+        this->addChild(layer,0);
+    }
+    if(theme == 1){
+        auto layer = LayerColor::create(Color4B(5,0,32,255),visibleSize.width,visibleSize.height);
+        layer->setPosition(Vec2::ZERO);
+        this->addChild(layer,0);
+    }
 
     auto list = ui::ScrollView::create();
     list->setContentSize(Vec2(visibleSize.width,visibleSize.height));
@@ -66,58 +74,113 @@ bool Settings::init()
         auto nextScene = MainScene::createScene();
         Director::getInstance()->replaceScene(nextScene);
     });
-    list->addChild(back, 25);
+    this->addChild(back, 25);
 
-    auto languageButton = ui::Button::create("sprites/button_1.png", "sprites/button_1_pressed.png");
-    languageButton->setPosition(Vec2(origin.x + visibleSize.width/2 - 175,origin.y + visibleSize.height/2));
-    languageButton->setScale(0.5f);
-    list->addChild(languageButton,10);
-    languageButton->setTitleText("English");
-    languageButton->setTitleFontName("fonts/Gokart Bubble.otf");
-    languageButton->setTitleFontSize(128);
-    languageButton->addClickEventListener([=](Object* sender){
-        std::string l = "en";
-        LANGUAGE::changeLanguage(l);
-        std::string LabelFont = DATAmanager::getInstance()->titleFont;
-        std::map<int,std::string> text = DATAmanager::getInstance()->translater;
-        TTFConfig config(LabelFont, 98);
-        labelanguage->setString(text[4]);
-        labelanguage->setTTFConfig(config);
-    });
+    if(theme == 0){
+        auto languageButton = ui::Button::create("sprites/button_1.png", "sprites/button_1_pressed.png");
+        languageButton->setPosition(Vec2(origin.x + visibleSize.width/2 - 175,origin.y + visibleSize.height/2));
+        languageButton->setScale(0.5f);
+        list->addChild(languageButton,10);
+        languageButton->setTitleText("English");
+        languageButton->setTitleFontName("fonts/Gokart Bubble.otf");
+        languageButton->setTitleFontSize(128);
+        languageButton->addClickEventListener([=](Object* sender){
+            std::string l = "en";
+            LANGUAGE::changeLanguage(l);
+            std::string LabelFont = DATAmanager::getInstance()->titleFont;
+            std::map<int,std::string> text = DATAmanager::getInstance()->translater;
+            TTFConfig config(LabelFont, 98);
+            labelanguage->setString(text[4]);
+            labelanguage->setTTFConfig(config);    
+        });
 
-    auto languageButton2 = ui::Button::create("sprites/button_1.png", "sprites/button_1_pressed.png");
-    languageButton2->setPosition(Vec2(origin.x + visibleSize.width/2 + 175,origin.y + visibleSize.height/2));
-    languageButton2->setScale(0.5f);
-    list->addChild(languageButton2,10);
-    languageButton2->setTitleText("Русский");
-    languageButton2->setTitleFontName("fonts/Simple.ttf");
-    languageButton2->setTitleFontSize(128);
-    languageButton2->addClickEventListener([=](Object* sender){
-        std::string l = "ru";
-        LANGUAGE::changeLanguage(l);
-        std::string LabelFont = DATAmanager::getInstance()->titleFont;
-        std::map<int,std::string> text = DATAmanager::getInstance()->translater;
-        TTFConfig config(LabelFont, 98);
-        labelanguage->setString(text[4]);
-        labelanguage->setTTFConfig(config);
-    });
+        auto languageButton2 = ui::Button::create("sprites/button_1.png", "sprites/button_1_pressed.png");
+        languageButton2->setPosition(Vec2(origin.x + visibleSize.width/2 + 175,origin.y + visibleSize.height/2));
+        languageButton2->setScale(0.5f);
+        list->addChild(languageButton2,10);
+        languageButton2->setTitleText("Русский");
+        languageButton2->setTitleFontName("fonts/Simple.ttf");
+        languageButton2->setTitleFontSize(128);
+        languageButton2->addClickEventListener([=](Object* sender){
+            std::string l = "ru";
+            LANGUAGE::changeLanguage(l);
+            std::string LabelFont = DATAmanager::getInstance()->titleFont;
+            std::map<int,std::string> text = DATAmanager::getInstance()->translater;
+            TTFConfig config(LabelFont, 98);
+            labelanguage->setString(text[4]);
+            labelanguage->setTTFConfig(config);
+        });
 
-    auto languageButton3 = ui::Button::create("sprites/button_1.png", "sprites/button_1_pressed.png");
-    languageButton3->setPosition(Vec2(origin.x + visibleSize.width/2 - 175,origin.y + visibleSize.height/2 - 150));
-    languageButton3->setScale(0.5f);
-    list->addChild(languageButton3,10);
-    languageButton3->setTitleText("Українська");
-    languageButton3->setTitleFontName("fonts/Simple.ttf");
-    languageButton3->setTitleFontSize(98);
-    languageButton3->addClickEventListener([=](Object* sender){
-        std::string l = "ukr";
-        LANGUAGE::changeLanguage(l);
-        std::string LabelFont = DATAmanager::getInstance()->titleFont;
-        std::map<int,std::string> text = DATAmanager::getInstance()->translater;
-        TTFConfig config(LabelFont, 98);
-        labelanguage->setString(text[4]);
-        labelanguage->setTTFConfig(config);
-    });
+        auto languageButton3 = ui::Button::create("sprites/button_1.png", "sprites/button_1_pressed.png");
+        languageButton3->setPosition(Vec2(origin.x + visibleSize.width/2 - 175,origin.y + visibleSize.height/2 - 150));
+        languageButton3->setScale(0.5f);
+        list->addChild(languageButton3,10);
+        languageButton3->setTitleText("Українська");
+        languageButton3->setTitleFontName("fonts/Simple.ttf");
+        languageButton3->setTitleFontSize(98);
+        languageButton3->addClickEventListener([=](Object* sender){
+            std::string l = "ukr";
+            LANGUAGE::changeLanguage(l);
+            std::string LabelFont = DATAmanager::getInstance()->titleFont;
+            std::map<int,std::string> text = DATAmanager::getInstance()->translater;
+            TTFConfig config(LabelFont, 98);
+            labelanguage->setString(text[4]);
+            labelanguage->setTTFConfig(config);
+        });
+    }
+
+    if(theme == 1){
+        auto languageButton = ui::Button::create("sprites/night/button_1.png", "sprites/night/button_1_pressed.png");
+        languageButton->setPosition(Vec2(origin.x + visibleSize.width/2 - 175,origin.y + visibleSize.height/2));
+        languageButton->setScale(0.5f);
+        list->addChild(languageButton,10);
+        languageButton->setTitleText("ENGLISH");
+        languageButton->setTitleFontName("fonts/Gokart Bubble.otf");
+        languageButton->setTitleFontSize(128);
+        languageButton->addClickEventListener([=](Object* sender){
+            std::string l = "en";
+            LANGUAGE::changeLanguage(l);
+            std::string LabelFont = DATAmanager::getInstance()->titleFont;
+            std::map<int,std::string> text = DATAmanager::getInstance()->translater;
+            TTFConfig config(LabelFont, 98);
+            labelanguage->setString(text[4]);
+            labelanguage->setTTFConfig(config);    
+        });
+
+        auto languageButton2 = ui::Button::create("sprites/night/button_1.png", "sprites/night/button_1_pressed.png");
+        languageButton2->setPosition(Vec2(origin.x + visibleSize.width/2 + 175,origin.y + visibleSize.height/2));
+        languageButton2->setScale(0.5f);
+        list->addChild(languageButton2,10);
+        languageButton2->setTitleText("Русский");
+        languageButton2->setTitleFontName("fonts/Simple.ttf");
+        languageButton2->setTitleFontSize(128);
+        languageButton2->addClickEventListener([=](Object* sender){
+            std::string l = "ru";
+            LANGUAGE::changeLanguage(l);
+            std::string LabelFont = DATAmanager::getInstance()->titleFont;
+            std::map<int,std::string> text = DATAmanager::getInstance()->translater;
+            TTFConfig config(LabelFont, 98);
+            labelanguage->setString(text[4]);
+            labelanguage->setTTFConfig(config);
+        });
+
+        auto languageButton3 = ui::Button::create("sprites/night/button_1.png", "sprites/night/button_1_pressed.png");
+        languageButton3->setPosition(Vec2(origin.x + visibleSize.width/2 - 175,origin.y + visibleSize.height/2 - 150));
+        languageButton3->setScale(0.5f);
+        list->addChild(languageButton3,10);
+        languageButton3->setTitleText("Українська");
+        languageButton3->setTitleFontName("fonts/Simple.ttf");
+        languageButton3->setTitleFontSize(98);
+        languageButton3->addClickEventListener([=](Object* sender){
+            std::string l = "ukr";
+            LANGUAGE::changeLanguage(l);
+            std::string LabelFont = DATAmanager::getInstance()->titleFont;
+            std::map<int,std::string> text = DATAmanager::getInstance()->translater;
+            TTFConfig config(LabelFont, 98);
+            labelanguage->setString(text[4]);
+            labelanguage->setTTFConfig(config);
+        });
+    }
 
     scheduleUpdate();
 

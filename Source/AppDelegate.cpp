@@ -20,7 +20,7 @@ AppDelegate::~AppDelegate() {}
 void AppDelegate::initGfxContextAttrs()
 {
     // set graphics context attributes: red,green,blue,alpha,depth,stencil,multisamplesCount
-    GfxContextAttrs gfxContextAttrs = {8, 8, 8, 8, 24, 8, 0};
+    GfxContextAttrs gfxContextAttrs = {8, 8, 8, 0, 24, 8, 0};
     // since axmol-2.2 vsync was enabled in engine by default
     // gfxContextAttrs.vsync = false;
 
@@ -37,9 +37,9 @@ bool AppDelegate::applicationDidFinishLaunching()
 #if (AX_TARGET_PLATFORM == AX_PLATFORM_WIN32) || (AX_TARGET_PLATFORM == AX_PLATFORM_MAC) || \
     (AX_TARGET_PLATFORM == AX_PLATFORM_LINUX)
         renderView = RenderViewImpl::createWithRect(
-            "simple_prototype", ax::Rect(0, 0, 360, 700));
+            "Simple Engine", ax::Rect(0, 0, 360, 700));
 #else
-        renderView = RenderViewImpl::create("simple_prototype");
+        renderView = RenderViewImpl::create("Simple Engine");
 #endif
         director->setRenderView(renderView);
     }
@@ -48,7 +48,7 @@ bool AppDelegate::applicationDidFinishLaunching()
     director->setStatsDisplay(false);
 
     // set FPS. the default value is 1.0/60 if you don't call this
-    director->setAnimationInterval(1.0f / 60);
+    director->setAnimationInterval(1.0f / 120.0f);
 
     // Set the design resolution
     renderView->setDesignResolutionSize(designResolutionSize.width, designResolutionSize.height,

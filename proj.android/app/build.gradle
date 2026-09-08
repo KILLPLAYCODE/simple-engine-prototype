@@ -14,15 +14,15 @@ android {
     // Apply build profiles
     namespace = packageName
     compileSdk = targetSdk.toInteger()
-    //ndkVersion = buildProfiles['ndkVer']
+    ndkVersion = buildProfiles['ndkVer']
     if(buildProfiles.containsKey('ndkPath')) {
         ndkPath = buildProfiles['ndkPath']
     }
 
     defaultConfig {
         applicationId packageName
-        minSdkVersion 21
-        targetSdkVersion 34
+        minSdkVersion minSdk
+        targetSdkVersion targetSdk
         versionCode 1
         versionName "1.0"
 

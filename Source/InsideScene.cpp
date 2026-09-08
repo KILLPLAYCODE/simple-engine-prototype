@@ -201,6 +201,8 @@ bool InsideScene::init()
     std::string titleF = DATAmanager::getInstance()->titleFont;
     std::string titleB = DATAmanager::getInstance()->buttonFont;
     uint8_t category = DATAmanager::getInstance()->switcher;
+    int theme = DATAmanager::getInstance()->theme;
+    std::string night;
     switch(category)
     {
         case 0:
@@ -215,10 +217,20 @@ bool InsideScene::init()
                 }  
             }
 
-            Color3B bgColor(135, 206, 235);
-            auto layer = LayerColor::create(Color4B(bgColor),visibleSize.width,visibleSize.height);
-            layer->setPosition(Vec2::ZERO);
-            this->addChild(layer,0);
+            if(theme == 0){
+                Color3B bgColor(135, 206, 235);
+                auto layer = LayerColor::create(Color4B(bgColor),visibleSize.width,visibleSize.height);
+                layer->setPosition(Vec2::ZERO);
+                this->addChild(layer,0);
+                night = "";
+            }
+            if(theme == 1){
+                Color3B bgColor(5,0,32);
+                auto layer = LayerColor::create(Color4B(bgColor),visibleSize.width,visibleSize.height);
+                layer->setPosition(Vec2::ZERO);
+                this->addChild(layer,0);
+                night = "night/";
+            }
 
             auto backLayer = ui::Layout::create();
             backLayer->setContentSize(visibleSize);
@@ -231,10 +243,19 @@ bool InsideScene::init()
             this->addChild(backLayer,30);
     
             auto frontWindow = DrawNode::create();
-            Color4F col = Color4F(0,0.64f,0.9f,1.0f);
-            frontWindow->drawSolidRect(Vec2(origin.x + 100,visibleSize.height - 200), Vec2(visibleSize.width - 100,origin.y + 200), col);
-            frontWindow->setVisible(false);
-            this->addChild(frontWindow,31);
+            if(theme == 0){
+                Color4F col = Color4F(0,0.64f,0.9f,1.0f);
+                frontWindow->drawSolidRect(Vec2(origin.x + 100,visibleSize.height - 200), Vec2(visibleSize.width - 100,origin.y + 200), col);
+                frontWindow->setVisible(false);
+                this->addChild(frontWindow,31);
+            }
+            if(theme == 1){
+                Color4F col = Color4F(0.13f,0,0.4f,1.0f);
+                frontWindow->drawSolidRect(Vec2(origin.x + 100,visibleSize.height - 200), Vec2(visibleSize.width - 100,origin.y + 200), col);
+                frontWindow->setVisible(false);
+                this->addChild(frontWindow,31);
+            }
+            
             touchListener->onTouchBegan = [=](Touch* touch, Event* event)->bool {
                 if(!frontWindow->isVisible()){
                     return false;
@@ -259,14 +280,14 @@ bool InsideScene::init()
             objectNameLabel->setVisible(false);
             this->addChild(objectNameLabel,33);
     
-            auto buttonTextField = Sprite::create("sprites/textfield.png");
+            auto buttonTextField = Sprite::create("sprites/" + night + "textfield.png");
             buttonTextField->setVisible(false);
             buttonTextField->setPosition(Vec2(origin.x + visibleSize.width/2,origin.y + visibleSize.height/2 + 200));
             buttonTextField->setScale(0.4f);
             auto textFieldSize = buttonTextField->getContentSize();
             this->addChild(buttonTextField,32);
 
-            auto deleteObject = ui::Button::create("sprites/button_1_1.png","sprites/button_1_1_pressed.png");
+            auto deleteObject = ui::Button::create("sprites/" + night + "button_1_1.png","sprites/" + night + "button_1_1_pressed.png");
             deleteObject->setVisible(false);
             deleteObject->setPosition(Vec2(origin.x + visibleSize.width/2,origin.y + 250));
             deleteObject->setScale(0.4f);
@@ -293,7 +314,13 @@ bool InsideScene::init()
 
             auto deleteLabel = Label::createWithTTF(text[8],titleB,142);
             deleteLabel->setVisible(false);
-            deleteLabel->setTextColor(Color4B::BLACK);
+            if(theme == 0){
+                deleteLabel->setTextColor(Color4B::BLACK);
+            }
+            if(theme == 1){
+                deleteLabel->setTextColor(Color4B::WHITE);
+            }
+            
             deleteObject->addChild(deleteLabel);
             deleteLabel->setPosition(Vec2(textSize.width/2,textSize.height/2));
 
@@ -301,16 +328,21 @@ bool InsideScene::init()
             nameObject->setVisible(false);
             nameObject->setMaxLengthEnabled(true);
             nameObject->setMaxLength(18);
-            nameObject->setTextColor(Color4B::BLACK);
+            if(theme == 0){
+                nameObject->setTextColor(Color4B::BLACK);
+            }
+            if(theme == 1){
+                nameObject->setTextColor(Color4B::WHITE);
+            }
             buttonTextField->addChild(nameObject);
             nameObject->setPosition(Vec2(textFieldSize.width/2,textFieldSize.height/2));
 
-            auto create = ui::Button::create("sprites/button.png","sprites/button_pressed.png");    
+            auto create = ui::Button::create("sprites/" + night + "button.png","sprites/" + night + "button_pressed.png");    
             create->setVisible(false);
             create->setPosition(Vec2(origin.x + visibleSize.width/2 + 135,origin.y + 250));
             create->setScale(0.3f);
             auto createSize = create->getContentSize();
-            this->addChild(create,34);
+            this->addChild(create,35);
             create->addClickEventListener([=](Object* sender){
                 auto nameSc = std::string(nameObject->getString());
                 DATAmanager::getInstance()->objectName = nameSc;
@@ -342,10 +374,15 @@ bool InsideScene::init()
             auto createLabel = Label::createWithTTF(text[0], titleB, 142);    
             createLabel->setVisible(false);
             create->addChild(createLabel,36);
-            createLabel->setTextColor(Color4B::BLACK);
+            if(theme == 0){
+                createLabel->setTextColor(Color4B::BLACK);
+            }
+            if(theme == 1){
+                createLabel->setTextColor(Color4B::WHITE);
+            }
             createLabel->setPosition(Vec2(createSize.width/2,createSize.height/2));
     
-            auto cancel = ui::Button::create("sprites/button_1_1.png","sprites/button_1_1_pressed.png");
+            auto cancel = ui::Button::create("sprites/" + night + "button_1_1.png","sprites/" + night + "button_1_1_pressed.png");
             cancel->setVisible(false);
             cancel->setPosition(Vec2(origin.x + visibleSize.width/2 - 135,origin.y + 250));
             cancel->setScale(0.3f);
@@ -366,19 +403,31 @@ bool InsideScene::init()
             auto cancelLabel = Label::createWithTTF(text[7], titleB, 142);
             cancelLabel->setVisible(false);
             cancel->addChild(cancelLabel,36);
-            cancelLabel->setTextColor(Color4B::BLACK);
+            if(theme == 0){
+                cancelLabel->setTextColor(Color4B::BLACK);
+            }
+            if(theme == 1){
+                cancelLabel->setTextColor(Color4B::WHITE);
+            }
             cancelLabel->setPosition(Vec2(cancelSize.width/2,cancelSize.height/2));
 
             auto DrawNode = DrawNode::create();    
-            Color4F color = Color4F(0,0.64f,0.9f,1.0f);
-            DrawNode->drawSolidRect(Vec2(0,visibleSize.height), Vec2(visibleSize.width,visibleSize.height - 150),color);
-            this->addChild(DrawNode,20);
+            if(theme == 0){
+                Color4F color = Color4F(0,0.64f,0.9f,1.0f);
+                DrawNode->drawSolidRect(Vec2(0,visibleSize.height), Vec2(visibleSize.width,visibleSize.height - 150),color);
+                this->addChild(DrawNode,20);
+            }
+            if(theme == 1){
+                Color4F color = Color4F(0.13f,0,0.4f,1.0f);
+                DrawNode->drawSolidRect(Vec2(0,visibleSize.height), Vec2(visibleSize.width,visibleSize.height - 150),color);
+                this->addChild(DrawNode,20);
+            }
 
             float xDuration = 175;    
             for(int i = 1;i < 5;i++){
                 float x = xDuration * i;
                 if(i == 1){
-                    auto microButton = ui::Button::create("sprites/button_2_0.png","sprites/button_2_0.png");
+                    auto microButton = ui::Button::create("sprites/" + night + "button_2_0.png","sprites/" + night + "button_2_0.png");
                     microButton->setPosition(Vec2(x - 75,visibleSize.height - 185));
                     microButton->setScale(0.25f);
                     this->addChild(microButton,14 + i);
@@ -389,7 +438,7 @@ bool InsideScene::init()
                     this->addChild(objectsIcon,15 + i);
                 }
                 if(i == 2){
-                    auto microButton = ui::Button::create("sprites/button_2_1.png","sprites/button_2_1.png");
+                    auto microButton = ui::Button::create("sprites/" + night + "button_2_1.png","sprites/" + night + "button_2_1.png");
                     microButton->setPosition(Vec2(x - 75,visibleSize.height - 185));
                     microButton->setScale(0.25f);
                     this->addChild(microButton,14 + i);
@@ -405,7 +454,7 @@ bool InsideScene::init()
                     this->addChild(soundsIcon,15 + i);
                 }
                 if(i == 3){
-                    auto microButton = ui::Button::create("sprites/button_2_3.png","sprites/button_2_3.png");
+                    auto microButton = ui::Button::create("sprites/" + night + "button_2_3.png","sprites/" + night + "button_2_3.png");
                     microButton->setPosition(Vec2(x - 75,visibleSize.height - 185));
                     microButton->setScale(0.25f);
                     this->addChild(microButton,14 + i);
@@ -421,7 +470,7 @@ bool InsideScene::init()
                     this->addChild(fontsIcon,15 + i);
                 }
                 if(i == 4){
-                    auto microButton = ui::Button::create("sprites/button_2_2.png","sprites/button_2_2.png");
+                    auto microButton = ui::Button::create("sprites/" + night + "button_2_2.png","sprites/" + night + "button_2_2.png");
                     microButton->setPosition(Vec2(x - 75,visibleSize.height - 185));
                     microButton->setScale(0.25f);
                     this->addChild(microButton,14 + i);
@@ -482,7 +531,7 @@ bool InsideScene::init()
             nameLabel->setPosition(Vec2(origin.x + visibleSize.width/2, visibleSize.height - 85));
             this->addChild(nameLabel, 21);
     
-            auto back = ui::Button::create("sprites/button_back.png"sv,"sprites/button_back_pressed.png"sv);
+            auto back = ui::Button::create("sprites/" + night + "button_back.png","sprites/" + night + "button_back_pressed.png");
             back->setScale(0.2f);
             auto backSize = back->getContentSize();
             back->setPosition(Vec2(origin.x + 50,visibleSize.height - 50));
@@ -497,12 +546,12 @@ bool InsideScene::init()
             more->setPosition(Vec2(visibleSize.width - 50,visibleSize.height - 75));
             this->addChild(more,26);
 
-            auto run = ui::Button::create("sprites/button_run.png","sprites/button_run_pressed.png");    
+            auto run = ui::Button::create("sprites/" + night + "button_run.png","sprites/" + night + "button_run_pressed.png");    
             run->setPosition(Vec2(visibleSize.width - 125,origin.y + 100));
             run->setScale(0.25f);
             this->addChild(run,12);
 
-            auto add = ui::Button::create("sprites/create_add.png","sprites/create_add_pressed.png");
+            auto add = ui::Button::create("sprites/" + night + "create_add.png","sprites/" + night + "create_add_pressed.png");
             add->setPosition(Vec2(visibleSize.width - 125,origin.y + 250));
             add->setScale(0.25f);
             this->addChild(add,13);
@@ -557,7 +606,7 @@ bool InsideScene::init()
                 name->setPosition(Vec2(origin.x + visibleSize.width/2,y));
                 listObjects->addChild(name);
 
-                auto settings = ui::Button::create("sprites/settings_button.png","sprites/settings_button.png");
+                auto settings = ui::Button::create("sprites/" + night + "settings_button.png","sprites/" + night + "settings_button.png");
                 settings->setPosition(Vec2(origin.x + visibleSize.width/2 + 180,y));
                 settings->setScale(0.1f);
                 listObjects->addChild(settings);
@@ -573,7 +622,7 @@ bool InsideScene::init()
                     DATAmanager::getInstance()->objectName = objectsName[i];
                 });
 
-                auto next = ui::Button::create("sprites/continue_button.png","sprites/continue_button_pressed.png");
+                auto next = ui::Button::create("sprites/" + night + "continue_button.png","sprites/" + night + "continue_button_pressed.png");
                 next->setPosition(Vec2(origin.x + visibleSize.width/2 + 260,y));
                 next->setScale(0.1f);
                 listObjects->addChild(next);
@@ -583,12 +632,12 @@ bool InsideScene::init()
                     Director::getInstance()->replaceScene(nextScene);
                 });
 
-                auto icon = Sprite::create("sprites/icon_scene_1.png");
+                auto icon = Sprite::create("sprites/" + night + "icon_scene_1.png");
                 icon->setPosition(Vec2(100,y));
                 icon->setScale(0.25f);
                 listObjects->addChild(icon);
 
-                auto up = ui::Button::create("sprites/sorting.png","sprites/sorting_pressed.png");
+                auto up = ui::Button::create("sprites/" + night + "sorting.png","sprites/" + night + "sorting_pressed.png");
                 up->setPosition(Vec2(origin.x + visibleSize.width/2 - 125,y + 50));
                 up->setScale(0.1f);
                 listObjects->addChild(up);
@@ -613,7 +662,7 @@ bool InsideScene::init()
                         Director::getInstance()->replaceScene(reload);
                     }
                 });
-                auto down = ui::Button::create("sprites/sorting.png","sprites/sorting_pressed.png");
+                auto down = ui::Button::create("sprites/" + night + "sorting.png","sprites/" + night + "sorting_pressed.png");
                 down->setRotation(180);
                 down->setPosition(Vec2(origin.x + visibleSize.width/2 - 125,y - 50));
                 down->setScale(0.1f);
@@ -655,10 +704,22 @@ bool InsideScene::init()
                 }  
             }
 
-            Color3B bgColor(156, 128, 247);
-            auto layer = LayerColor::create(Color4B(bgColor),visibleSize.width,visibleSize.height);
-            layer->setPosition(Vec2::ZERO);
-            this->addChild(layer,0);
+            if(theme == 0){
+                Color3B bgColor(156, 128, 247);
+                auto layer = LayerColor::create(Color4B(bgColor),visibleSize.width,visibleSize.height);
+                layer->setPosition(Vec2::ZERO);
+                this->addChild(layer,0);
+
+                night = "";
+            }
+            if(theme == 1){
+                Color3B bgColor(30, 0, 36);
+                auto layer = LayerColor::create(Color4B(bgColor),visibleSize.width,visibleSize.height);
+                layer->setPosition(Vec2::ZERO);
+                this->addChild(layer,0);
+
+                night = "night/";
+            }
 
             auto backLayer = ui::Layout::create();
             backLayer->setContentSize(visibleSize);
@@ -671,10 +732,19 @@ bool InsideScene::init()
             this->addChild(backLayer,30);
     
             auto frontWindow = DrawNode::create();
-            Color4F col = Color4F(0.59f,0,0.71f,1.0f);
-            frontWindow->drawSolidRect(Vec2(origin.x + 100,visibleSize.height - 200), Vec2(visibleSize.width - 100,origin.y + 200), col);
-            frontWindow->setVisible(false);
-            this->addChild(frontWindow,31);
+            if(theme == 0){
+                Color4F col = Color4F(0.59f,0,0.71f,1.0f);
+                frontWindow->drawSolidRect(Vec2(origin.x + 100,visibleSize.height - 200), Vec2(visibleSize.width - 100,origin.y + 200), col);
+                frontWindow->setVisible(false);
+                this->addChild(frontWindow,31);
+            }
+            if(theme == 1){
+                Color4F col = Color4F(0.35f,0,0.42f,1.0f);
+                frontWindow->drawSolidRect(Vec2(origin.x + 100,visibleSize.height - 200), Vec2(visibleSize.width - 100,origin.y + 200), col);
+                frontWindow->setVisible(false);
+                this->addChild(frontWindow,31);
+            }
+            
             touchListener->onTouchBegan = [=](Touch* touch, Event* event)->bool {
                 if(!frontWindow->isVisible()){
                     return false;
@@ -699,14 +769,14 @@ bool InsideScene::init()
             objectNameLabel->setVisible(false);
             this->addChild(objectNameLabel,33);
     
-            auto buttonTextField = Sprite::create("sprites/textfield.png");
+            auto buttonTextField = Sprite::create("sprites/" + night + "textfield.png");
             buttonTextField->setVisible(false);
             buttonTextField->setPosition(Vec2(origin.x + visibleSize.width/2,origin.y + visibleSize.height/2 + 200));
             buttonTextField->setScale(0.4f);
             auto textFieldSize = buttonTextField->getContentSize();
             this->addChild(buttonTextField,32);
 
-            auto deleteObject = ui::Button::create("sprites/button_1_1.png","sprites/button_1_1_pressed.png");
+            auto deleteObject = ui::Button::create("sprites/" + night + "button_1_1.png","sprites/" + night + "button_1_1_pressed.png");
             deleteObject->setVisible(false);
             deleteObject->setPosition(Vec2(origin.x + visibleSize.width/2,origin.y + 250));
             deleteObject->setScale(0.4f);
@@ -733,7 +803,13 @@ bool InsideScene::init()
 
             auto deleteLabel = Label::createWithTTF(text[8],titleB,142);
             deleteLabel->setVisible(false);
-            deleteLabel->setTextColor(Color4B::BLACK);
+            if(theme == 0){
+                deleteLabel->setTextColor(Color4B::BLACK);
+            }
+            if(theme == 1){
+                deleteLabel->setTextColor(Color4B::WHITE);
+            }
+            
             deleteObject->addChild(deleteLabel);
             deleteLabel->setPosition(Vec2(textSize.width/2,textSize.height/2));
 
@@ -741,20 +817,32 @@ bool InsideScene::init()
             nameObject->setVisible(false);
             nameObject->setMaxLengthEnabled(true);
             nameObject->setMaxLength(64);
-            nameObject->setTextColor(Color4B::BLACK);
+            if(theme == 0){
+                nameObject->setTextColor(Color4B::BLACK);
+            }
+            if(theme == 1){
+                nameObject->setTextColor(Color4B::WHITE);
+            }
             buttonTextField->addChild(nameObject);
             nameObject->setPosition(Vec2(textFieldSize.width/2,textFieldSize.height/2));
 
-            auto DrawNode = DrawNode::create();    
-            Color4F color = Color4F(0.59f,0,0.71f,1.0f);
-            DrawNode->drawSolidRect(Vec2(0,visibleSize.height), Vec2(visibleSize.width,visibleSize.height - 150),color);
-            this->addChild(DrawNode,20);
+            auto DrawNode = DrawNode::create();   
+            if(theme == 0){
+                Color4F color = Color4F(0.59f,0,0.71f,1.0f);
+                DrawNode->drawSolidRect(Vec2(0,visibleSize.height), Vec2(visibleSize.width,visibleSize.height - 150),color);
+                this->addChild(DrawNode,20);
+            } 
+            if(theme == 1){
+                Color4F color = Color4F(0.35f,0,0.42f,1.0f);
+                DrawNode->drawSolidRect(Vec2(0,visibleSize.height), Vec2(visibleSize.width,visibleSize.height - 150),color);
+                this->addChild(DrawNode,20);
+            } 
 
             float xDuration = 175;    
             for(int i = 1;i < 5;i++){
                 float x = xDuration * i;
                 if(i == 1){
-                    auto microButton = ui::Button::create("sprites/button_2_0.png","sprites/button_2_0.png");
+                    auto microButton = ui::Button::create("sprites/" + night + "button_2_0.png","sprites/" + night + "button_2_0.png");
                     microButton->setPosition(Vec2(x - 75,visibleSize.height - 185));
                     microButton->setScale(0.25f);
                     this->addChild(microButton,14 + i);
@@ -774,7 +862,7 @@ bool InsideScene::init()
                     this->addChild(objectsIcon,15 + i);
                 }
                 if(i == 2){
-                    auto microButton = ui::Button::create("sprites/button_2_1.png","sprites/button_2_1.png");
+                    auto microButton = ui::Button::create("sprites/" + night + "button_2_1.png","sprites/" + night + "button_2_1.png");
                     microButton->setPosition(Vec2(x - 75,visibleSize.height - 185));
                     microButton->setScale(0.25f);
                     this->addChild(microButton,14 + i);
@@ -785,7 +873,7 @@ bool InsideScene::init()
                     this->addChild(soundsIcon,15 + i);
                 }
                 if(i == 3){
-                    auto microButton = ui::Button::create("sprites/button_2_3.png","sprites/button_2_3.png");
+                    auto microButton = ui::Button::create("sprites/" + night + "button_2_3.png","sprites/" + night + "button_2_3.png");
                     microButton->setPosition(Vec2(x - 75,visibleSize.height - 185));
                     microButton->setScale(0.25f);
                     this->addChild(microButton,14 + i);
@@ -801,7 +889,7 @@ bool InsideScene::init()
                     this->addChild(fontsIcon,15 + i);
                 }
                 if(i == 4){
-                    auto microButton = ui::Button::create("sprites/button_2_2.png","sprites/button_2_2.png");
+                    auto microButton = ui::Button::create("sprites/" + night + "button_2_2.png","sprites/" + night + "button_2_2.png");
                     microButton->setPosition(Vec2(x - 75,visibleSize.height - 185));
                     microButton->setScale(0.25f);
                     this->addChild(microButton,14 + i);
@@ -858,7 +946,7 @@ bool InsideScene::init()
             nameLabel->setPosition(Vec2(origin.x + visibleSize.width/2, visibleSize.height - 85));
             this->addChild(nameLabel, 21);
     
-            auto back = ui::Button::create("sprites/button_back.png"sv,"sprites/button_back_pressed.png"sv);
+            auto back = ui::Button::create("sprites/" + night + "button_back.png","sprites/" + night + "button_back_pressed.png");
             back->setScale(0.2f);
             auto backSize = back->getContentSize();
             back->setPosition(Vec2(origin.x + 50,visibleSize.height - 50));
@@ -877,12 +965,12 @@ bool InsideScene::init()
             more->setPosition(Vec2(visibleSize.width - 50,visibleSize.height - 75));
             this->addChild(more,26);
 
-            auto run = ui::Button::create("sprites/button_run.png","sprites/button_run_pressed.png");    
+            auto run = ui::Button::create("sprites/" + night + "button_run.png","sprites/" + night + "button_run_pressed.png");    
             run->setPosition(Vec2(visibleSize.width - 125,origin.y + 100));
             run->setScale(0.25f);
             this->addChild(run,12);
 
-            auto add = ui::Button::create("sprites/create_add.png","sprites/create_add_pressed.png");
+            auto add = ui::Button::create("sprites/" + night + "create_add.png","sprites/" + night + "create_add_pressed.png");
             add->setPosition(Vec2(visibleSize.width - 125,origin.y + 250));
             add->setScale(0.25f);
             this->addChild(add,13);
@@ -921,7 +1009,7 @@ bool InsideScene::init()
                 name->setPosition(Vec2(origin.x + visibleSize.width/2,y));
                 listObjects->addChild(name);
 
-                auto settings = ui::Button::create("sprites/settings_button.png","sprites/settings_button.png");
+                auto settings = ui::Button::create("sprites/" + night + "settings_button.png","sprites/" + night + "settings_button.png");
                 settings->setPosition(Vec2(origin.x + visibleSize.width/2 + 180,y));
                 settings->setScale(0.1f);
                 listObjects->addChild(settings);
@@ -937,12 +1025,12 @@ bool InsideScene::init()
                     DATAmanager::getInstance()->soundName = soundsName[i];
                 });
 
-                auto next = ui::Button::create("sprites/button_play.png","sprites/button_play_pressed.png");
+                auto next = ui::Button::create("sprites/" + night + "button_play.png","sprites/" + night + "button_play_pressed.png");
                 next->setPosition(Vec2(origin.x + visibleSize.width/2 + 260,y));
                 next->setScale(0.1f);
                 listObjects->addChild(next);
 
-                auto stop = ui::Button::create("sprites/button_stop.png","sprites/button_stop_pressed.png");
+                auto stop = ui::Button::create("sprites/" + night + "button_stop.png","sprites/" + night + "button_stop_pressed.png");
                 stop->setVisible(false);
                 stop->setPosition(Vec2(origin.x + visibleSize.width/2 + 260,y));
                 stop->setScale(0.1f);
@@ -981,7 +1069,7 @@ bool InsideScene::init()
                 icon->setScale(0.25f);
                 listObjects->addChild(icon);
 
-                auto up = ui::Button::create("sprites/sorting.png","sprites/sorting_pressed.png");
+                auto up = ui::Button::create("sprites/" + night + "sorting.png","sprites/" + night + "sorting_pressed.png");
                 up->setPosition(Vec2(origin.x + visibleSize.width/2 - 150,y + 50));
                 up->setScale(0.1f);
                 listObjects->addChild(up);
@@ -1010,7 +1098,7 @@ bool InsideScene::init()
                         Director::getInstance()->replaceScene(reload);
                     }
                 });
-                auto down = ui::Button::create("sprites/sorting.png","sprites/sorting_pressed.png");
+                auto down = ui::Button::create("sprites/" + night + "sorting.png","sprites/" + night + "sorting_pressed.png");
                 down->setRotation(180);
                 down->setPosition(Vec2(origin.x + visibleSize.width/2 - 150,y - 50));
                 down->setScale(0.1f);

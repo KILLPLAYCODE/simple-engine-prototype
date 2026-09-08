@@ -406,6 +406,90 @@
       "example": "onTimer([>] timecode)= \n\n=="  
     }
   ]  
+},
+{
+  "name": "physics",
+  "icon": ".png",
+  "luaFile": ".lua",
+  "commands": [
+    {
+      "name": "setPosition",
+      "luaFunction": "",
+      "displayName": "",
+      "description": "",
+      "args": [
+        { "name": "type", "type": "PhysicBodyType" }
+      ],
+      "returns": "void",
+      "example": "setPosition(100,200)"
+    },
+    {
+      "name": "setX",
+      "luaFunction": "",
+      "displayName": "",
+      "description": "",
+      "args": [
+        { "name": "type", "type": "PhysicBodyType" }
+      ],
+      "returns": "void",
+      "example": "setX(100)"
+    },
+    {
+      "name": "setY",
+      "luaFunction": "",
+      "displayName": "",
+      "description": "",
+      "args": [
+        { "name": "type", "type": "PhysicBodyType" }
+      ],
+      "returns": "void",
+      "example": "setY(200)"
+    },
+    {
+      "name": "changeX",
+      "luaFunction": "",
+      "displayName": "",
+      "description": "",
+      "args": [
+        { "name": "type", "type": "PhysicBodyType" }
+      ],
+      "returns": "void",
+      "example": "changeX(50)"
+    },
+    {
+      "name": "changeY",
+      "luaFunction": "",
+      "displayName": "",
+      "description": "",
+      "args": [
+        { "name": "type", "type": "PhysicBodyType" }
+      ],
+      "returns": "void",
+      "example": "changeY(50)"
+    },
+    {
+      "name": "step",
+      "luaFunction": "",
+      "displayName": "",
+      "description": "",
+      "args": [
+        { "name": "type", "type": "PhysicBodyType" }
+      ],
+      "returns": "void",
+      "example": "step(5)"
+    },
+    {
+      "name": "setPhysicType",
+      "luaFunction": "",
+      "displayName": "",
+      "description": "",
+      "args": [
+        { "name": "type", "type": "PhysicBodyType" }
+      ],
+      "returns": "void",
+      "example": "setPhysicType(static)"
+    }
+  ]
 }
 ]
 }

@@ -44,6 +44,8 @@ bool Scenes::init()
     std::map<int,std::string> text = DATAmanager::getInstance()->translater;
     std::string titleF = DATAmanager::getInstance()->titleFont;
     std::string titleB = DATAmanager::getInstance()->buttonFont;
+    int theme = DATAmanager::getInstance()->theme;
+    std::string night;
 
     std::vector<std::string> sceneName;
     auto fileUtils = FileUtils::getInstance();
@@ -54,11 +56,22 @@ bool Scenes::init()
             sceneName.push_back(value.asString());
         }
     }
+    if(theme == 0){
+        Color3B bgColor(135, 206, 235);
+        auto layer = LayerColor::create(Color4B(bgColor),visibleSize.width,visibleSize.height);
+        layer->setPosition(Vec2::ZERO);
+        this->addChild(layer,0);
 
-    Color3B bgColor(135, 206, 235);
-    auto layer = LayerColor::create(Color4B(bgColor),visibleSize.width,visibleSize.height);
-    layer->setPosition(Vec2::ZERO);
-    this->addChild(layer,0);
+        night = "";
+    }
+    if(theme == 1){
+        Color3B bgColor(5,0,32);
+        auto layer = LayerColor::create(Color4B(bgColor),visibleSize.width,visibleSize.height);
+        layer->setPosition(Vec2::ZERO);
+        this->addChild(layer,0);
+
+        night = "night/";
+    }
     //CHANGE SCENE
     auto backLayerChange = ui::Layout::create();
     backLayerChange->setContentSize(visibleSize);
@@ -72,16 +85,23 @@ bool Scenes::init()
 
     auto option = DrawNode::create();
     option->setVisible(false);
-    auto col = Color4F(0,0.64f,0.9f,1);
-    option->drawSolidRect(Vec2(origin.x + 100,visibleSize.height - 200), Vec2(visibleSize.width - 100,origin.y + 200),col);
-    this->addChild(option,36);
+    if(theme == 0){
+        auto col = Color4F(0,0.64f,0.9f,1);
+        option->drawSolidRect(Vec2(origin.x + 100,visibleSize.height - 200), Vec2(visibleSize.width - 100,origin.y + 200),col);
+        this->addChild(option,36);
+    }
+    if(theme == 1){
+        auto col = Color4F(0.13f,0,0.4f,1.0f);
+        option->drawSolidRect(Vec2(origin.x + 100,visibleSize.height - 200), Vec2(visibleSize.width - 100,origin.y + 200),col);
+        this->addChild(option,36);
+    }
 
     auto SceneNameLabel = Label::createWithTTF(text[5],titleF,46);
     SceneNameLabel->setPosition(Vec2(origin.x + visibleSize.width/2,visibleSize.height - 300));
     SceneNameLabel->setVisible(false);
     this->addChild(SceneNameLabel,37);
 
-    auto buttonTextFieldScene = Sprite::create("sprites/textfield.png");
+    auto buttonTextFieldScene = Sprite::create("sprites/" + night + "textfield.png");
     buttonTextFieldScene->setVisible(false);
     buttonTextFieldScene->setPosition(Vec2(origin.x + visibleSize.width/2,origin.y + visibleSize.height/2 + 200));
     buttonTextFieldScene->setScale(0.4f);
@@ -92,11 +112,16 @@ bool Scenes::init()
     nameSceneTextField->setVisible(false);
     nameSceneTextField->setMaxLengthEnabled(true);
     nameSceneTextField->setMaxLength(18);
-    nameSceneTextField->setTextColor(Color4B::BLACK);
+    if(theme == 0){
+        nameSceneTextField->setTextColor(Color4B::BLACK);
+    }
+    if(theme == 1){
+        nameSceneTextField->setTextColor(Color4B::WHITE);
+    }
     buttonTextFieldScene->addChild(nameSceneTextField);
     nameSceneTextField->setPosition(Vec2(textFieldSizeScene.width/2,textFieldSizeScene.height/2));
 
-    auto deleteScene = ui::Button::create("sprites/button_1_1.png","sprites/button_1_1_pressed.png");
+    auto deleteScene = ui::Button::create("sprites/" + night + "button_1_1.png","sprites/" + night + "button_1_1_pressed.png");
     deleteScene->setVisible(false);
     deleteScene->setPosition(Vec2(origin.x + visibleSize.width/2,origin.y + 250));
     deleteScene->setScale(0.4f);
@@ -105,7 +130,12 @@ bool Scenes::init()
 
     auto deleteLabel = Label::createWithTTF(text[8],titleB,142);
     deleteLabel->setVisible(false);
-    deleteLabel->setTextColor(Color4B::BLACK);
+    if(theme == 0){
+        deleteLabel->setTextColor(Color4B::BLACK);
+    }
+    if(theme == 1){
+        deleteLabel->setTextColor(Color4B::WHITE);
+    }
     deleteScene->addChild(deleteLabel);
     deleteLabel->setPosition(Vec2(textSize.width/2,textSize.height/2));
 
@@ -194,10 +224,19 @@ bool Scenes::init()
     this->addChild(backLayer,30);
 
     auto frontWindow = DrawNode::create();
-    auto color1 = Color4F(0,0.64f,0.9f,1.0f);
-    frontWindow->drawSolidRect(Vec2(origin.x + 100,visibleSize.height - 200), Vec2(visibleSize.width - 100,origin.y + 200), color1);
-    frontWindow->setVisible(false);
-    this->addChild(frontWindow,31);
+    if(theme == 0){
+        auto color1 = Color4F(0,0.64f,0.9f,1.0f);
+        frontWindow->drawSolidRect(Vec2(origin.x + 100,visibleSize.height - 200), Vec2(visibleSize.width - 100,origin.y + 200), color1);
+        frontWindow->setVisible(false);
+        this->addChild(frontWindow,31);
+    }
+    if(theme == 1){
+        auto color1 = Color4F(0.13f,0,0.4f,1);
+        frontWindow->drawSolidRect(Vec2(origin.x + 100,visibleSize.height - 200), Vec2(visibleSize.width - 100,origin.y + 200), color1);
+        frontWindow->setVisible(false);
+        this->addChild(frontWindow,31);
+    }
+    
     touchListener->onTouchBegan = [=](Touch* touch, Event* event)->bool {
         if(!frontWindow->isVisible()){
             return false;
@@ -222,7 +261,7 @@ bool Scenes::init()
     sceneNameLabel->setVisible(false);
     this->addChild(sceneNameLabel,33);
 
-    auto buttonTextField = Sprite::create("sprites/textfield.png");
+    auto buttonTextField = Sprite::create("sprites/" + night + "textfield.png");
     buttonTextField->setVisible(false);
     buttonTextField->setPosition(Vec2(origin.x + visibleSize.width/2,origin.y + visibleSize.height/2 + 200));
     buttonTextField->setScale(0.4f);
@@ -233,11 +272,16 @@ bool Scenes::init()
     nameScene->setVisible(false);
     nameScene->setMaxLengthEnabled(true);
     nameScene->setMaxLength(18);
-    nameScene->setTextColor(Color4B::BLACK);
+    if(theme == 0){
+        nameScene->setTextColor(Color4B::BLACK);
+    }
+    if(theme == 1){
+        nameScene->setTextColor(Color4B::WHITE);
+    }
     buttonTextField->addChild(nameScene);
     nameScene->setPosition(Vec2(textFieldSize.width/2,textFieldSize.height/2));
 
-    auto create = ui::Button::create("sprites/button.png","sprites/button_pressed.png");
+    auto create = ui::Button::create("sprites/" + night + "button.png","sprites/" + night + "button_pressed.png");
     create->setVisible(false);
     create->setPosition(Vec2(origin.x + visibleSize.width/2 + 135,origin.y + 250));
     create->setScale(0.3f);
@@ -274,10 +318,15 @@ bool Scenes::init()
     auto createLabel = Label::createWithTTF(text[0], titleB, 142);
     createLabel->setVisible(false);
     create->addChild(createLabel,36);
-    createLabel->setTextColor(Color4B::BLACK);
+    if(theme == 0){
+        createLabel->setTextColor(Color4B::BLACK);
+    }
+    if(theme == 1){
+        createLabel->setTextColor(Color4B::WHITE);
+    }
     createLabel->setPosition(Vec2(createSize.width/2,createSize.height/2));
 
-    auto cancel = ui::Button::create("sprites/button_1_1.png","sprites/button_1_1_pressed.png");
+    auto cancel = ui::Button::create("sprites/" + night + "button_1_1.png","sprites/" + night + "button_1_1_pressed.png");
     cancel->setVisible(false);
     cancel->setPosition(Vec2(origin.x + visibleSize.width/2 - 135,origin.y + 250));
     cancel->setScale(0.3f);
@@ -287,7 +336,12 @@ bool Scenes::init()
     auto cancelLabel = Label::createWithTTF(text[7], titleB, 142);
     cancelLabel->setVisible(false);
     cancel->addChild(cancelLabel,36);
-    cancelLabel->setTextColor(Color4B::BLACK);
+    if(theme == 0){
+        cancelLabel->setTextColor(Color4B::BLACK);
+    }
+    if(theme == 1){
+        cancelLabel->setTextColor(Color4B::WHITE);
+    }
     cancelLabel->setPosition(Vec2(cancelSize.width/2,cancelSize.height/2));
 
     backLayer->addClickEventListener([=](Object* sender){
@@ -316,16 +370,23 @@ bool Scenes::init()
     });
     //UI
     auto DrawNode = DrawNode::create();
-    Color4F color = Color4F(0,0.64f,0.9f,1.0f);
-    DrawNode->drawSolidRect(Vec2(0,visibleSize.height), Vec2(visibleSize.width,visibleSize.height - 150),color);
-    this->addChild(DrawNode,20);
+    if(theme == 0){
+        Color4F color = Color4F(0,0.64f,0.9f,1.0f);
+        DrawNode->drawSolidRect(Vec2(0,visibleSize.height), Vec2(visibleSize.width,visibleSize.height - 150),color);
+        this->addChild(DrawNode,20);
+    }
+    if(theme == 1){
+        Color4F color = Color4F(0.13f,0,0.4f,1);
+        DrawNode->drawSolidRect(Vec2(0,visibleSize.height), Vec2(visibleSize.width,visibleSize.height - 150),color);
+        this->addChild(DrawNode,20);
+    }
 
     std::string name = DATAmanager::getInstance()->projectName;
     auto nameLabel = Label::createWithTTF(name,"fonts/arial.ttf",96 - name.length() * 2);
     nameLabel->setPosition(Vec2(origin.x + visibleSize.width/2, visibleSize.height - 85));
     this->addChild(nameLabel, 21);
 
-    auto back = ui::Button::create("sprites/button_back.png"sv,"sprites/button_back_pressed.png"sv);
+    auto back = ui::Button::create("sprites/" + night + "button_back.png","sprites/" + night + "button_back_pressed.png");
     back->setScale(0.2f);
     auto backSize = back->getContentSize();
     back->setPosition(Vec2(origin.x + 50,visibleSize.height - 50));
@@ -340,12 +401,12 @@ bool Scenes::init()
     more->setPosition(Vec2(visibleSize.width - 50,visibleSize.height - 75));
     this->addChild(more,26);
 
-    auto run = ui::Button::create("sprites/button_run.png","sprites/button_run_pressed.png");    
+    auto run = ui::Button::create("sprites/" + night + "button_run.png","sprites/" + night + "button_run_pressed.png");    
     run->setPosition(Vec2(visibleSize.width - 125,origin.y + 100));
     run->setScale(0.25f);
     this->addChild(run,12);
 
-    auto add = ui::Button::create("sprites/create_add.png","sprites/create_add_pressed.png");
+    auto add = ui::Button::create("sprites/" + night + "create_add.png","sprites/" + night + "create_add_pressed.png");
     add->setPosition(Vec2(visibleSize.width - 125,origin.y + 250));
     add->setScale(0.25f);
     this->addChild(add,13);
@@ -386,7 +447,7 @@ for(int i = 0;i < sceneName.size();i++){
     name->setPosition(Vec2(origin.x + visibleSize.width/2,y));
     listScenes->addChild(name);
 
-    auto settings = ui::Button::create("sprites/settings_button.png","sprites/settings_button.png");
+    auto settings = ui::Button::create("sprites/" + night + "settings_button.png","sprites/" + night + "settings_button.png");
     settings->setPosition(Vec2(origin.x + visibleSize.width/2 + 180,y));
     settings->setScale(0.1f);
     listScenes->addChild(settings);
@@ -402,7 +463,7 @@ for(int i = 0;i < sceneName.size();i++){
             DATAmanager::getInstance()->sceneName = sceneName[i];
     });
 
-    auto up = ui::Button::create("sprites/sorting.png","sprites/sorting_pressed.png");
+    auto up = ui::Button::create("sprites/" + night + "sorting.png","sprites/" + night + "sorting_pressed.png");
     up->setPosition(Vec2(origin.x + visibleSize.width/2 - 125,y + 50));
     up->setScale(0.1f);
     listScenes->addChild(up);
@@ -429,7 +490,7 @@ for(int i = 0;i < sceneName.size();i++){
         }
     });
 
-    auto down = ui::Button::create("sprites/sorting.png","sprites/sorting_pressed.png");
+    auto down = ui::Button::create("sprites/" + night + "sorting.png","sprites/" + night + "sorting_pressed.png");
     down->setRotation(180);
     down->setPosition(Vec2(origin.x + visibleSize.width/2 - 125,y - 50));
     down->setScale(0.1f);
@@ -457,7 +518,7 @@ for(int i = 0;i < sceneName.size();i++){
         }
     });
 
-    auto next = ui::Button::create("sprites/continue_button.png","sprites/continue_button_pressed.png");
+    auto next = ui::Button::create("sprites/" + night + "continue_button.png","sprites/" + night + "continue_button_pressed.png");
     next->setPosition(Vec2(origin.x + visibleSize.width/2 + 260,y));
     next->setScale(0.1f);
     listScenes->addChild(next);

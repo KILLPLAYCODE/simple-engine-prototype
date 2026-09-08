@@ -44,6 +44,13 @@ void loadEnglish(){
     enText[21] = "LISTS";
     enText[22] = "MORE";
     enText[23] = "PROGRAMMER";
+    enText[24] = "CREDITS";
+    enText[25] = "OWNER";
+    enText[26] = "ARTIST";
+    enText[27] = "HELPER TRANSLATE";
+    enText[28] = "CODER";
+    enText[29] = "CONCEPT-MAKER";
+    enText[30] = "DESIGNER";
 
     DATAmanager::getInstance()->language = "en";
     DATAmanager::getInstance()->translater = std::move(enText);
@@ -79,6 +86,13 @@ void loadRussian(){
     ruText[21] = "Списки";
     ruText[22] = "Прочее";
     ruText[23] = "ПРОГРАМНИК";
+    ruText[24] = "АВТОРЫ";
+    ruText[25] = "ВЛАДЕЛЕЦ";
+    ruText[26] = "ХУДОЖНИК";
+    ruText[27] = "ЛОКАЛИЗАТОР";
+    ruText[28] = "КОДЕР";
+    ruText[29] = "КОНЦЕПТ-МЕЙКЕР";
+    ruText[30] = "ДИЗАЙНЕР";
 
     DATAmanager::getInstance()->language = "ru";
     DATAmanager::getInstance()->translater = std::move(ruText);
@@ -114,6 +128,13 @@ void loadUkraine(){
     ukrText[21] = "Списки";
     ukrText[22] = "Інше";
     ukrText[23] = "ПІДРУЧНИК";
+    ukrText[24] = "АВТОРИ";
+    ukrText[25] = "Власник";
+    ukrText[26] = "ХУДОЖНИК";
+    ukrText[27] = "ЛОКАЛІЗАТОР";
+    ukrText[28] = "КОДЕР";
+    ukrText[29] = "КОНЦЕПТ-МЕЙКЕР";
+    ukrText[30] = "ДИЗАЙНЕР";
     
     DATAmanager::getInstance()->language = "ukr";
     DATAmanager::getInstance()->translater = std::move(ukrText);

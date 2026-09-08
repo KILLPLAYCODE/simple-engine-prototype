@@ -103,6 +103,8 @@ bool ListProject::init()
     std::string titleF = DATAmanager::getInstance()->titleFont;
     //std::string marker = DATAmanager::getInstance()->markerFont;
     DATAmanager::getInstance()->projectPath = "";
+    int theme = DATAmanager::getInstance()->theme;
+    std::string night;
 
     std::vector<std::string> folderNames;
     auto fileUtils = FileUtils::getInstance();
@@ -112,28 +114,52 @@ bool ListProject::init()
         folderNames.push_back(value.asString());
     }
 
-    Color3B bgColor(135, 206, 235);
-    auto layer = LayerColor::create(Color4B(bgColor),visibleSize.width,visibleSize.height);
-    layer->setPosition(Vec2::ZERO);
-    this->addChild(layer,0);
-
-    auto DrawNode = DrawNode::create();
-    auto color = Color4F(0,0.64f,0.9f,1.0f);
-    DrawNode->drawSolidRect(Vec2(0,visibleSize.height), Vec2(visibleSize.width,visibleSize.height - 150),color);
-    this->addChild(DrawNode,20);
 
     auto option = DrawNode::create();
-    option->setVisible(false);
-    auto col = Color4F(0,0.64f,0.9f,1);
-    option->drawSolidRect(Vec2(origin.x + 100,visibleSize.height - 200), Vec2(visibleSize.width - 100,origin.y + 200),col);
-    this->addChild(option,31);
+
+    if(theme == 0){
+        Color3B bgColor(135, 206, 235);
+        auto layer = LayerColor::create(Color4B(bgColor),visibleSize.width,visibleSize.height);
+        layer->setPosition(Vec2::ZERO);
+        this->addChild(layer,0);
+
+        auto DrawNode = DrawNode::create();
+        auto color = Color4F(0,0.64f,0.9f,1.0f);
+        DrawNode->drawSolidRect(Vec2(0,visibleSize.height), Vec2(visibleSize.width,visibleSize.height - 150),color);
+        this->addChild(DrawNode,20);
+
+        option->setVisible(false);
+        auto col = Color4F(0,0.64f,0.9f,1);
+        option->drawSolidRect(Vec2(origin.x + 100,visibleSize.height - 200), Vec2(visibleSize.width - 100,origin.y + 200),col);
+        this->addChild(option,31);
+
+        night = "";
+    }
+    if(theme == 1){
+        Color3B bgColor(5,0,32);
+        auto layer = LayerColor::create(Color4B(bgColor),visibleSize.width,visibleSize.height);
+        layer->setPosition(Vec2::ZERO);
+        this->addChild(layer,0);
+
+        auto DrawNode = DrawNode::create();
+        auto color = Color4F(0.13f,0,0.4f,1.0f);
+        DrawNode->drawSolidRect(Vec2(0,visibleSize.height), Vec2(visibleSize.width,visibleSize.height - 150),color);
+        this->addChild(DrawNode,20);
+
+        option->setVisible(false);
+        auto col = Color4F(0.13f,0,0.4f,1);
+        option->drawSolidRect(Vec2(origin.x + 100,visibleSize.height - 200), Vec2(visibleSize.width - 100,origin.y + 200),col);
+        this->addChild(option,31);
+
+        night = "night/";
+    }
 
     auto projectNameLabel = Label::createWithTTF(text[2],titleF,46);
     projectNameLabel->setPosition(Vec2(origin.x + visibleSize.width/2,visibleSize.height - 300));
     projectNameLabel->setVisible(false);
     this->addChild(projectNameLabel,33);
 
-    auto buttonTextField = Sprite::create("sprites/textfield.png");
+    auto buttonTextField = Sprite::create("sprites/" + night + "textfield.png");
     buttonTextField->setVisible(false);
     buttonTextField->setPosition(Vec2(origin.x + visibleSize.width/2,origin.y + visibleSize.height/2 + 200));
     buttonTextField->setScale(0.4f);
@@ -144,11 +170,16 @@ bool ListProject::init()
     nameProject->setVisible(false);
     nameProject->setMaxLengthEnabled(true);
     nameProject->setMaxLength(18);
-    nameProject->setTextColor(Color4B::BLACK);
+    if(theme == 0){
+        nameProject->setTextColor(Color4B::BLACK);
+    }
+    if(theme == 1){
+        nameProject->setTextColor(Color4B::WHITE);
+    }
     buttonTextField->addChild(nameProject);
     nameProject->setPosition(Vec2(textFieldSize.width/2,textFieldSize.height/2));
 
-    auto deleteProj = ui::Button::create("sprites/button_1_1.png","sprites/button_1_1_pressed.png");
+    auto deleteProj = ui::Button::create("sprites/" + night + "button_1_1.png","sprites/" + night + "button_1_1_pressed.png");
     deleteProj->setVisible(false);
     deleteProj->setPosition(Vec2(origin.x + visibleSize.width/2,origin.y + 250));
     deleteProj->setScale(0.4f);
@@ -157,7 +188,12 @@ bool ListProject::init()
 
     auto deleteLabel = Label::createWithTTF(text[8],titleB,142);
     deleteLabel->setVisible(false);
-    deleteLabel->setTextColor(Color4B::BLACK);
+    if(theme == 0){
+        deleteLabel->setTextColor(Color4B::BLACK);
+    }
+    if(theme == 1){
+        deleteLabel->setTextColor(Color4B::WHITE);
+    }
     deleteProj->addChild(deleteLabel);
     deleteLabel->setPosition(Vec2(textSize.width/2,textSize.height/2));
 
@@ -242,7 +278,7 @@ bool ListProject::init()
         Director::getInstance()->replaceScene(reload);
     });
 
-    auto back = ui::Button::create("sprites/button_back.png"sv,"sprites/button_back_pressed.png"sv);
+    auto back = ui::Button::create("sprites/" + night + "button_back.png","sprites/" + night + "button_back_pressed.png");
     back->setScale(0.2f);
     auto backSize = back->getContentSize();
     back->setPosition(Vec2(origin.x + 50,visibleSize.height - 50));
@@ -290,7 +326,7 @@ bool ListProject::init()
         item->setScaleY(scaleY);
         scrollGroup->addChild(item);
 
-        auto placeIcon = ui::Button::create("sprites/icon_scene.png","sprites/icon_scene.png");
+        auto placeIcon = ui::Button::create("sprites/" + night + "icon_scene.png","sprites/" + night + "icon_scene.png");
         placeIcon->setPosition(Vec2(100,y));
         placeIcon->setScale(0.25f);
         scrollGroup->addChild(placeIcon);
@@ -302,7 +338,7 @@ bool ListProject::init()
         openGallery();
         });
 
-        auto next = ui::Button::create("sprites/continue_button.png","sprites/continue_button_pressed.png");
+        auto next = ui::Button::create("sprites/" + night + "continue_button.png","sprites/" + night + "continue_button_pressed.png");
         //float y = totalHeight - (i * folderHeight) - (folderHeight/2);
         next->setPosition(Vec2(origin.x + visibleSize.width/2 + 260,y));
         next->setScale(0.1f);
@@ -332,7 +368,7 @@ bool ListProject::init()
             Director::getInstance()->replaceScene(nextScene);
         });
 
-        auto settings = ui::Button::create("sprites/settings_button.png","sprites/settings_button.png");
+        auto settings = ui::Button::create("sprites/" + night + "settings_button.png","sprites/" + night + "settings_button.png");
         settings->setPosition(Vec2(origin.x + visibleSize.width/2 + 180,y));
         settings->setScale(0.1f);
         scrollGroup->addChild(settings);

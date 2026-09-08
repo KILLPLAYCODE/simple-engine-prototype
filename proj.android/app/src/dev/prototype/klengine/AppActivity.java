@@ -27,7 +27,7 @@ package dev.prototype.klengine;
 
 import android.os.Bundle;
 import dev.axmol.lib.AxmolActivity;
-import dev.axmol.lib.SharedLoader;
+import dev.prototype.lib.SharedLoader;
 import android.os.Build;
 import android.view.WindowManager;
 import android.view.WindowManager.LayoutParams;

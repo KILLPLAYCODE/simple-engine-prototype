@@ -18,6 +18,7 @@ struct CustomLibs {
     std::string version;
 };
 struct CustomCommands {
+    std::string name;
     std::string command;
 };
 
@@ -26,6 +27,8 @@ class DATAmanager
     public:
     static DATAmanager* getInstance();
 
+    std::vector<std::string> listCommands;
+    std::vector<std::string> listExamples;
     std::vector<SystemCommands> commands;
     std::map<int,std::string> translater;
     std::unordered_map<std::string,std::vector<SystemCommands>> systemCommands;
@@ -48,6 +51,9 @@ class DATAmanager
     std::string objectName = "";
     std::string soundName = "";
     bool LanguageLoad = false;
+    bool ThemeLoad = false;
+    //MainScene
+    int theme = 0;
     //IOS
     int iosRequestSender = 0; //1 - ListProject, 2 - InsideScene
     //InsideScene
@@ -61,6 +67,10 @@ class DATAmanager
     int selectedChar = 0;
     bool rightMode = true;
     ax::DrawNode* cursor = nullptr;
+    ax::ui::Layout* panel = nullptr;
+    ax::EventListenerTouchOneByOne* panelTouch = nullptr;
+    int startPoint = 0;
+    int endPoint = 0;
     //CodeHelper
     int bookName = 0;
     private:
