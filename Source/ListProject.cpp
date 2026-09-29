@@ -518,3 +518,31 @@ extern "C" {
     }
 }
 #endif
+
+#if (AX_TARGET_PLATFORM == AX_PLATFORM_ANDROID)
+extern "C" {
+    JNIEXPORT void JNICALL Java_dev_prototype_klengine_AppActivity_onFontSelectedNative(JNIEnv* env, jobject thiz, jstring path, jstring name) {
+        std::string cacheFontPath = JniHelper::jstring2string(path);
+        std::string cacheName = JniHelper::jstring2string(name);
+        Director::getInstance()->getScheduler()->performFunctionInCocosThread([cacheFontPath, cacheName](){
+            auto fileUtils = FileUtils::getInstance();
+            std::string filePath = DATAmanager::getInstance()->savePath + cacheName;
+            Data fileData = fileUtils->getDataFromFile(cacheFontPath);
+            auto currentScene = Director::getInstance()->getRunningScene();
+            if(!fileData.isNull()){
+                fileUtils->writeDataToFile(fileData,filePath);
+                fileUtils->removeFile(cacheFontPath);
+                if (currentScene) {
+            if (auto insideScene = dynamic_cast<InsideScene*>(currentScene)) {
+                auto fontsConfig = DATAmanager::getInstance()->savePath + "fonts.plist";
+                ValueVector fontsCF = fileUtils->getValueVectorFromFile(fontsConfig);
+                fontsCF.push_back(Value(cacheName));
+                fileUtils->writeValueVectorToFile(fontsCF,fontsConfig);
+                insideScene->onImported(); 
+            }
+            }
+            }
+        });
+    }
+}
+#endif

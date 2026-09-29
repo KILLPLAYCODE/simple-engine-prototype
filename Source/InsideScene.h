@@ -43,7 +43,6 @@ public:
     static ax::Scene* createScene();
     bool init() override;
     void update(float delta) override;
-    void menuCloseCallback(ax::Object* sender);
     void onImported();
 
     CREATE_FUNC(InsideScene);

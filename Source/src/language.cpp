@@ -42,7 +42,7 @@ void loadEnglish(){
     enText[19] = "CLONES";
     enText[20] = "VARIABLES";
     enText[21] = "LISTS";
-    enText[22] = "MORE";
+    enText[22] = "TEXTS";
     enText[23] = "PROGRAMMER";
     enText[24] = "CREDITS";
     enText[25] = "OWNER";
@@ -51,6 +51,12 @@ void loadEnglish(){
     enText[28] = "CODER";
     enText[29] = "CONCEPT-MAKER";
     enText[30] = "DESIGNER";
+    enText[31] = "WARNING";
+    enText[32] = "Changing this setting\nrequires restarting the\napplication";
+    enText[33] = "CONFIRM";
+    enText[34] = "Main Settings:";
+    enText[35] = "System Stats:";
+    enText[36] = "SETTINGS";
 
     DATAmanager::getInstance()->language = "en";
     DATAmanager::getInstance()->translater = std::move(enText);
@@ -84,7 +90,7 @@ void loadRussian(){
     ruText[19] = "Клоны";
     ruText[20] = "Переменные";
     ruText[21] = "Списки";
-    ruText[22] = "Прочее";
+    ruText[22] = "Текст";
     ruText[23] = "ПРОГРАМНИК";
     ruText[24] = "АВТОРЫ";
     ruText[25] = "ВЛАДЕЛЕЦ";
@@ -93,6 +99,12 @@ void loadRussian(){
     ruText[28] = "КОДЕР";
     ruText[29] = "КОНЦЕПТ-МЕЙКЕР";
     ruText[30] = "ДИЗАЙНЕР";
+    ruText[31] = "Внимание";
+    ruText[32] = "Чтобы изменить этот\nпараметр требуется\nперезапустить\nприложение";
+    ruText[33] = "ПОДТВЕРДИТЬ";
+    ruText[34] = "Основные Настройки:";
+    ruText[35] = " Системная\nСтатистика:";
+    ruText[36] = "НАСТРОЙКИ";
 
     DATAmanager::getInstance()->language = "ru";
     DATAmanager::getInstance()->translater = std::move(ruText);
@@ -126,7 +138,7 @@ void loadUkraine(){
     ukrText[19] = "Клони";
     ukrText[20] = "Змінні";
     ukrText[21] = "Списки";
-    ukrText[22] = "Інше";
+    ukrText[22] = "Текст";
     ukrText[23] = "ПІДРУЧНИК";
     ukrText[24] = "АВТОРИ";
     ukrText[25] = "Власник";
@@ -135,6 +147,12 @@ void loadUkraine(){
     ukrText[28] = "КОДЕР";
     ukrText[29] = "КОНЦЕПТ-МЕЙКЕР";
     ukrText[30] = "ДИЗАЙНЕР";
+    ukrText[31] = "Увага";
+    ukrText[32] = "Для зміни цього\nпараметру потрібно\nперезавантаження\nпрограми";
+    ukrText[33] = "ПІДТВЕРДИТИ";
+    ukrText[34] = "Загальні Налаштування:";
+    ukrText[35] = " Системна\nСтатистика";
+    ukrText[36] = "НАЛАШТУВАННЯ";
     
     DATAmanager::getInstance()->language = "ukr";
     DATAmanager::getInstance()->translater = std::move(ukrText);

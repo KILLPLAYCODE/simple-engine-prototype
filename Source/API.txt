@@ -4,6 +4,8 @@ if()-
 
 -- else -
 
+-- else if() -
+
 --
 
 //////////////////////////////////////////////////////
@@ -81,7 +83,7 @@ onTouchObjectEnd(name object) =
 
 ==
 
-onTimer(['>' | '<' or '>=' | '<='] timecode) =
+onTimer(name,['>' | '<' or '>=' | '<='] timecode) =
 
 ==
 
@@ -95,39 +97,41 @@ setY(y)
 changeX()
 changeY()
 step()
-setPhysicType(static,dynamic,non)
+setPhysicType(static,dynamic,none)
 
 //////////////////////////////////////////////////////
 
 HITBOXES
 
-setSquareHitbox()
-setCircleHitbox()
+setSquareHitbox(w,h)
+setCircleHitbox(r)
 
 //////////////////////////////////////////////////////
 
 AUDIO
 
-audioPlay()
-audioStop()
-audioPause()
-audioResume()
-audioTimeCode()
-audioSetSpeed()
-audioChangeSpeed()
-audioSetVolume()
-audioChangeVolume()
-audioSetPan()
-audioChangePan()
+audioCreate(name)
+audioPlay(name)
+audioStop(name)
+audioPause(name)
+audioResume(name)
+audioTimeCode(name,n)
+audioSetSpeed(name,n)
+audioChangeSpeed(name,n)
+audioSetVolume(name,n)
+audioChangeVolume(name,n)
+audioSetPan(name,n)
+audioChangePan(name,n)
+audioDelete(name,n)
 
 //////////////////////////////////////////////////////
 
 SCENES
 
-sceneRun()
-sceneResume()
-sceneClean()
-sceneLoad()
+sceneRun(name)
+sceneResume(name)
+sceneClean(name)
+sceneLoad(name)
 
 //////////////////////////////////////////////////////
 
@@ -159,4 +163,32 @@ addListKey([listName],value)
 pasteListKey([listName],number,value)
 removeListKey([listName],number)
 cleanList([listName])
+
+//////////////////////////////////////////////////////
+
+VIDEO
+
+createVideo(name)
+videoSetPosition(name,x,y)
+videoSetScale(name,n)
+videoShow(name)
+videoHide(name)
+videoPlay(name)
+videoStop(name)
+videoResume(name)
+videoTimeCode(name,n)
+videoDelete(name)
+
+//////////////////////////////////////////////////////
+
+MORE
+
+createTimer(name)
+playTimer(name)
+stopTimer(name)
+resetTimer(name)
+deleteTimer(name)
+setOrientation(landscape,portrait)
+lua(code)
+stop
 

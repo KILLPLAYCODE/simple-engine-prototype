@@ -45,6 +45,7 @@ import android.database.Cursor;
 public class AppActivity extends AxmolActivity {
     private static final int PICK_IMAGE = 1;
     private static final int PICK_SOUND = 2;
+    private static final int PICK_FONT = 3;
     private static AppActivity _instance = null;
     static {
         SharedLoader.load();
@@ -88,6 +89,19 @@ public class AppActivity extends AxmolActivity {
                 Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
                 intent.setType("audio/*");
                 _instance.startActivityForResult(Intent.createChooser(intent, "Select Audio"), PICK_SOUND);
+            }
+        });
+    }
+    public static void openAudioFounder(){
+        if(_instance == null){
+            return;
+        }
+        _instance.runOnUiThread(new Runnable(){
+            @Override
+            public void run(){
+                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                intent.setType("font/*");
+                _instance.startActivityForResult(Intent.createChooser(intent, "Select Font"), PICK_FONT);
             }
         });
     }
@@ -144,6 +158,31 @@ public class AppActivity extends AxmolActivity {
         } catch (Exception e) {
                 android.util.Log.e("Simple Engine", "Ошибка при обработке звука: " + e.getMessage());
             }
+        } else if(requestCode == PICK_FONT && ResultCode == Activity.RESULT_OK && data != null && data.getData() != null){
+            Uri selectedFileUri = data.getData();
+            String name = getFileName(selectedFileUri);
+            try {
+            InputStream inputStream = getContentResolver().openInputStream(selectedFileUri);
+            File temp = new File(getCacheDir(), name);
+            if(temp.exists()){
+                temp.delete();
+            }
+            FileOutputStream outputStream = new FileOutputStream(temp);
+
+            byte[] buffer = new byte[65536];
+            int bytesRead;
+            while((bytesRead = inputStream.read(buffer)) != -1){
+                outputStream.write(buffer, 0, bytesRead);
+            }
+            
+            outputStream.flush();
+            inputStream.close();
+            outputStream.close();
+
+            onFontSelectedNative(temp.getAbsolutePath(),name);
+        } catch (Exception e) {
+                android.util.Log.e("Simple Engine", "Ошибка при обработке шрифта: " + e.getMessage());
+            }
         }
     }
     private String getFileName(Uri selectedFileUri) {
@@ -171,4 +210,5 @@ public class AppActivity extends AxmolActivity {
     }
     private static native void onImageSelectedNative(String path, String name);
     private static native void onSoundSelectedNative(String path, String name);
+    private static native void onFontSelectedNative(String path, String name);
 }

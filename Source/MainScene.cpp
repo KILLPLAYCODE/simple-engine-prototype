@@ -146,14 +146,15 @@ bool MainScene::init()
     logoDay->runAction(Sequence::create(move_ease->clone(),nullptr));
     logoNight->runAction(Sequence::create(move_ease->clone(),nullptr));
 
-    auto button = ui::Button::create("sprites/button.png"sv,"sprites/button.png"sv);
+    auto button = ui::Button::create("sprites/button.png","sprites/button.png");
     auto buttonNight = ui::Button::create("sprites/night/button_night.png","sprites/night/button_night.png");
-    auto button2 = ui::Button::create("sprites/button.png"sv,"sprites/button.png"sv);
+    auto button2 = ui::Button::create("sprites/button.png","sprites/button.png");
     auto buttonNight1 = ui::Button::create("sprites/night/button_night.png","sprites/night/button_night.png");
 
     auto fileUtils = FileUtils::getInstance();
     std::string languageConfig = fileUtils->getWritablePath() + "language.cf";
     std::string themeConfig = fileUtils->getWritablePath() + "theme.cf";
+    std::string settingsConfig = fileUtils->getWritablePath() + "settings.plist";
     if(fileUtils->isFileExist(languageConfig) && fileUtils->isFileExist(themeConfig)){
         DATAmanager::getInstance()->language = fileUtils->getStringFromFile(languageConfig);
         DATAmanager::getInstance()->theme = std::stoi(fileUtils->getStringFromFile(themeConfig));
@@ -163,6 +164,28 @@ bool MainScene::init()
         std::string t = std::to_string(DATAmanager::getInstance()->theme);
         fileUtils->writeStringToFile(t,themeConfig);
     }
+
+    if(!fileUtils->isFileExist(settingsConfig)){
+        ValueVector settingCF;
+        settingCF.push_back(Value(1));
+        settingCF.push_back(Value(60));
+        settingCF.push_back(Value(0));
+        DATAmanager::getInstance()->VSync = true;
+        DATAmanager::getInstance()->fps = 60;
+        DATAmanager::getInstance()->stats = false;
+        fileUtils->writeValueVectorToFile(settingCF,settingsConfig);
+        for(const auto& value : settingCF){
+            DATAmanager::getInstance()->settingStorage.push_back(value.asInt());
+        }
+    } else if(DATAmanager::getInstance()->settingStorage.empty()){
+        ValueVector settingCF = fileUtils->getValueVectorFromFile(settingsConfig);
+        for(const auto& value : settingCF){
+            DATAmanager::getInstance()->settingStorage.push_back(value.asInt());
+        }
+        DATAmanager::getInstance()->fps = DATAmanager::getInstance()->settingStorage[1];
+    }
+
+    Director::getInstance()->setAnimationInterval(1.0f / (float)DATAmanager::getInstance()->settingStorage[1]);
 
     if(DATAmanager::getInstance()->theme == 0){
         black_layer->setOpacity(0);
@@ -194,6 +217,16 @@ bool MainScene::init()
         std::cout<<DATAmanager::getInstance()->theme<<std::endl;
         LANGUAGE::changeLanguage(l);
         DATAmanager::getInstance()->LanguageLoad = true;
+        if(DATAmanager::getInstance()->settingStorage[0] == 0){
+            DATAmanager::getInstance()->VSync = false;
+        } else {
+            DATAmanager::getInstance()->VSync = true;
+        }
+        if(DATAmanager::getInstance()->settingStorage[2] == 0){
+            DATAmanager::getInstance()->stats = false;
+        } else {
+            DATAmanager::getInstance()->stats = true;
+        }
     }
     if(!readT){
         if(DATAmanager::getInstance()->theme == 1){

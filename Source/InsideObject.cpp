@@ -550,6 +550,12 @@ bool InsideObject::init()
     std::string numbers = "1234567890";
     std::string specialKeys = ".,!?-=[]()";
     capsLock = true;
+    DATAmanager::getInstance()->panelNode = Node::create();
+    auto pN = DATAmanager::getInstance()->panelNode;
+    this->addChild(pN,100);
+
+    auto cN = Node::create();
+    this->addChild(cN,50);
 
     Color3B bgColor(24,28,80);
     auto layer = LayerColor::create(Color4B(bgColor),visibleSize.width,visibleSize.height);
@@ -710,7 +716,7 @@ bool InsideObject::init()
         }
     } else {
         auto h = codeList->getInnerContainerSize().height;
-        codeList->setInnerContainerPosition(Vec2(0,h - 100));
+        codeList->setInnerContainerPosition(Vec2(0,((visibleSize.height - 100) - total)));
         std::cout<<"IMPORT#3\n";
     }
 

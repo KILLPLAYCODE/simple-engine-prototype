@@ -27,6 +27,7 @@ class DATAmanager
     public:
     static DATAmanager* getInstance();
 
+    std::vector<int> settingStorage; 
     std::vector<std::string> listCommands;
     std::vector<std::string> listExamples;
     std::vector<SystemCommands> commands;
@@ -50,8 +51,12 @@ class DATAmanager
     std::string sceneName = "";
     std::string objectName = "";
     std::string soundName = "";
+    std::string fontName = "";
     bool LanguageLoad = false;
     bool ThemeLoad = false;
+    bool VSync = false;
+    bool stats = true;
+    int fps = 60;
     //MainScene
     int theme = 0;
     //IOS
@@ -68,6 +73,7 @@ class DATAmanager
     bool rightMode = true;
     ax::DrawNode* cursor = nullptr;
     ax::ui::Layout* panel = nullptr;
+    ax::Node* panelNode = nullptr;
     ax::EventListenerTouchOneByOne* panelTouch = nullptr;
     int startPoint = 0;
     int endPoint = 0;
