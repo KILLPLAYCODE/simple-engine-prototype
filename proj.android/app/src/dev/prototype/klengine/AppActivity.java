@@ -27,7 +27,7 @@ package dev.prototype.klengine;
 
 import android.os.Bundle;
 import dev.axmol.lib.AxmolActivity;
-import dev.Axmol.lib.SharedLoader;
+import dev.axmol.lib.SharedLoader;
 import android.os.Build;
 import android.view.WindowManager;
 import android.view.WindowManager.LayoutParams;
@@ -92,7 +92,7 @@ public class AppActivity extends AxmolActivity {
             }
         });
     }
-    public static void openAudioFounder(){
+    public static void openFontFounder(){
         if(_instance == null){
             return;
         }
