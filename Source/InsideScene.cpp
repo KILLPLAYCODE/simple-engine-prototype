@@ -218,6 +218,44 @@ static void openFont(){
     #endif
 }
 
+static void openMedia(){
+    DATAmanager::getInstance()->savePath = DATAmanager::getInstance()->projectPath + "textures/";
+    #if (AX_TARGET_PLATFORM == AX_PLATFORM_ANDROID) //ANDROID
+    JniMethodInfo methodInfo;
+    if(JniHelper::getStaticMethodInfo(methodInfo, "dev/prototype/klengine/AppActivity", "openMediaFounder", "()V")){
+        methodInfo.env->CallStaticVoidMethod(methodInfo.classID, methodInfo.methodID);
+        methodInfo.env->DeleteLocalRef(methodInfo.classID);
+    }
+    #elif (AX_TARGET_PLATFORM == AX_PLATFORM_LINUX || AX_TARGET_PLATFORM == AX_PLATFORM_WIN32) //WIN,LINUX
+    auto select = pfd::open_file(
+        "Select font",
+        "",
+        {"Media (*.png *.jpg *.jpeg *.plist)", "*.png *.jpg *.jpeg *.plist"},
+        pfd::opt::none
+    );
+    if(!select.result().empty()){
+        std::string fullPath = select.result()[0];
+        std::filesystem::path p(fullPath);
+        std::string fileName = p.filename().string();
+        auto fileUtils = FileUtils::getInstance();
+        Data fileData = fileUtils->getDataFromFile(fullPath);
+        auto spritesPath = DATAmanager::getInstance()->projectPath + "textures/" + fileName;
+        auto clothesConfig = DATAmanager::getInstance()->projectPath + "textures/textures.plist";
+        ValueVector clothesCF = fileUtils->getValueVectorFromFile(clothesConfig);
+        clothesCF.push_back(Value(fileName));
+        fileUtils->writeValueVectorToFile(clothesCF,clothesConfig);
+        if(!fileData.isNull()){
+            fileUtils->writeDataToFile(fileData,spritesPath);
+            auto reload = InsideScene::createScene();
+            Director::getInstance()->replaceScene(reload);
+        }
+    } else {
+        auto reload = InsideScene::createScene();
+        Director::getInstance()->replaceScene(reload);
+    }
+    #endif
+}
+
 void InsideScene::onImported(){
     auto reload = InsideScene::createScene();
     Director::getInstance()->replaceScene(reload);
@@ -1244,7 +1282,7 @@ bool InsideScene::init()
                 night = "";
             }
             if(theme == 1){
-                Color3B bgColor(109, 0, 0);
+                Color3B bgColor(80, 0, 0);
                 auto layer = LayerColor::create(Color4B(bgColor),visibleSize.width,visibleSize.height);
                 layer->setPosition(Vec2::ZERO);
                 this->addChild(layer,0);
@@ -1263,8 +1301,14 @@ bool InsideScene::init()
             this->addChild(backLayer,30);
     
             auto frontWindow = DrawNode::create();
-            Color4F col = Color4F(0.71f,0,0,1.0f);
-            frontWindow->drawSolidRect(Vec2(origin.x + 100,visibleSize.height - 200), Vec2(visibleSize.width - 100,origin.y + 200), col);
+            if(theme == 0){
+                Color4F col = Color4F(1,0,0,1.0f);
+                frontWindow->drawSolidRect(Vec2(origin.x + 100,visibleSize.height - 200), Vec2(visibleSize.width - 100,origin.y + 200), col);
+            }
+            if(theme == 1){
+                Color4F col = Color4F(0.71f,0,0,1.0f);
+                frontWindow->drawSolidRect(Vec2(origin.x + 100,visibleSize.height - 200), Vec2(visibleSize.width - 100,origin.y + 200), col);
+            }
             frontWindow->setVisible(false);
             this->addChild(frontWindow,31);
             touchListener->onTouchBegan = [=](Touch* touch, Event* event)->bool {
@@ -1337,9 +1381,15 @@ bool InsideScene::init()
             buttonTextField->addChild(nameObject);
             nameObject->setPosition(Vec2(textFieldSize.width/2,textFieldSize.height/2));
 
-            auto DrawNode = DrawNode::create();    
-            Color4F color = Color4F(0.71f,0,0,1.0f);
-            DrawNode->drawSolidRect(Vec2(0,visibleSize.height), Vec2(visibleSize.width,visibleSize.height - 150),color);
+            auto DrawNode = DrawNode::create();   
+            if(theme == 0){
+                Color4F color = Color4F(1,0,0,1.0f);
+                DrawNode->drawSolidRect(Vec2(0,visibleSize.height), Vec2(visibleSize.width,visibleSize.height - 150),color);
+            } 
+            if(theme == 1){
+                Color4F color = Color4F(0.71f,0,0,1.0f);
+                DrawNode->drawSolidRect(Vec2(0,visibleSize.height), Vec2(visibleSize.width,visibleSize.height - 150),color);
+            }
             this->addChild(DrawNode,20);
 
             float xDuration = 145;    
@@ -1612,18 +1662,30 @@ bool InsideScene::init()
         {
             std::vector<std::string> soundsName;
             auto fileUtils = FileUtils::getInstance();
-            std::string configSequance = DATAmanager::getInstance()->projectPath + "fonts/fonts.plist";
+            std::string configSequance = DATAmanager::getInstance()->projectPath + "textures/textures.plist";
             if(fileUtils->isFileExist(configSequance)){
                 ValueVector sequance = fileUtils->getValueVectorFromFile(configSequance);
                 for(const auto& value : sequance){
                     soundsName.push_back(value.asString());
-                }  
+                }
             }
 
-            Color3B bgColor(181, 255, 109);
-            auto layer = LayerColor::create(Color4B(bgColor),visibleSize.width,visibleSize.height);
-            layer->setPosition(Vec2::ZERO);
-            this->addChild(layer,0);
+            if(theme == 0){
+                Color3B bgColor(181, 255, 109);
+                auto layer = LayerColor::create(Color4B(bgColor),visibleSize.width,visibleSize.height);
+                layer->setPosition(Vec2::ZERO);
+                this->addChild(layer,0);
+
+                night = "";
+            }
+            if(theme == 1){
+                Color3B bgColor(36,56,0);
+                auto layer = LayerColor::create(Color4B(bgColor),visibleSize.width,visibleSize.height);
+                layer->setPosition(Vec2::ZERO);
+                this->addChild(layer,0);
+
+                night = "night/";
+            }
 
             auto backLayer = ui::Layout::create();
             backLayer->setContentSize(visibleSize);
@@ -1636,8 +1698,14 @@ bool InsideScene::init()
             this->addChild(backLayer,30);
     
             auto frontWindow = DrawNode::create();
-            Color4F col = Color4F(0.42f,0.85f,0,1.0f);
-            frontWindow->drawSolidRect(Vec2(origin.x + 100,visibleSize.height - 200), Vec2(visibleSize.width - 100,origin.y + 200), col);
+            if(theme == 0){
+                Color4F col = Color4F(0.42f,0.85f,0,1.0f);
+                frontWindow->drawSolidRect(Vec2(origin.x + 100,visibleSize.height - 200), Vec2(visibleSize.width - 100,origin.y + 200), col);
+            }
+            if(theme == 1){
+                Color4F col = Color4F(0.28f,0.56f,0,1.0f);
+                frontWindow->drawSolidRect(Vec2(origin.x + 100,visibleSize.height - 200), Vec2(visibleSize.width - 100,origin.y + 200), col);
+            }
             frontWindow->setVisible(false);
             this->addChild(frontWindow,31);
             touchListener->onTouchBegan = [=](Touch* touch, Event* event)->bool {
@@ -1679,10 +1747,10 @@ bool InsideScene::init()
             this->addChild(deleteObject,39);
             deleteObject->addClickEventListener([=](Object* sender){
                 auto fileUtils = FileUtils::getInstance();
-                auto soundPlace = DATAmanager::getInstance()->projectPath + "sounds/" + DATAmanager::getInstance()->soundName;
+                auto soundPlace = DATAmanager::getInstance()->projectPath + "textures/" + DATAmanager::getInstance()->soundName;
                 fileUtils->removeDirectory(soundPlace);
 
-                std::string objectsConfig = DATAmanager::getInstance()->projectPath + "sounds/audio.plist";
+                std::string objectsConfig = DATAmanager::getInstance()->projectPath + "textures/textures.plist";
                 ValueVector sequance = fileUtils->getValueVectorFromFile(objectsConfig);
                 for(auto it = sequance.begin();it != sequance.end();++it){
                     if(it->asString() == DATAmanager::getInstance()->soundName){
@@ -1698,7 +1766,12 @@ bool InsideScene::init()
 
             auto deleteLabel = Label::createWithTTF(text[8],titleB,142);
             deleteLabel->setVisible(false);
-            deleteLabel->setTextColor(Color4B::BLACK);
+            if(theme == 0){
+                deleteLabel->setTextColor(Color4B::BLACK);
+            }
+            if(theme == 1){
+                deleteLabel->setTextColor(Color4B::WHITE);
+            }
             deleteObject->addChild(deleteLabel);
             deleteLabel->setPosition(Vec2(textSize.width/2,textSize.height/2));
 
@@ -1706,13 +1779,24 @@ bool InsideScene::init()
             nameObject->setVisible(false);
             nameObject->setMaxLengthEnabled(true);
             nameObject->setMaxLength(64);
-            nameObject->setTextColor(Color4B::BLACK);
+            if(theme == 0){
+                nameObject->setTextColor(Color4B::BLACK);
+            }
+            if(theme == 1){
+                nameObject->setTextColor(Color4B::WHITE);
+            }
             buttonTextField->addChild(nameObject);
             nameObject->setPosition(Vec2(textFieldSize.width/2,textFieldSize.height/2));
 
-            auto DrawNode = DrawNode::create();    
-            Color4F color = Color4F(0.42f,0.85f,0,1.0f);
-            DrawNode->drawSolidRect(Vec2(0,visibleSize.height), Vec2(visibleSize.width,visibleSize.height - 150),color);
+            auto DrawNode = DrawNode::create();
+            if(theme == 0){
+                Color4F color = Color4F(0.42f,0.85f,0,1.0f);
+                DrawNode->drawSolidRect(Vec2(0,visibleSize.height), Vec2(visibleSize.width,visibleSize.height - 150),color);
+            }
+            if(theme == 1){
+                Color4F color = Color4F(0.28f,0.56f,0,1.0f);
+                DrawNode->drawSolidRect(Vec2(0,visibleSize.height), Vec2(visibleSize.width,visibleSize.height - 150),color);
+            }
             this->addChild(DrawNode,20);
 
             float xDuration = 145;    
@@ -1725,10 +1809,6 @@ bool InsideScene::init()
                     this->addChild(microButton,14 + i);
                     microButton->addClickEventListener([this](Object* sender){
                         DATAmanager::getInstance()->switcher = 0;
-                        AudioEngine::stopAll();
-                        DATAmanager::getInstance()->sound_id = 0;
-                        DATAmanager::getInstance()->activePlayButton = nullptr;
-                        DATAmanager::getInstance()->activeStopButton = nullptr;
                         auto reload = InsideScene::createScene();
                         Director::getInstance()->replaceScene(reload);
                     });
@@ -1777,7 +1857,7 @@ bool InsideScene::init()
                     microButton->setScale(0.25f);
                     this->addChild(microButton,14 + i);
 
-                    auto texturesIcon = Sprite::create("sprites/" + night + "icon_textures.png");            
+                    auto texturesIcon = Sprite::create("sprites/icon_textures.png");            
                     texturesIcon->setPosition(Vec2(x - 75,visibleSize.height - 185));
                     texturesIcon->setScale(0.08f);
                     this->addChild(texturesIcon,15 + i);
@@ -1812,15 +1892,15 @@ bool InsideScene::init()
         objectNameLabel->setVisible(false);
         auto oldName = DATAmanager::getInstance()->soundName;
         auto newName = std::string(nameObject->getString());
-        std::string sequancePath = DATAmanager::getInstance()->projectPath + "sounds/" + "/audio.plist";
+        std::string sequancePath = DATAmanager::getInstance()->projectPath + "textures/" + "textures.plist";
         if(oldName == newName){
             return;
         }
         if(newName.empty()){
             return;
         }
-        auto oldPath = DATAmanager::getInstance()->projectPath + "sounds/" + oldName;
-        auto newPath = DATAmanager::getInstance()->projectPath + "sounds/" + newName;
+        auto oldPath = DATAmanager::getInstance()->projectPath + "textures/" + oldName;
+        auto newPath = DATAmanager::getInstance()->projectPath + "textures/" + newName;
         fileUtils->renameFile(oldPath,newPath);
         ValueVector renameSequance = fileUtils->getValueVectorFromFile(sequancePath);
 
@@ -1840,15 +1920,11 @@ bool InsideScene::init()
             nameLabel->setPosition(Vec2(origin.x + visibleSize.width/2, visibleSize.height - 85));
             this->addChild(nameLabel, 21);
     
-            auto back = ui::Button::create("sprites/button_back.png"sv,"sprites/button_back_pressed.png"sv);
+            auto back = ui::Button::create("sprites/" + night + "button_back.png","sprites/" + night + "button_back_pressed.png");
             back->setScale(0.2f);
             auto backSize = back->getContentSize();
             back->setPosition(Vec2(origin.x + 50,visibleSize.height - 50));
             back->addClickEventListener([=](Object* sender){
-                AudioEngine::stopAll();
-                DATAmanager::getInstance()->sound_id = 0;
-                DATAmanager::getInstance()->activePlayButton = nullptr;
-                DATAmanager::getInstance()->activeStopButton = nullptr;
                 auto nextScene = Scenes::createScene();
                 Director::getInstance()->replaceScene(nextScene);
             });
@@ -1859,21 +1935,17 @@ bool InsideScene::init()
             more->setPosition(Vec2(visibleSize.width - 50,visibleSize.height - 75));
             this->addChild(more,26);
 
-            auto run = ui::Button::create("sprites/button_run.png","sprites/button_run_pressed.png");    
+            auto run = ui::Button::create("sprites/" + night + "button_run.png","sprites/" + night + "button_run_pressed.png");    
             run->setPosition(Vec2(visibleSize.width - 125,origin.y + 100));
             run->setScale(0.25f);
             this->addChild(run,12);
 
-            auto add = ui::Button::create("sprites/create_add.png","sprites/create_add_pressed.png");
+            auto add = ui::Button::create("sprites/" + night + "create_add.png","sprites/" + night + "create_add_pressed.png");
             add->setPosition(Vec2(visibleSize.width - 125,origin.y + 250));
             add->setScale(0.25f);
             this->addChild(add,13);
             add->addClickEventListener([=](Object* sender){
-                AudioEngine::stopAll();
-                DATAmanager::getInstance()->sound_id = 0;
-                DATAmanager::getInstance()->activePlayButton = nullptr;
-                DATAmanager::getInstance()->activeStopButton = nullptr;
-                openSound();
+                openMedia();
             });
 
             auto listObjects = ui::ScrollView::create();    
@@ -1897,13 +1969,15 @@ bool InsideScene::init()
                 std::string music;
                 if(soundsName[i].length() > 12){
                     music = soundsName[i].substr(0,9); + "...";
+                } else {
+                    music = soundsName[i];
                 }
 
                 auto name = Label::createWithTTF(music,"fonts/arial.ttf",68 - music.length() * 2);
                 name->setPosition(Vec2(origin.x + visibleSize.width/2,y));
                 listObjects->addChild(name);
 
-                auto settings = ui::Button::create("sprites/settings_button.png","sprites/settings_button.png");
+                auto settings = ui::Button::create("sprites/" + night + "settings_button.png","sprites/" + night + "settings_button.png");
                 settings->setPosition(Vec2(origin.x + visibleSize.width/2 + 180,y));
                 settings->setScale(0.1f);
                 listObjects->addChild(settings);
@@ -1919,57 +1993,23 @@ bool InsideScene::init()
                     DATAmanager::getInstance()->soundName = soundsName[i];
                 });
 
-                auto next = ui::Button::create("sprites/button_play.png","sprites/button_play_pressed.png");
+                auto next = ui::Button::create("sprites/" + night + "button_play.png","sprites/" + night + "button_play_pressed.png");
                 next->setPosition(Vec2(origin.x + visibleSize.width/2 + 260,y));
                 next->setScale(0.1f);
                 listObjects->addChild(next);
 
-                auto stop = ui::Button::create("sprites/button_stop.png","sprites/button_stop_pressed.png");
-                stop->setVisible(false);
-                stop->setPosition(Vec2(origin.x + visibleSize.width/2 + 260,y));
-                stop->setScale(0.1f);
-                listObjects->addChild(stop);
-
-                next->addClickEventListener([=](Object* sender){
-                    int checker = DATAmanager::getInstance()->sound_id;
-                    if(checker != 0){
-                        AudioEngine::stop(checker);
-                        if(DATAmanager::getInstance()->activePlayButton && DATAmanager::getInstance()->activeStopButton){
-                            DATAmanager::getInstance()->activePlayButton->setVisible(true);
-                            DATAmanager::getInstance()->activeStopButton->setVisible(false);
-                        }
-                    }
-                    auto path = DATAmanager::getInstance()->projectPath + "sounds/" + soundsName[i];
-                    int sound = AudioEngine::play2d(path,false);
-                    next->setVisible(false);
-                    stop->setVisible(true);
-                    DATAmanager::getInstance()->sound_id = sound;
-                    DATAmanager::getInstance()->activePlayButton = next;
-                    DATAmanager::getInstance()->activeStopButton = stop;
-                });
-
-                stop->addClickEventListener([=](Object* sender){
-                    next->setVisible(true);
-                    stop->setVisible(false);
-                    int sound = DATAmanager::getInstance()->sound_id;
-                    AudioEngine::stop(sound);
-                    DATAmanager::getInstance()->sound_id = 0;
-                    DATAmanager::getInstance()->activePlayButton = nullptr;
-                    DATAmanager::getInstance()->activeStopButton = nullptr;
-                });
-
-                auto icon = Sprite::create("sprites/icon_sound.png");
+                auto icon = Sprite::create("sprites/icon_textures.png");
                 icon->setPosition(Vec2(100,y));
                 icon->setScale(0.25f);
                 listObjects->addChild(icon);
 
-                auto up = ui::Button::create("sprites/sorting.png","sprites/sorting_pressed.png");
+                auto up = ui::Button::create("sprites/" + night + "sorting.png","sprites/" + night + "sorting_pressed.png");
                 up->setPosition(Vec2(origin.x + visibleSize.width/2 - 150,y + 50));
                 up->setScale(0.1f);
                 listObjects->addChild(up);
                 up->addClickEventListener([=](Object* sender){
                     auto fileUtils = FileUtils::getInstance();
-                    auto configSequance = DATAmanager::getInstance()->projectPath + "sounds/" + "audio.plist";
+                    auto configSequance = DATAmanager::getInstance()->projectPath + "textures/" + "textures.plist";
                     if(!fileUtils->isFileExist(configSequance)){
                         return;
                     }
@@ -1984,22 +2024,18 @@ bool InsideScene::init()
                     if(index > 0){
                         std::swap(sequance[index],sequance[index - 1]);
                         fileUtils->writeValueVectorToFile(sequance,configSequance);
-                        AudioEngine::stopAll();
-                        DATAmanager::getInstance()->sound_id = 0;
-                        DATAmanager::getInstance()->activePlayButton = nullptr;
-                        DATAmanager::getInstance()->activeStopButton = nullptr;
                         auto reload = InsideScene::createScene();
                         Director::getInstance()->replaceScene(reload);
                     }
                 });
-                auto down = ui::Button::create("sprites/sorting.png","sprites/sorting_pressed.png");
+                auto down = ui::Button::create("sprites/" + night + "sorting.png","sprites/" + night + "sorting_pressed.png");
                 down->setRotation(180);
                 down->setPosition(Vec2(origin.x + visibleSize.width/2 - 150,y - 50));
                 down->setScale(0.1f);
                 listObjects->addChild(down);
                 down->addClickEventListener([=](Object* sender){
                     auto fileUtils = FileUtils::getInstance();
-                    auto configSequance = DATAmanager::getInstance()->projectPath + "sounds/" + "audio.plist";
+                    auto configSequance = DATAmanager::getInstance()->projectPath + "textures/" + "textures.plist";
                     if(!fileUtils->isFileExist(configSequance)){
                         return;
                     }
@@ -2015,10 +2051,6 @@ bool InsideScene::init()
                     if(index < sequance.size() - 1){
                         std::swap(sequance[index],sequance[index + 1]);
                         fileUtils->writeValueVectorToFile(sequance,configSequance);
-                        AudioEngine::stopAll();
-                        DATAmanager::getInstance()->sound_id = 0;
-                        DATAmanager::getInstance()->activePlayButton = nullptr;
-                        DATAmanager::getInstance()->activeStopButton = nullptr;
                         auto reload = InsideScene::createScene();
                         Director::getInstance()->replaceScene(reload);
                     }

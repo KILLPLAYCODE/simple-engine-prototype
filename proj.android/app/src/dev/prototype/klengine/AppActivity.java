@@ -46,6 +46,7 @@ public class AppActivity extends AxmolActivity {
     private static final int PICK_IMAGE = 1;
     private static final int PICK_SOUND = 2;
     private static final int PICK_FONT = 3;
+    private static final int PICK_MEDIA = 4;
     private static AppActivity _instance = null;
     static {
         SharedLoader.load();
@@ -105,6 +106,19 @@ public class AppActivity extends AxmolActivity {
             }
         });
     }
+    public static void openMediaFounder(){
+        if(_instance == null){
+            return;
+        }
+        _instance.runOnUiThread(new Runnable(){
+            @Override
+            public void run(){
+                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                intent.setType("*/*");
+                _instance.startActivityForResult(Intent.createChooser(intent, "Select Media"), PICK_MEDIA);
+            }
+        });
+    }
     @Override
     protected void onActivityResult(int requestCode, int ResultCode, Intent data){
         super.onActivityResult(requestCode,ResultCode,data);
@@ -131,8 +145,9 @@ public class AppActivity extends AxmolActivity {
 
             onImageSelectedNative(temp.getAbsolutePath(),name);
         } catch (Exception e) {
-                android.util.Log.e("Simple Engine", "Ошибка при обработке картинки: " + e.getMessage());
-            }
+            android.util.Log.e("Simple Engine", "Ошибка при обработке картинки: " + e.getMessage());
+        }
+
         } else if(requestCode == PICK_SOUND && ResultCode == Activity.RESULT_OK && data != null && data.getData() != null){
             Uri selectedFileUri = data.getData();
             String name = getFileName(selectedFileUri);
@@ -156,8 +171,9 @@ public class AppActivity extends AxmolActivity {
 
             onSoundSelectedNative(temp.getAbsolutePath(),name);
         } catch (Exception e) {
-                android.util.Log.e("Simple Engine", "Ошибка при обработке звука: " + e.getMessage());
-            }
+            android.util.Log.e("Simple Engine", "Ошибка при обработке звука: " + e.getMessage());
+        }
+
         } else if(requestCode == PICK_FONT && ResultCode == Activity.RESULT_OK && data != null && data.getData() != null){
             Uri selectedFileUri = data.getData();
             String name = getFileName(selectedFileUri);
@@ -181,9 +197,36 @@ public class AppActivity extends AxmolActivity {
 
             onFontSelectedNative(temp.getAbsolutePath(),name);
         } catch (Exception e) {
-                android.util.Log.e("Simple Engine", "Ошибка при обработке шрифта: " + e.getMessage());
-            }
+            android.util.Log.e("Simple Engine", "Ошибка при обработке шрифта: " + e.getMessage());
         }
+
+        } else if(requestCode == PICK_MEDIA && ResultCode == Activity.RESULT_OK && data != null && data.getData() != null){
+            Uri selectedFileUri = data.getData();
+            String name = getFileName(selectedFileUri);
+            String lower = name.toLowerCase();
+            if (!(lower.endsWith(".png") || lower.endsWith(".jpg")|| lower.endsWith(".jpeg") || lower.endsWith(".plist"))) {
+                return;
+            }
+            try {
+                InputStream inputStream = getContentResolver().openInputStream(selectedFileUri);
+                File temp = new File(getCacheDir(), name);
+                if(temp.exists()){
+                    temp.delete();
+                }
+                FileOutputStream outputStream = new FileOutputStream(temp);
+                byte[] buffer = new byte[65536];
+                int bytesRead;
+                while((bytesRead = inputStream.read(buffer)) != -1){
+                    outputStream.write(buffer, 0, bytesRead);
+                }
+                outputStream.flush();
+                inputStream.close();
+                outputStream.close();
+                onMediaSelectedNative(temp.getAbsolutePath(),name);
+            } catch (Exception e) {
+                    android.util.Log.e("Simple Engine", "Ошибка при обработке медиа: " + e.getMessage());
+                }
+            }
     }
     private String getFileName(Uri selectedFileUri) {
             String result = null;
@@ -211,4 +254,5 @@ public class AppActivity extends AxmolActivity {
     private static native void onImageSelectedNative(String path, String name);
     private static native void onSoundSelectedNative(String path, String name);
     private static native void onFontSelectedNative(String path, String name);
+    private static native void onMediaSelectedNative(String path, String name);
 }
