@@ -52,6 +52,7 @@ class DATAmanager
     std::string objectName = "";
     std::string soundName = "";
     std::string fontName = "";
+    std::string videoName = "";
     bool LanguageLoad = false;
     bool ThemeLoad = false;
     bool VSync = false;

@@ -468,18 +468,30 @@ extern "C" {
             Data fileData = fileUtils->getDataFromFile(cacheImagePath);
             auto currentScene = Director::getInstance()->getRunningScene();
             if(!fileData.isNull()){
-                fileUtils->writeDataToFile(fileData,filePath);
-                fileUtils->removeFile(cacheImagePath);
                 if (currentScene) {
             if (auto insideScene = dynamic_cast<InsideScene*>(currentScene)) {
+                std::vector<std::string> imagesName;
                 Director::getInstance()->getTextureCache()->removeTextureForKey(filePath);
                 auto clothesConfig = DATAmanager::getInstance()->savePath + "clothes.plist";
                 ValueVector clothesCF = fileUtils->getValueVectorFromFile(clothesConfig);
+                for(const auto& value : clothesCF){
+                    imagesName.push_back(value.asString());
+                }
+                for(int i = 0;i < imagesName.size();i++){
+                    if(cacheName == imagesName[i]){
+                        insideScene->onImported();
+                        return;
+                    }
+                }
+                fileUtils->writeDataToFile(fileData,filePath);
+                fileUtils->removeFile(cacheImagePath);
                 clothesCF.push_back(Value(cacheName));
                 fileUtils->writeValueVectorToFile(clothesCF,clothesConfig);
                 insideScene->onImported(); 
             }
             else if (auto listProject = dynamic_cast<ListProject*>(currentScene)) {
+                fileUtils->writeDataToFile(fileData,filePath);
+                fileUtils->removeFile(cacheImagePath);
                 std::string truePath = DATAmanager::getInstance()->savePath + "icon.png";
                 Director::getInstance()->getTextureCache()->removeTextureForKey(truePath);
                 listProject->onImported(cacheName);
@@ -502,12 +514,22 @@ extern "C" {
             Data fileData = fileUtils->getDataFromFile(cacheSoundPath);
             auto currentScene = Director::getInstance()->getRunningScene();
             if(!fileData.isNull()){
-                fileUtils->writeDataToFile(fileData,filePath);
-                fileUtils->removeFile(cacheSoundPath);
                 if (currentScene) {
             if (auto insideScene = dynamic_cast<InsideScene*>(currentScene)) {
+                std::vector<std::string> soundsName;
                 auto soundsConfig = DATAmanager::getInstance()->savePath + "audio.plist";
                 ValueVector soundsCF = fileUtils->getValueVectorFromFile(soundsConfig);
+                for(const auto& value : soundsCF){
+                    soundsName.push_back(value.asString());
+                }
+                for(int i = 0;i < soundsName.size();i++){
+                    if(cacheName == soundsName[i]){
+                        insideScene->onImported();
+                        return;
+                    }
+                }
+                fileUtils->writeDataToFile(fileData,filePath);
+                fileUtils->removeFile(cacheSoundPath);
                 soundsCF.push_back(Value(cacheName));
                 fileUtils->writeValueVectorToFile(soundsCF,soundsConfig);
                 insideScene->onImported(); 
@@ -530,12 +552,22 @@ extern "C" {
             Data fileData = fileUtils->getDataFromFile(cacheFontPath);
             auto currentScene = Director::getInstance()->getRunningScene();
             if(!fileData.isNull()){
-                fileUtils->writeDataToFile(fileData,filePath);
-                fileUtils->removeFile(cacheFontPath);
                 if (currentScene) {
             if (auto insideScene = dynamic_cast<InsideScene*>(currentScene)) {
+                std::vector<std::string> fontsName;
                 auto fontsConfig = DATAmanager::getInstance()->savePath + "fonts.plist";
                 ValueVector fontsCF = fileUtils->getValueVectorFromFile(fontsConfig);
+                for(const auto& value : fontsCF){
+                    fontsName.push_back(value.asString());
+                }
+                for(int i = 0;i < fontsName.size();i++){
+                    if(cacheName == fontsName[i]){
+                        insideScene->onImported();
+                        return;
+                    }
+                }
+                fileUtils->writeDataToFile(fileData,filePath);
+                fileUtils->removeFile(cacheFontPath);
                 fontsCF.push_back(Value(cacheName));
                 fileUtils->writeValueVectorToFile(fontsCF,fontsConfig);
                 insideScene->onImported(); 
@@ -558,13 +590,23 @@ extern "C" {
             Data fileData = fileUtils->getDataFromFile(cacheFontPath);
             auto currentScene = Director::getInstance()->getRunningScene();
             if(!fileData.isNull()){
-                fileUtils->writeDataToFile(fileData,filePath);
-                fileUtils->removeFile(cacheFontPath);
                 if (currentScene) {
             if (auto insideScene = dynamic_cast<InsideScene*>(currentScene)) {
+                std::vector<std::string> mediaName;
                 auto mediaConfig = DATAmanager::getInstance()->savePath + "textures.plist";
                 ValueVector mediaCF = fileUtils->getValueVectorFromFile(mediaConfig);
+                for(const auto& value : mediaCF){
+                    mediaName.push_back(value.asString());
+                }
+                for(int i = 0;i < mediaName.size();i++){
+                    if(cacheName == mediaName[i]){
+                        insideScene->onImported();
+                        return;
+                    }
+                }
                 mediaCF.push_back(Value(cacheName));
+                fileUtils->writeDataToFile(fileData,filePath);
+                fileUtils->removeFile(cacheFontPath);
                 fileUtils->writeValueVectorToFile(mediaCF,mediaConfig);
                 insideScene->onImported(); 
             }

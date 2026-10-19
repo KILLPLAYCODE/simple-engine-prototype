@@ -117,11 +117,13 @@ bool CreateProj::init()
         std::string fonts = folder + "fonts/"; 
         std::string scenes = folder + "scenes/";
         std::string textures = folder + "textures/";
+        std::string videos = folder + "video/";
         fileUtils->createDirectories(folder);
         fileUtils->createDirectories(sounds);
         fileUtils->createDirectories(fonts);
         fileUtils->createDirectories(scenes);
         fileUtils->createDirectories(textures);
+        fileUtils->createDirectories(videos);
         
         if(fileUtils->isDirectoryExist(folder)){
             DATAmanager::getInstance()->projectPath = folder;
@@ -141,6 +143,9 @@ bool CreateProj::init()
             fileUtils->writeValueVectorToFile(sequance,saveSequance);
 
             saveSequance = folder + "textures/textures.plist";
+            fileUtils->writeValueVectorToFile(sequance,saveSequance);
+
+            saveSequance = folder + "video/video.plist";
             fileUtils->writeValueVectorToFile(sequance,saveSequance);
 
             std::string savePj = systemPath + "projects/projects.plist";

@@ -23,8 +23,6 @@
 
 using namespace ax;
 
-static int _sceneID = 1005;
-
 Scene* InsideScene::createScene() 
 {
     return InsideScene::create();
@@ -54,6 +52,7 @@ static void openGallery(){ //IMPORT IMAGE
         pfd::opt::none
     );
     if(!select.result().empty()){
+        std::vector<std::string> imageName;
         std::string fullPath = select.result()[0];
         std::filesystem::path p(fullPath);
         std::string fileName = p.filename().string();
@@ -62,6 +61,14 @@ static void openGallery(){ //IMPORT IMAGE
         auto spritesPath = DATAmanager::getInstance()->savePath + fileName;
         auto clothesConfig = DATAmanager::getInstance()->savePath + "clothes.plist";
         ValueVector clothesCF = fileUtils->getValueVectorFromFile(clothesConfig);
+        for(const auto& value : clothesCF){
+            imageName.push_back(value.asString());
+        }
+        for(int i = 0;i < imageName.size();i++){
+            if(fileName == imageName[i]){
+                return;
+            }
+        }
         clothesCF.push_back(Value(fileName));
         fileUtils->writeValueVectorToFile(clothesCF,clothesConfig);
         if(!fileData.isNull()){
@@ -95,6 +102,7 @@ static void openSound(){
         pfd::opt::none
     );
     if(!select.result().empty()){
+        std::vector<std::string> soundsName;
         std::string fullPath = select.result()[0];
         std::filesystem::path p(fullPath);
         std::string fileName = p.filename().string();
@@ -103,6 +111,14 @@ static void openSound(){
         auto soundsPath = DATAmanager::getInstance()->savePath + fileName;
         auto soundsConfig = DATAmanager::getInstance()->savePath + "audio.plist";
         ValueVector soundsCF = fileUtils->getValueVectorFromFile(soundsConfig);
+        for(const auto& value : soundsCF){
+            soundsName.push_back(value.asString());
+        }
+        for(int i = 0;i < soundsName.size();i++){
+            if(fileName == soundsName[i]){
+                return;
+            }
+        }
         soundsCF.push_back(Value(fileName));
         fileUtils->writeValueVectorToFile(soundsCF,soundsConfig);
         if(!fileData.isNull()){
@@ -124,7 +140,7 @@ static void openSound(){
 #if (AX_TARGET_PLATFORM == AX_PLATFORM_IOS)
 void IOSBridge::onFileSelected(const std::string& cachePath, std::string fileName){
     if(cachePath.empty() || fileName.empty()){
-        IOSBridge::showNativeAlert("Пустые переменные","Были присланы пустые переменные от BridgeIOS.mm");
+        IOSBridge::showNativeAlert("Empty vars","Empty vars have been sending from BridgeIOS.mm");
         return;
     }
     if(DATAmanager::getInstance()->iosRequestSender == 1){ //LISTPROJECT
@@ -140,35 +156,58 @@ void IOSBridge::onFileSelected(const std::string& cachePath, std::string fileNam
     if(DATAmanager::getInstance()->iosRequestSender == 2){ //INSIDESCENE
         uint8_t type = DATAmanager::getInstance()->switcher;
     if(type == 0){ //IMAGE
+        std::vector<std::string> imagesName;
         auto spritesPath = DATAmanager::getInstance()->savePath + fileName;
         auto fileUtils = FileUtils::getInstance();
         Data cacheData = fileUtils->getDataFromFile(cachePath);
+        
+        auto clothesConfig = DATAmanager::getInstance()->savePath + "clothes.plist";
+        ValueVector clothesCF = fileUtils->getValueVectorFromFile(clothesConfig);
+        for(const auto& value : clothesCF){
+            imagesName.push_back(value.asString());
+        }
+        for(int i = 0;i < imagesName.size();i++){
+            if(fileName == imagesName[i]){
+                return;
+            }
+        }
+
         if(!cacheData.isNull()){
             fileUtils->writeDataToFile(cacheData,spritesPath);
             fileUtils->removeFile(cachePath);    
             Director::getInstance()->getTextureCache()->removeTextureForKey(spritesPath);
+        } else {
+            return;
         }
-        auto clothesConfig = DATAmanager::getInstance()->savePath + "clothes.plist";
-        ValueVector clothesCF = fileUtils->getValueVectorFromFile(clothesConfig);
+
         clothesCF.push_back(Value(fileName));
         fileUtils->writeValueVectorToFile(clothesCF,clothesConfig);
-
+    
         auto reload = InsideObject::createScene();
         Director::getInstance()->replaceScene(reload);
     }
     if(type == 1){ //AUDIO
+        std::vector<std::string> soundsName;
         auto soundsPath = DATAmanager::getInstance()->savePath + fileName;
         auto fileUtils = FileUtils::getInstance();
         Data cacheData = fileUtils->getDataFromFile(cachePath);
         if(cacheData.isNull()){
-            IOSBridge::showNativeAlert("Пустой файл в кеше","Данные из кеша отсутствуют");
+            IOSBridge::showNativeAlert("Empty file in cache","Cache data is dont exist");
             DATAmanager::getInstance()->iosRequestSender = 0;
             return;
-        }
-        fileUtils->writeDataToFile(cacheData,soundsPath);
-        fileUtils->removeFile(cachePath);    
+        }    
         auto soundsConfig = DATAmanager::getInstance()->savePath + "audio.plist";
         ValueVector soundsCF = fileUtils->getValueVectorFromFile(soundsConfig);
+        for(const auto& value : soundsCF){
+            soundsName.push_back(value.asString());
+        }
+        for(int i = 0;i < soundsName.size();i++){
+            if(fileName == soundsName[i]){
+                return;
+            }
+        }
+        fileUtils->writeDataToFile(cacheData,soundsPath);
+        fileUtils->removeFile(cachePath);
         soundsCF.push_back(Value(fileName));
         fileUtils->writeValueVectorToFile(soundsCF,soundsConfig);
 
@@ -196,6 +235,7 @@ static void openFont(){
         pfd::opt::none
     );
     if(!select.result().empty()){
+        std::vector<std::string> fontsName;
         std::string fullPath = select.result()[0];
         std::filesystem::path p(fullPath);
         std::string fileName = p.filename().string();
@@ -204,6 +244,14 @@ static void openFont(){
         auto spritesPath = DATAmanager::getInstance()->projectPath + "fonts/" + fileName;
         auto clothesConfig = DATAmanager::getInstance()->projectPath + "fonts/fonts.plist";
         ValueVector clothesCF = fileUtils->getValueVectorFromFile(clothesConfig);
+        for(const auto& value : clothesCF){
+            fontsName.push_back(value.asString());
+        }
+        for(int i = 0;i < fontsName.size();i++){
+            if(fileName == fontsName[i]){
+                return;
+            }
+        }
         clothesCF.push_back(Value(fileName));
         fileUtils->writeValueVectorToFile(clothesCF,clothesConfig);
         if(!fileData.isNull()){
@@ -234,6 +282,7 @@ static void openMedia(){
         pfd::opt::none
     );
     if(!select.result().empty()){
+        std::vector<std::string> mediaName;
         std::string fullPath = select.result()[0];
         std::filesystem::path p(fullPath);
         std::string fileName = p.filename().string();
@@ -242,6 +291,61 @@ static void openMedia(){
         auto spritesPath = DATAmanager::getInstance()->projectPath + "textures/" + fileName;
         auto clothesConfig = DATAmanager::getInstance()->projectPath + "textures/textures.plist";
         ValueVector clothesCF = fileUtils->getValueVectorFromFile(clothesConfig);
+        for(const auto& value : clothesCF){
+            mediaName.push_back(value.asString());
+        }
+        for(int i = 0;i < mediaName.size();i++){
+            if(fileName == mediaName[i]){
+                return;
+            }
+        }
+        clothesCF.push_back(Value(fileName));
+        fileUtils->writeValueVectorToFile(clothesCF,clothesConfig);
+        if(!fileData.isNull()){
+            fileUtils->writeDataToFile(fileData,spritesPath);
+            auto reload = InsideScene::createScene();
+            Director::getInstance()->replaceScene(reload);
+        }
+    } else {
+        auto reload = InsideScene::createScene();
+        Director::getInstance()->replaceScene(reload);
+    }
+    #endif
+}
+
+static void openVideo(){
+    DATAmanager::getInstance()->savePath = DATAmanager::getInstance()->projectPath + "video/";
+    #if (AX_TARGET_PLATFORM == AX_PLATFORM_ANDROID) //ANDROID
+    JniMethodInfo methodInfo;
+    if(JniHelper::getStaticMethodInfo(methodInfo, "dev/prototype/klengine/AppActivity", "openMediaFounder", "()V")){
+        methodInfo.env->CallStaticVoidMethod(methodInfo.classID, methodInfo.methodID);
+        methodInfo.env->DeleteLocalRef(methodInfo.classID);
+    }
+    #elif (AX_TARGET_PLATFORM == AX_PLATFORM_LINUX || AX_TARGET_PLATFORM == AX_PLATFORM_WIN32) //WIN,LINUX
+    auto select = pfd::open_file(
+        "Select video",
+        "",
+        {"Video (*.mp4 *.mkv *.webm)", "*.mp4 *.mkv *.webm"},
+        pfd::opt::none
+    );
+    if(!select.result().empty()){
+        std::vector<std::string> videosName;
+        std::string fullPath = select.result()[0];
+        std::filesystem::path p(fullPath);
+        std::string fileName = p.filename().string();
+        auto fileUtils = FileUtils::getInstance();
+        Data fileData = fileUtils->getDataFromFile(fullPath);
+        auto spritesPath = DATAmanager::getInstance()->projectPath + "video/" + fileName;
+        auto clothesConfig = DATAmanager::getInstance()->projectPath + "video/video.plist";
+        ValueVector clothesCF = fileUtils->getValueVectorFromFile(clothesConfig);
+        for(const auto& value : clothesCF){
+            videosName.push_back(value.asString());
+        }
+        for(int i = 0;i < videosName.size();i++){
+            if(fileName == videosName[i]){
+                return;
+            }
+        }
         clothesCF.push_back(Value(fileName));
         fileUtils->writeValueVectorToFile(clothesCF,clothesConfig);
         if(!fileData.isNull()){
@@ -1002,7 +1106,7 @@ bool InsideScene::init()
                     microButton->setScale(0.25f);
                     this->addChild(microButton,14 + i);
                     microButton->addClickEventListener([this](Object* sender){
-                        DATAmanager::getInstance()->switcher = 3;
+                        DATAmanager::getInstance()->switcher = 4;
                         auto reload = InsideScene::createScene();
                         Director::getInstance()->replaceScene(reload);
                     });
@@ -1464,7 +1568,7 @@ bool InsideScene::init()
                     microButton->setScale(0.25f);
                     this->addChild(microButton,14 + i);
                     microButton->addClickEventListener([this](Object* sender){
-                        DATAmanager::getInstance()->switcher = 3;
+                        DATAmanager::getInstance()->switcher = 4;
                         auto reload = InsideScene::createScene();
                         Director::getInstance()->replaceScene(reload);
                     });
@@ -1868,7 +1972,7 @@ bool InsideScene::init()
                     microButton->setScale(0.25f);
                     this->addChild(microButton,14 + i);
                     microButton->addClickEventListener([this](Object* sender){
-                        DATAmanager::getInstance()->switcher = 3;
+                        DATAmanager::getInstance()->switcher = 4;
                         auto reload = InsideScene::createScene();
                         Director::getInstance()->replaceScene(reload);
                     });
@@ -2044,6 +2148,407 @@ bool InsideScene::init()
                     int index = -1;
                     for(int a = 0;a < sequance.size();a++){
                         if(sequance[a].asString() == soundsName[i]){
+                            index = a;
+                            break;
+                        }
+                    }
+                    if(index < sequance.size() - 1){
+                        std::swap(sequance[index],sequance[index + 1]);
+                        fileUtils->writeValueVectorToFile(sequance,configSequance);
+                        auto reload = InsideScene::createScene();
+                        Director::getInstance()->replaceScene(reload);
+                    }
+                });
+            }
+
+            break;
+        }
+        case 4:
+        {
+            std::vector<std::string> videosName;
+            auto fileUtils = FileUtils::getInstance();
+            std::string configSequance = DATAmanager::getInstance()->projectPath + "video/video.plist";
+            if(fileUtils->isFileExist(configSequance)){
+                ValueVector sequance = fileUtils->getValueVectorFromFile(configSequance);
+                for(const auto& value : sequance){
+                    videosName.push_back(value.asString());
+                }
+            }
+
+            if(theme == 0){
+                Color3B bgColor(255, 224, 90);
+                auto layer = LayerColor::create(Color4B(bgColor),visibleSize.width,visibleSize.height);
+                layer->setPosition(Vec2::ZERO);
+                this->addChild(layer,0);
+
+                night = "";
+            }
+            if(theme == 1){
+                Color3B bgColor(36,56,0);
+                auto layer = LayerColor::create(Color4B(bgColor),visibleSize.width,visibleSize.height);
+                layer->setPosition(Vec2::ZERO);
+                this->addChild(layer,0);
+
+                night = "night/";
+            }
+
+            auto backLayer = ui::Layout::create();
+            backLayer->setContentSize(visibleSize);
+            backLayer->setBackGroundColorType(ui::Layout::BackGroundColorType::SOLID);    
+            backLayer->setBackGroundColor(Color3B(0, 0, 0));
+            backLayer->setBackGroundColorOpacity(198);
+            backLayer->setVisible(false);
+            backLayer->setPosition(Vec2::ZERO);
+            backLayer->setTouchEnabled(true);
+            this->addChild(backLayer,30);
+    
+            auto frontWindow = DrawNode::create();
+            if(theme == 0){
+                Color4F col = Color4F(1.00f,0.94f,0.02f,1.0f);
+                frontWindow->drawSolidRect(Vec2(origin.x + 100,visibleSize.height - 200), Vec2(visibleSize.width - 100,origin.y + 200), col);
+            }
+            if(theme == 1){
+                Color4F col = Color4F(0.28f,0.56f,0,1.0f);
+                frontWindow->drawSolidRect(Vec2(origin.x + 100,visibleSize.height - 200), Vec2(visibleSize.width - 100,origin.y + 200), col);
+            }
+            frontWindow->setVisible(false);
+            this->addChild(frontWindow,31);
+            touchListener->onTouchBegan = [=](Touch* touch, Event* event)->bool {
+                if(!frontWindow->isVisible()){
+                    return false;
+                }
+                if(canFadeOut){
+                    canFadeOut = false;
+                }
+                Vec2 localPoint = frontWindow->convertToNodeSpace(touch->getLocation());        
+                Rect bounds = Rect(origin.x + 100,origin.y + 200, visibleSize.width - 200,visibleSize.height - 400);
+
+                if(bounds.containsPoint(localPoint)){
+                    canFadeOut = false;
+                    return true;
+                }
+                canFadeOut = true;
+                return false;
+            };
+            _eventDispatcher->addEventListenerWithSceneGraphPriority(touchListener,frontWindow);
+
+            auto objectNameLabel = Label::createWithTTF(text[9],titleF,46);    
+            objectNameLabel->setPosition(Vec2(origin.x + visibleSize.width/2,visibleSize.height - 300));
+            objectNameLabel->setVisible(false);
+            this->addChild(objectNameLabel,33);
+    
+            auto buttonTextField = Sprite::create("sprites/" + night + "textfield.png");
+            buttonTextField->setVisible(false);
+            buttonTextField->setPosition(Vec2(origin.x + visibleSize.width/2,origin.y + visibleSize.height/2 + 200));
+            buttonTextField->setScale(0.4f);
+            auto textFieldSize = buttonTextField->getContentSize();
+            this->addChild(buttonTextField,32);
+
+            auto deleteObject = ui::Button::create("sprites/" + night + "button_1_1.png","sprites/" + night + "button_1_1_pressed.png");
+            deleteObject->setVisible(false);
+            deleteObject->setPosition(Vec2(origin.x + visibleSize.width/2,origin.y + 250));
+            deleteObject->setScale(0.4f);
+            auto textSize = deleteObject->getContentSize();
+            this->addChild(deleteObject,39);
+            deleteObject->addClickEventListener([=](Object* sender){
+                auto fileUtils = FileUtils::getInstance();
+                auto soundPlace = DATAmanager::getInstance()->projectPath + "video/" + DATAmanager::getInstance()->videoName;
+                fileUtils->removeDirectory(soundPlace);
+
+                std::string objectsConfig = DATAmanager::getInstance()->projectPath + "video/video.plist";
+                ValueVector sequance = fileUtils->getValueVectorFromFile(objectsConfig);
+                for(auto it = sequance.begin();it != sequance.end();++it){
+                    if(it->asString() == DATAmanager::getInstance()->videoName){
+                        sequance.erase(it);
+                        break;
+                    }
+                }
+                fileUtils->writeValueVectorToFile(sequance,objectsConfig);
+
+                auto reload = InsideScene::createScene();        
+                Director::getInstance()->replaceScene(reload);
+            });
+
+            auto deleteLabel = Label::createWithTTF(text[8],titleB,142);
+            deleteLabel->setVisible(false);
+            if(theme == 0){
+                deleteLabel->setTextColor(Color4B::BLACK);
+            }
+            if(theme == 1){
+                deleteLabel->setTextColor(Color4B::WHITE);
+            }
+            deleteObject->addChild(deleteLabel);
+            deleteLabel->setPosition(Vec2(textSize.width/2,textSize.height/2));
+
+            auto nameObject = ui::TextField::create(text[10],"fonts/arial.ttf",86);    
+            nameObject->setVisible(false);
+            nameObject->setMaxLengthEnabled(true);
+            nameObject->setMaxLength(64);
+            if(theme == 0){
+                nameObject->setTextColor(Color4B::BLACK);
+            }
+            if(theme == 1){
+                nameObject->setTextColor(Color4B::WHITE);
+            }
+            buttonTextField->addChild(nameObject);
+            nameObject->setPosition(Vec2(textFieldSize.width/2,textFieldSize.height/2));
+
+            auto DrawNode = DrawNode::create();
+            if(theme == 0){
+                Color4F color = Color4F(0.85f,0.81f,0,1.0f);
+                DrawNode->drawSolidRect(Vec2(0,visibleSize.height), Vec2(visibleSize.width,visibleSize.height - 150),color);
+            }
+            if(theme == 1){
+                Color4F color = Color4F(0.28f,0.56f,0,1.0f);
+                DrawNode->drawSolidRect(Vec2(0,visibleSize.height), Vec2(visibleSize.width,visibleSize.height - 150),color);
+            }
+            this->addChild(DrawNode,20);
+
+            float xDuration = 145;    
+            for(int i = 1;i < 6;i++){
+                float x = xDuration * i;
+                if(i == 1){
+                    auto microButton = ui::Button::create("sprites/" + night + "button_2_0.png","sprites/" + night + "button_2_0.png");
+                    microButton->setPosition(Vec2(x - 75,visibleSize.height - 185));
+                    microButton->setScale(0.25f);
+                    this->addChild(microButton,14 + i);
+                    microButton->addClickEventListener([this](Object* sender){
+                        DATAmanager::getInstance()->switcher = 0;
+                        auto reload = InsideScene::createScene();
+                        Director::getInstance()->replaceScene(reload);
+                    });
+
+                    auto objectsIcon = Sprite::create("sprites/icon_objects.png");            
+                    objectsIcon->setPosition(Vec2(x - 75,visibleSize.height - 185));
+                    objectsIcon->setScale(0.08f);
+                    this->addChild(objectsIcon,15 + i);
+                }
+                if(i == 2){
+                    auto microButton = ui::Button::create("sprites/" + night + "button_2_1.png","sprites/" + night + "button_2_1.png");
+                    microButton->setPosition(Vec2(x - 75,visibleSize.height - 185));
+                    microButton->setScale(0.25f);
+                    this->addChild(microButton,14 + i);
+                    microButton->addClickEventListener([this](Object* sender){
+                        DATAmanager::getInstance()->switcher = 1;
+                        auto reload = InsideScene::createScene();
+                        Director::getInstance()->replaceScene(reload);
+                    });
+            
+                    auto soundsIcon = Sprite::create("sprites/icon_sound.png");
+                    soundsIcon->setPosition(Vec2(x - 75,visibleSize.height - 185));
+                    soundsIcon->setScale(0.08f);
+                    this->addChild(soundsIcon,15 + i);
+                }
+                if(i == 3){
+                    auto microButton = ui::Button::create("sprites/" + night + "button_2_3.png","sprites/" + night + "button_2_3.png");
+                    microButton->setPosition(Vec2(x - 75,visibleSize.height - 185));
+                    microButton->setScale(0.25f);
+                    this->addChild(microButton,14 + i);
+
+                    auto fontsIcon = Sprite::create("sprites/icon_fonts.png");            
+                    fontsIcon->setPosition(Vec2(x - 75,visibleSize.height - 185));
+                    fontsIcon->setScale(0.1f);
+                    this->addChild(fontsIcon,15 + i);
+
+                    microButton->addClickEventListener([this](Object* sender){
+                        DATAmanager::getInstance()->switcher = 2;
+                        auto reload = InsideScene::createScene();
+                        Director::getInstance()->replaceScene(reload);
+                    });
+                }
+                if(i == 4){
+                    auto microButton = ui::Button::create("sprites/" + night + "button_2_2.png","sprites/" + night + "button_2_2.png");
+                    microButton->setPosition(Vec2(x - 75,visibleSize.height - 185));
+                    microButton->setScale(0.25f);
+                    this->addChild(microButton,14 + i);
+                    microButton->addClickEventListener([this](Object* sender){
+                        DATAmanager::getInstance()->switcher = 3;
+                        auto reload = InsideScene::createScene();
+                        Director::getInstance()->replaceScene(reload);
+                    });
+
+                    auto texturesIcon = Sprite::create("sprites/icon_textures.png");            
+                    texturesIcon->setPosition(Vec2(x - 75,visibleSize.height - 185));
+                    texturesIcon->setScale(0.08f);
+                    this->addChild(texturesIcon,15 + i);
+                }
+                if(i == 5){
+                    auto microButton = ui::Button::create("sprites/" + night + "button_2_4.png","sprites/" + night + "button_2_4.png");
+                    microButton->setPosition(Vec2(x - 75,visibleSize.height - 185));
+                    microButton->setScale(0.25f);
+                    this->addChild(microButton,14 + i);
+
+                    auto texturesIcon = Sprite::create("sprites/icon_camera.png");            
+                    texturesIcon->setPosition(Vec2(x - 75,visibleSize.height - 185));
+                    texturesIcon->setScale(0.08f);
+                    this->addChild(texturesIcon,15 + i);
+                }
+            }
+            backLayer->addClickEventListener([=](Object* sender){
+        if(!canFadeOut){
+            return;
+        }
+        auto fileUtils = FileUtils::getInstance();
+        backLayer->setVisible(false);
+        frontWindow->setVisible(false);
+        deleteObject->setVisible(false);
+        buttonTextField->setVisible(false);
+        nameObject->setVisible(false);
+        objectNameLabel->setVisible(false);
+        auto oldName = DATAmanager::getInstance()->videoName;
+        auto newName = std::string(nameObject->getString());
+        std::string sequancePath = DATAmanager::getInstance()->projectPath + "video/" + "video.plist";
+        if(oldName == newName){
+            return;
+        }
+        if(newName.empty()){
+            return;
+        }
+        auto oldPath = DATAmanager::getInstance()->projectPath + "video/" + oldName;
+        auto newPath = DATAmanager::getInstance()->projectPath + "video/" + newName;
+        fileUtils->renameFile(oldPath,newPath);
+        ValueVector renameSequance = fileUtils->getValueVectorFromFile(sequancePath);
+
+        for(int i = 0; i < renameSequance.size(); i++){
+        if(renameSequance[i].asString() == oldName){
+            renameSequance[i] = Value(newName);
+            break;
+        }
+    }
+        fileUtils->writeValueVectorToFile(renameSequance,sequancePath);
+        auto reload = InsideScene::createScene();
+        Director::getInstance()->replaceScene(reload);
+    });
+
+            std::string name = DATAmanager::getInstance()->sceneName;    
+            auto nameLabel = Label::createWithTTF(name,"fonts/arial.ttf",86 - name.length() * 2);
+            nameLabel->setPosition(Vec2(origin.x + visibleSize.width/2, visibleSize.height - 85));
+            this->addChild(nameLabel, 21);
+    
+            auto back = ui::Button::create("sprites/" + night + "button_back.png","sprites/" + night + "button_back_pressed.png");
+            back->setScale(0.2f);
+            auto backSize = back->getContentSize();
+            back->setPosition(Vec2(origin.x + 50,visibleSize.height - 50));
+            back->addClickEventListener([=](Object* sender){
+                auto nextScene = Scenes::createScene();
+                Director::getInstance()->replaceScene(nextScene);
+            });
+            this->addChild(back, 25);
+
+            auto more = ui::Button::create("sprites/more.png","sprites/more_pressed.png");    
+            more->setScale(0.15f);
+            more->setPosition(Vec2(visibleSize.width - 50,visibleSize.height - 75));
+            this->addChild(more,26);
+
+            auto run = ui::Button::create("sprites/" + night + "button_run.png","sprites/" + night + "button_run_pressed.png");    
+            run->setPosition(Vec2(visibleSize.width - 125,origin.y + 100));
+            run->setScale(0.25f);
+            this->addChild(run,12);
+
+            auto add = ui::Button::create("sprites/" + night + "create_add.png","sprites/" + night + "create_add_pressed.png");
+            add->setPosition(Vec2(visibleSize.width - 125,origin.y + 250));
+            add->setScale(0.25f);
+            this->addChild(add,13);
+            add->addClickEventListener([](Object* sender){
+                openVideo();
+            });
+
+            auto listObjects = ui::ScrollView::create();    
+            listObjects->setContentSize(Size(visibleSize.width,visibleSize.height - 225));
+            listObjects->setPosition(Vec2(origin.x,origin.y));
+            listObjects->setDirection(ui::ScrollView::Direction::VERTICAL);
+            listObjects->setBounceEnabled(true);
+            this->addChild(listObjects);
+    
+            auto objectsPath = DATAmanager::getInstance()->projectPath + "scenes/" + DATAmanager::getInstance()->sceneName + "/";
+            float iconHeight = 232;
+            float total = iconHeight * videosName.size() + 125;
+            if(total < visibleSize.height - 100){
+                total = visibleSize.height - 100;
+            }
+            listObjects->setInnerContainerSize(Size(visibleSize.width,total));
+
+            for(int i = 0;i < videosName.size();i++){
+                auto fileUtils = FileUtils::getInstance();
+                float y = total - (iconHeight * i) - iconHeight/2;
+                std::string music;
+                if(videosName[i].length() > 12){
+                    music = videosName[i].substr(0,9); + "...";
+                } else {
+                    music = videosName[i];
+                }
+
+                auto name = Label::createWithTTF(music,"fonts/arial.ttf",68 - music.length() * 2);
+                name->setPosition(Vec2(origin.x + visibleSize.width/2,y));
+                listObjects->addChild(name);
+
+                auto settings = ui::Button::create("sprites/" + night + "settings_button.png","sprites/" + night + "settings_button.png");
+                settings->setPosition(Vec2(origin.x + visibleSize.width/2 + 180,y));
+                settings->setScale(0.1f);
+                listObjects->addChild(settings);
+                settings->addClickEventListener([=](Object* sender){
+                    frontWindow->setVisible(true);
+                    backLayer->setVisible(true);
+                    deleteObject->setVisible(true);
+                    deleteLabel->setVisible(true);
+                    //buttonTextField->setVisible(true);
+                    //nameObject->setVisible(true);
+                    //objectNameLabel->setVisible(true);
+                    //nameObject->setString(soundsName[i]);            
+                    DATAmanager::getInstance()->videoName = videosName[i];
+                });
+
+                auto next = ui::Button::create("sprites/" + night + "button_play.png","sprites/" + night + "button_play_pressed.png");
+                next->setPosition(Vec2(origin.x + visibleSize.width/2 + 260,y));
+                next->setScale(0.1f);
+                listObjects->addChild(next);
+
+                auto icon = Sprite::create("sprites/icon_textures.png");
+                icon->setPosition(Vec2(100,y));
+                icon->setScale(0.25f);
+                listObjects->addChild(icon);
+
+                auto up = ui::Button::create("sprites/" + night + "sorting.png","sprites/" + night + "sorting_pressed.png");
+                up->setPosition(Vec2(origin.x + visibleSize.width/2 - 150,y + 50));
+                up->setScale(0.1f);
+                listObjects->addChild(up);
+                up->addClickEventListener([=](Object* sender){
+                    auto fileUtils = FileUtils::getInstance();
+                    auto configSequance = DATAmanager::getInstance()->projectPath + "video/" + "video.plist";
+                    if(!fileUtils->isFileExist(configSequance)){
+                        return;
+                    }
+                    ValueVector sequance = fileUtils->getValueVectorFromFile(configSequance);
+                    int index = -1;
+                    for(int a = 0;a < sequance.size();a++){
+                        if(sequance[a].asString() == videosName[i]){
+                            index = a;
+                            break;
+                        }
+                    }
+                    if(index > 0){
+                        std::swap(sequance[index],sequance[index - 1]);
+                        fileUtils->writeValueVectorToFile(sequance,configSequance);
+                        auto reload = InsideScene::createScene();
+                        Director::getInstance()->replaceScene(reload);
+                    }
+                });
+                auto down = ui::Button::create("sprites/" + night + "sorting.png","sprites/" + night + "sorting_pressed.png");
+                down->setRotation(180);
+                down->setPosition(Vec2(origin.x + visibleSize.width/2 - 150,y - 50));
+                down->setScale(0.1f);
+                listObjects->addChild(down);
+                down->addClickEventListener([=](Object* sender){
+                    auto fileUtils = FileUtils::getInstance();
+                    auto configSequance = DATAmanager::getInstance()->projectPath + "video/" + "video.plist";
+                    if(!fileUtils->isFileExist(configSequance)){
+                        return;
+                    }
+                    ValueVector sequance = fileUtils->getValueVectorFromFile(configSequance);
+    
+                    int index = -1;
+                    for(int a = 0;a < sequance.size();a++){
+                        if(sequance[a].asString() == videosName[i]){
                             index = a;
                             break;
                         }
