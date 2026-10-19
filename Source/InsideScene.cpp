@@ -317,7 +317,7 @@ static void openVideo(){
     DATAmanager::getInstance()->savePath = DATAmanager::getInstance()->projectPath + "video/";
     #if (AX_TARGET_PLATFORM == AX_PLATFORM_ANDROID) //ANDROID
     JniMethodInfo methodInfo;
-    if(JniHelper::getStaticMethodInfo(methodInfo, "dev/prototype/klengine/AppActivity", "openMediaFounder", "()V")){
+    if(JniHelper::getStaticMethodInfo(methodInfo, "dev/prototype/klengine/AppActivity", "openVideoFounder", "()V")){
         methodInfo.env->CallStaticVoidMethod(methodInfo.classID, methodInfo.methodID);
         methodInfo.env->DeleteLocalRef(methodInfo.classID);
     }
@@ -2097,7 +2097,7 @@ bool InsideScene::init()
                     DATAmanager::getInstance()->soundName = soundsName[i];
                 });
 
-                auto next = ui::Button::create("sprites/" + night + "button_play.png","sprites/" + night + "button_play_pressed.png");
+                auto next = ui::Button::create("sprites/" + night + "continue_button.png","sprites/" + night + "continue_button_pressed.png");
                 next->setPosition(Vec2(origin.x + visibleSize.width/2 + 260,y));
                 next->setScale(0.1f);
                 listObjects->addChild(next);
@@ -2184,7 +2184,7 @@ bool InsideScene::init()
                 night = "";
             }
             if(theme == 1){
-                Color3B bgColor(36,56,0);
+                Color3B bgColor(109,90,10);
                 auto layer = LayerColor::create(Color4B(bgColor),visibleSize.width,visibleSize.height);
                 layer->setPosition(Vec2::ZERO);
                 this->addChild(layer,0);
@@ -2208,7 +2208,7 @@ bool InsideScene::init()
                 frontWindow->drawSolidRect(Vec2(origin.x + 100,visibleSize.height - 200), Vec2(visibleSize.width - 100,origin.y + 200), col);
             }
             if(theme == 1){
-                Color4F col = Color4F(0.28f,0.56f,0,1.0f);
+                Color4F col = Color4F(0.71f,0.59f,0.06f,1.0f);
                 frontWindow->drawSolidRect(Vec2(origin.x + 100,visibleSize.height - 200), Vec2(visibleSize.width - 100,origin.y + 200), col);
             }
             frontWindow->setVisible(false);
@@ -2299,7 +2299,7 @@ bool InsideScene::init()
                 DrawNode->drawSolidRect(Vec2(0,visibleSize.height), Vec2(visibleSize.width,visibleSize.height - 150),color);
             }
             if(theme == 1){
-                Color4F color = Color4F(0.28f,0.56f,0,1.0f);
+                Color4F color = Color4F(0.71f,0.59f,0.06f,1.0f);
                 DrawNode->drawSolidRect(Vec2(0,visibleSize.height), Vec2(visibleSize.width,visibleSize.height - 150),color);
             }
             this->addChild(DrawNode,20);
@@ -2498,7 +2498,7 @@ bool InsideScene::init()
                     DATAmanager::getInstance()->videoName = videosName[i];
                 });
 
-                auto next = ui::Button::create("sprites/" + night + "button_play.png","sprites/" + night + "button_play_pressed.png");
+                auto next = ui::Button::create("sprites/" + night + "continue_button.png","sprites/" + night + "continue_button_pressed.png");
                 next->setPosition(Vec2(origin.x + visibleSize.width/2 + 260,y));
                 next->setScale(0.1f);
                 listObjects->addChild(next);
